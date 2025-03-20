@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a202c">
     <title>Coffy Adventure</title>
     <link rel="stylesheet" href="game.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
@@ -12,11 +16,20 @@
     <script src="https://cdn.jsdelivr.net/npm/web3modal"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Preload düzeltmesi -->
+    <link rel="preload" href="game.css" as="style" crossorigin="anonymous">
+    <link rel="preload" href="game.js" as="script" crossorigin="anonymous">
 </head>
-<body>
-    <div id="game-container">
+<body class="no-select optimize-gpu">
+    <div id="game-container" class="optimize-gpu">
         <canvas id="game-canvas"></canvas>
         
+        <!-- Boss HUD -->
+        <div id="boss-health-bar" class="boss-health-bar">
+            <div id="boss-health-fill" class="boss-health-fill"></div>
+        </div>
+        <div id="boss-name" class="boss-name"></div>
+
         <!-- Yükleme Ekranı -->
         <div id="loading-screen" class="screen">
             <div class="spinner"></div>
@@ -29,8 +42,8 @@
             <p style="color: #fff; max-width: 80%; text-align: center; margin-bottom: 1rem;">Collect coffee cups, avoid tea cups!</p>
             <div style="color: #fff; margin-bottom: 1rem;">Total Reward: <span id="total-reward">0</span> COFFY</div>
             <button id="claim-total-reward" class="game-button">CLAIM REWARDS</button>
-            <button id="connect-wallet" class="game-button">CONNECT WALLET</button>
-            <button id="start-button" class="game-button">START GAME</button>
+            <button id="connect-wallet" class="game-button touch-target">CONNECT WALLET</button>
+            <button id="start-button" class="game-button touch-target">START GAME</button>
 
             <!-- Karakterler Bölümü -->
             <h3 class="section-title">Characters</h3>
@@ -100,20 +113,29 @@
             <div class="hud-item"><i class="fas fa-coins"></i> <span id="token-count">0</span></div>
             <div class="hud-item"><i class="fas fa-trophy"></i> <span id="total-rewards-hud">0</span></div>
             <div class="hud-item wallet"><i class="fas fa-wallet"></i> <span id="wallet-address">Not Connected</span></div>
+            <!-- Superpower notification -->
+            <div id="superpower-notification" class="superpower-notification">
+                <i class="fas fa-bolt"></i>
+                <span id="superpower-text"></span>
+            </div>
+        </div>
+
+        <!-- Süpergüç Bildirimi -->
+        <div id="superpower-notification" class="superpower-notification">
+            <i class="fas fa-star"></i>
+            <span id="superpower-text">Superpower Ready!</span>
         </div>
 
         <!-- Kontrol Bilgileri -->
         <div id="controls-info">
-            <p>Keyboard: WASD or Arrow Keys = Move</p>
-            <p>Mouse: Move and Collect</p>
-            <p>P = Pause</p>
-            <p>ESC = Menu</p>
-            <p>Touch: Swipe to Move</p>
+            <div>WASD/Arrows: Move</div>
+            <div>P: Pause</div>
+            <div>SPACE: Superpower</div>
         </div>
     </div>
 
     <!-- Ses Elementleri -->
-    <audio id="background-music" loop>
+    <audio id="background-music" preload="none" loop>
         <source src="background.mp3" type="audio/mpeg">
     </audio>
     <audio id="collect-sound">
@@ -125,7 +147,7 @@
     <audio id="gameover-sound">
         <source src="gameover.mp3" type="audio/mpeg">
     </audio>
-
-    <script src="game.js"></script>
+></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html>

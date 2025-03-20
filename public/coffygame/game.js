@@ -1,5 +1,5 @@
 // Constants
-const PLAYER_RADIUS = 40;
+const PLAYER_RADIUS = 32; // 40'tan 32'ye düşürüldü
 const CUP_RADIUS = 25;
 const SMILE_DURATION = 30;
 const INITIAL_COFFEE_SPAWN_RATE = 900;
@@ -12,6 +12,373 @@ const MAX_PARTICLES = 50;
 const TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
 const SUPPORTED_WALLETS = ['MetaMask', 'Trust Wallet', 'Binance Wallet'];
 const BSC_CHAIN_ID = '0x38';
+
+const SUPERPOWER_COOLDOWN = 20000; // 20 seconds
+const SUPERPOWER_DURATION = 3000;  // 3 seconds
+
+const SUPERPOWERS = {
+    'basic-barista': {
+        name: 'Coffee Shield',
+        description: 'Creates a protective shield and doubles coin rewards',
+        effect: (player) => {
+            gameState.shieldActive = true;
+            gameState.rewardMultiplier = 2;
+            // Kalkan efekti
+            const shieldInterval = setInterval(() => {
+                if (!gameState.shieldActive) {
+                    clearInterval(shieldInterval);
+                    return;
+                }
+                createShieldEffect(player);
+            }, 200);
+        },
+        reset: (player) => {
+            gameState.shieldActive = false;
+            gameState.rewardMultiplier = 1;
+        }
+    },
+    'mocha-knight': {
+        name: 'Coffee Storm',
+        description: 'Creates a vortex that pulls and collects all coffee cups',
+        effect: (player) => {
+            gameState.coffeeStormActive = true;
+            player.collectRange *= 4;
+            // Kahve fırtınası efekti
+            const stormInterval = setInterval(() => {
+                if (!gameState.coffeeStormActive) {
+                    clearInterval(stormInterval);
+                    return;
+                }
+                createCoffeeVortex(player);
+                // Tüm kahve kupalarını oyuncuya doğru çek
+                gameObjects.coffeeCups.forEach(cup => {
+                    if (!cup.active) return;
+                    const dx = player.x - cup.x;
+                    const dy = player.y - cup.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    cup.dx += (dx / dist) * 0.5;
+                    cup.dy += (dy / dist) * 0.5;
+                });
+            }, 100);
+        },
+        reset: (player) => {
+            gameState.coffeeStormActive = false;
+            player.collectRange /= 4;
+        }
+    },
+    'arabica-archmage': {
+        name: 'Time Freeze',
+        description: 'Freezes all tea cups and creates magical coffee portals',
+        effect: (player) => {
+            gameState.timeStopActive = true;
+            // Çay kupalarını dondur
+            gameObjects.teaCups.forEach(cup => {
+                cup.originalDx = cup.dx;
+                cup.originalDy = cup.dy;
+                cup.dx = 0;
+                cup.dy = 0;
+            });
+            // Portal efekti ve ekstra kahve spawn
+            const portalInterval = setInterval(() => {
+                if (!gameState.timeStopActive) {
+                    clearInterval(portalInterval);
+                    return;
+                }
+                createMagicPortals(player);
+                // Rastgele konumlarda kahve oluştur
+                if (Math.random() < 0.3) {
+                    const coffee = getCoffeeFromPool();
+                    if (coffee) {
+                        coffee.x = random(player.radius, gameState.width - player.radius);
+                        coffee.y = random(player.radius, gameState.height - player.radius);
+                        coffee.dx = 0;
+                        coffee.dy = 0;
+                        coffee.active = true;
+                        gameObjects.coffeeCups.push(coffee);
+                    }
+                }
+            }, 500);
+        },
+        reset: (player) => {
+            gameState.timeStopActive = false;
+            gameObjects.teaCups.forEach(cup => {
+                if (cup.originalDx !== undefined) {
+                    cup.dx = cup.originalDx;
+                    cup.dy = cup.originalDy;
+                }
+            });
+        }
+    },
+    'robusta-shadowblade': {
+        name: 'Shadow Clones',
+        description: 'Creates 4 shadow clones that collect coffee independently',
+        effect: (player) => {
+            gameState.shadowClonesActive = true;
+            const clonePositions = [
+                { x: -1, y: -1 }, { x: 1, y: -1 },
+                { x: -1, y: 1 }, { x: 1, y: 1 }
+            ];
+            
+            const clones = clonePositions.map(pos => ({
+                x: player.x + pos.x * 50,
+                y: player.y + pos.y * 50,
+                radius: player.radius * 0.8,
+                collectRange: player.collectRange
+            }));
+            
+            const cloneInterval = setInterval(() => {
+                if (!gameState.shadowClonesActive) {
+                    clearInterval(cloneInterval);
+                    return;
+                }
+                
+                clones.forEach((clone, i) => {
+                    // Klonları oyuncuyu takip ettir
+                    clone.x = player.x + clonePositions[i].x * 50;
+                    clone.y = player.y + clonePositions[i].y * 50;
+                    createShadowTrail(clone);
+                    
+                    // Klonların kahve toplamasını sağla
+                    gameObjects.coffeeCups.forEach((cup, j) => {
+                        if (!cup.active) return;
+                        const dx = clone.x - cup.x;
+                        const dy = clone.y - cup.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < clone.collectRange) {
+                            resetCoffeeCup(cup);
+                            gameObjects.coffeeCups.splice(j, 1);
+                            gameState.score += 5 * gameState.level;
+                            gameState.coffeeCount++;
+                            createParticles(clone.x, clone.y, '#4A2C2A', 5);
+                            scoreElement.textContent = gameState.score;
+                            coffeeCountElement.textContent = gameState.coffeeCount;
+                        }
+                    });
+                });
+            }, 50);
+        },
+        reset: (player) => {
+            gameState.shadowClonesActive = false;
+        }
+    },
+    'cappuccino-templar': {
+        name: 'Divine Conversion',
+        description: 'Converts all tea cups into coffee and creates sacred barriers',
+        effect: (player) => {
+            gameState.divineConversionActive = true;
+            convertTeaToCoffee();
+            const barrierInterval = setInterval(() => {
+                if (!gameState.divineConversionActive) {
+                    clearInterval(barrierInterval);
+                    return;
+                }
+                createSacredBarriers(player);
+                // Yeni gelen çay kupalarını da kahveye çevir
+                convertTeaToCoffee();
+            }, 500);
+        },
+        reset: (player) => {
+            gameState.divineConversionActive = false;
+        }
+    },
+    'espresso-dragonlord': {
+        name: 'Dragon Ascension',
+        description: 'Transform into an invincible coffee dragon with massive collection range',
+        effect: (player) => {
+            gameState.dragonFormActive = true;
+            gameState.shieldActive = true;
+            player.originalRadius = player.radius;
+            player.originalCollectRange = player.collectRange;
+            player.radius *= 1.5;
+            player.collectRange *= 5;
+            
+            const dragonInterval = setInterval(() => {
+                if (!gameState.dragonFormActive) {
+                    clearInterval(dragonInterval);
+                    return;
+                }
+                createDragonEffects(player);
+                // Otomatik kahve toplama
+                gameObjects.coffeeCups.forEach((cup, i) => {
+                    if (!cup.active) return;
+                    const dx = player.x - cup.x;
+                    const dy = player.y - cup.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < player.collectRange) {
+                        resetCoffeeCup(cup);
+                        gameObjects.coffeeCups.splice(i, 1);
+                        gameState.score += 10 * gameState.level; // Ejderha formu bonus puan
+                        gameState.coffeeCount++;
+                        createParticles(player.x, player.y, '#FFD700', 5);
+                        scoreElement.textContent = gameState.score;
+                        coffeeCountElement.textContent = gameState.coffeeCount;
+                    }
+                });
+            }, 100);
+        },
+        reset: (player) => {
+            gameState.dragonFormActive = false;
+            gameState.shieldActive = false;
+            player.radius = player.originalRadius;
+            player.collectRange = player.originalCollectRange;
+        }
+    }
+};
+
+// Storage Keys
+const STORAGE_KEYS = {
+    OWNED_CHARACTERS: 'ownedCharacters',
+    PENDING_REWARDS: 'pendingRewards',
+    SOUND_ENABLED: 'soundEnabled',
+    HIGH_SCORE: 'coffeeAdventureHighScore'
+};
+
+// Add new visual effect functions
+function createShieldEffect(player) {
+    const radius = player.radius * 1.5;
+    const particles = 12;
+    for (let i = 0; i < particles; i++) {
+        const angle = (i / particles) * Math.PI * 2;
+        createParticles(
+            player.x + Math.cos(angle) * radius,
+            player.y + Math.sin(angle) * radius,
+            '#FFD700',
+            1,
+            0.5
+        );
+    }
+}
+
+function createCoffeeVortex(player) {
+    const vortexRadius = player.collectRange * 2;
+    const particles = 24;
+    for (let i = 0; i < particles; i++) {
+        const angle = (i / particles) * Math.PI * 2;
+        const x = player.x + Math.cos(angle) * vortexRadius;
+        const y = player.y + Math.sin(angle) * vortexRadius;
+        createParticles(x, y, '#4A2C2A', 1, 3);
+    }
+}
+
+function createMagicPortals(player) {
+    const portalCount = 3;
+    const radius = player.collectRange * 2;
+    for (let i = 0; i < portalCount; i++) {
+        const angle = (i / portalCount) * Math.PI * 2;
+        const x = player.x + Math.cos(angle) * radius;
+        const y = player.y + Math.sin(angle) * radius;
+        createPortalEffect(x, y);
+    }
+}
+
+function createPortalEffect(x, y) {
+    const particles = 8;
+    for (let i = 0; i < particles; i++) {
+        const angle = (i / particles) * Math.PI * 2;
+        createParticles(
+            x + Math.cos(angle) * 20,
+            y + Math.sin(angle) * 20,
+            '#9370DB',
+            1,
+            2
+        );
+    }
+}
+
+function createShadowClones(player) {
+    const clonePositions = [
+        { x: -1, y: -1 }, { x: 1, y: -1 },
+        { x: -1, y: 1 }, { x: 1, y: 1 }
+    ];
+    
+    clonePositions.forEach(pos => {
+        const distance = 50;
+        createParticles(
+            player.x + pos.x * distance,
+            player.y + pos.y * distance,
+            '#000000',
+            5,
+            1,
+            true
+        );
+    });
+}
+
+function createSacredBarriers(player) {
+    const barrierCount = 6;
+    const radius = player.collectRange * 1.5;
+    for (let i = 0; i < barrierCount; i++) {
+        const angle = (i / barrierCount) * Math.PI * 2;
+        createParticles(
+            player.x + Math.cos(angle) * radius,
+            player.y + Math.sin(angle) * radius,
+            '#FFF8DC',
+            3,
+            0.5
+        );
+    }
+}
+
+function createDragonTransformation(player) {
+    // Create dragon wing effects
+    const wingParticles = 20;
+    for (let i = 0; i < wingParticles; i++) {
+        const angleLeft = Math.PI + (i / wingParticles) * Math.PI / 2;
+        const angleRight = Math.PI * 1.5 - (i / wingParticles) * Math.PI / 2;
+        const radius = player.radius * 3;
+        
+        // Left wing
+        createParticles(
+            player.x + Math.cos(angleLeft) * radius,
+            player.y + Math.sin(angleLeft) * radius,
+            '#FFD700',
+            1,
+            2
+        );
+        
+        // Right wing
+        createParticles(
+            player.x + Math.cos(angleRight) * radius,
+            player.y + Math.sin(angleRight) * radius,
+            '#FFD700',
+            1,
+            2
+        );
+    }
+}
+
+// Boss Constants
+const BOSS_TYPES = {
+    COFFEE: 'coffee-boss',
+    TEA: 'tea-boss'
+};
+
+const BOSS_PROPERTIES = {
+    [BOSS_TYPES.COFFEE]: {
+        health: 100,
+        radius: 60,
+        speed: 1.5,
+        bulletCount: 8,
+        bulletSpeed: 2,  // Mermi hızını azalttık
+        reward: 1000,
+        attackInterval: 3000,
+        vulnerableTime: 1000,
+        maxAttacks: 2    // Level 10'dan önce varsayılan saldırı sayısı
+    },
+    [BOSS_TYPES.TEA]: {
+        health: 80,
+        radius: 50,
+        speed: 2,
+        bulletSpeed: 2.5,
+        spreadAngle: Math.PI / 4,
+        reward: 800,
+        attackInterval: 2500,
+        vulnerableTime: 1000,
+        maxAttacks: 2    // Level 10'dan önce varsayılan saldırı sayısı
+    }
+};
+
+const BOSS_SPAWN_INTERVAL = 25000; // 25 seconds
 
 // Character Definitions
 const characters = [
@@ -526,25 +893,6 @@ const COFFY_ABI = [
 			}
 		],
 		"name": "Unpaused",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "Unstaked",
 		"type": "event"
 	},
 	{
@@ -1663,6 +2011,9 @@ const loadingScreen = document.getElementById('loading-screen');
 const startScreen = document.getElementById('start-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const pauseScreen = document.getElementById('pause-screen');
+const bossHealthBar = document.getElementById('boss-health-bar');
+const bossHealthFill = document.getElementById('boss-health-fill');
+const bossNameDisplay = document.getElementById('boss-name');
 const connectWalletButton = document.getElementById('connect-wallet');
 const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
@@ -1738,7 +2089,12 @@ const gameState = {
     comboCount: 0,
     currentCharacter: 'basic-barista',
     ownedCharacters: ['basic-barista'],
-    touchSensitivity: 0.1
+    touchSensitivity: 0.1,
+    lastBossTime: 0,
+    activeBoss: null,
+    lastSuperpowerTime: 0,
+    superpowerActive: false,
+    soundEnabled: localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED) !== 'false',
 };
 
 // Game Objects
@@ -1747,7 +2103,8 @@ const gameObjects = {
     coffeeCups: [],
     teaCups: [],
     powerUps: [],
-    particles: []
+    particles: [],
+    bossBullets: []
 };
 
 // SVG Görseller (Sad emojiler eklendi)
@@ -1774,7 +2131,73 @@ const SVG_URLS = {
     teaCup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="40" width="40" height="40" fill="#DAA520" rx="5" stroke="#AA8500" stroke-width="1" /><ellipse cx="50" cy="40" rx="20" ry="5" fill="#8B4513" /><path d="M70 50 C80 50 85 60 80 70" stroke="#000" stroke-width="2" fill="none" /><path d="M45 50 Q50 65 55 50" stroke="#8B4513" stroke-width="3" fill="none" /></svg>'),
     shieldCoin: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#FFD700" stroke="#DAA520" stroke-width="2" /><text x="50" y="60" font-size="40" fill="#000" text-anchor="middle" font-family="Arial">C</text></svg>'),
     speedBoost: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#00FF00" stroke="#00CC00" stroke-width="2" /><path d="M30 50 H70 M50 30 V70" stroke="#000" stroke-width="4"/></svg>'),
-    magnet: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#FF00FF" stroke="#CC00CC" stroke-width="2" /><path d="M30 30 Q50 50 70 30 M30 70 Q50 50 70 70" stroke="#000" stroke-width="3" fill="none"/></svg>')
+    magnet: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="#FF00FF" stroke="#CC00CC" stroke-width="2" /><path d="M30 30 Q50 50 70 30 M30 70 Q50 50 70 70" stroke="#000" stroke-width="3" fill="none"/></svg>'),
+    coffeeBoss: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="coffeeBossGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#8B4513"/>
+                    <stop offset="100%" style="stop-color:#4A2C2A"/>
+                </radialGradient>
+                <filter id="bossGlow">
+                    <feGaussianBlur stdDeviation="2" result="glow"/>
+                    <feMerge>
+                        <feMergeNode in="glow"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <!-- Ana gövde -->
+            <path d="M50,100 C50,50 150,50 150,100 C150,150 50,150 50,100" 
+                  fill="url(#coffeeBossGrad)" stroke="#2C1810" stroke-width="5"/>
+            <!-- Kafa tacı -->
+            <path d="M60,50 L100,30 L140,50 L130,60 L100,45 L70,60 Z" 
+                  fill="#FFD700" stroke="#DAA520" stroke-width="3" filter="url(#bossGlow)"/>
+            <!-- Gözler -->
+            <ellipse cx="80" cy="90" rx="12" ry="15" fill="#FFD700"/>
+            <ellipse cx="120" cy="90" rx="12" ry="15" fill="#FFD700"/>
+            <circle cx="80" cy="90" r="6" fill="#2C1810"/>
+            <circle cx="120" cy="90" r="6" fill="#2C1810"/>
+            <!-- Ağız -->
+            <path d="M70,120 Q100,140 130,120" stroke="#FFD700" stroke-width="6" fill="none"/>
+            <!-- Dekoratif detaylar -->
+            <path d="M40,80 L60,70 M160,80 L140,70" stroke="#FFD700" stroke-width="3"/>
+            <circle cx="100" cy="70" r="5" fill="#FFD700"/>
+        </svg>
+    `),
+    
+    teaBoss: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="teaBossGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" style="stop-color:#DAA520"/>
+                    <stop offset="100%" style="stop-color:#8B4513"/>
+                </radialGradient>
+                <filter id="teaGlow">
+                    <feGaussianBlur stdDeviation="2" result="glow"/>
+                    <feMerge>
+                        <feMergeNode in="glow"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <!-- Ana gövde -->
+            <path d="M40,100 C40,40 160,40 160,100 C160,160 40,160 40,100" 
+                  fill="url(#teaBossGrad)" stroke="#654321" stroke-width="5"/>
+            <!-- Çay yaprağı şeklinde taç -->
+            <path d="M80,40 Q100,20 120,40 Q140,30 130,50 Q100,35 70,50 Q60,30 80,40" 
+                  fill="#228B22" stroke="#006400" stroke-width="3" filter="url(#teaGlow)"/>
+            <!-- Gözler -->
+            <path d="M70,85 Q80,80 90,85 Q80,95 70,85" fill="#2C1810"/>
+            <path d="M110,85 Q120,80 130,85 Q120,95 110,85" fill="#2C1810"/>
+            <!-- Ağız -->
+            <path d="M80,120 Q100,140 120,120 Q100,130 80,120" 
+                  fill="#2C1810" stroke="#654321" stroke-width="2"/>
+            <!-- Dekoratif detaylar -->
+            <path d="M50,70 S65,60 80,70" stroke="#228B22" stroke-width="3" fill="none"/>
+            <path d="M120,70 S135,60 150,70" stroke="#228B22" stroke-width="3" fill="none"/>
+        </svg>
+    `)
 };
 // Yardımcı Fonksiyonlar
 function encryptData(data) { return btoa(JSON.stringify(data)); }
@@ -1783,16 +2206,66 @@ function encryptLocalStorage(key, value) { localStorage.setItem(key, encryptData
 function decryptLocalStorage(key) { const value = localStorage.getItem(key); return value ? decryptData(value) : null; }
 function random(min, max) { return Math.random() * (max - min) + min; }
 function distanceSquared(obj1, obj2) { const dx = obj1.x - obj2.x; const dy = obj1.y - obj2.y; return dx * dx + dy * dy; }
-function checkCollision(obj1, obj2) { return distanceSquared(obj1, obj2) < (obj1.radius + obj2.radius) * (obj1.radius + obj2.radius); }
+function checkCollision(obj1, obj2) {
+    const dx = obj1.x - obj2.x;
+    const dy = obj1.y - obj2.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Çarpışma toleransını ayarla
+    const collisionTolerance = 0.8; // 0.8 = %80 hassasiyet
+    const effectiveRadius = (obj1.radius + obj2.radius) * collisionTolerance;
+    
+    return distance < effectiveRadius;
+}
 function isOutOfBounds(obj, padding = 100) { return (obj.x < -padding || obj.x > gameState.width + padding || obj.y < -padding || obj.y > gameState.height + padding); }
 
 function loadOwnedCharacters() {
-    const owned = decryptLocalStorage('ownedCharacters');
-    if (owned) gameState.ownedCharacters = owned;
+    try {
+        const owned = localStorage.getItem(STORAGE_KEYS.OWNED_CHARACTERS);
+        if (owned) {
+            const parsed = JSON.parse(owned);
+            if (Array.isArray(parsed)) {
+                gameState.ownedCharacters = parsed;
+            } else {
+                gameState.ownedCharacters = ['basic-barista'];
+                saveOwnedCharacters();
+            }
+        } else {
+            gameState.ownedCharacters = ['basic-barista'];
+            saveOwnedCharacters();
+        }
+
+        const savedRewards = localStorage.getItem(STORAGE_KEYS.PENDING_REWARDS);
+        if (savedRewards) {
+            const rewards = parseFloat(savedRewards);
+            if (!isNaN(rewards)) {
+                gameState.pendingRewards = rewards;
+                totalRewardElement.textContent = rewards.toFixed(2);
+                totalRewardsHudElement.textContent = rewards.toFixed(2);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading saved data:', error);
+        gameState.ownedCharacters = ['basic-barista'];
+        gameState.pendingRewards = 0;
+        saveOwnedCharacters();
+    }
 }
 
 function saveOwnedCharacters() {
-    encryptLocalStorage('ownedCharacters', gameState.ownedCharacters);
+    try {
+        localStorage.setItem(STORAGE_KEYS.OWNED_CHARACTERS, JSON.stringify(gameState.ownedCharacters));
+    } catch (error) {
+        console.error('Error saving characters:', error);
+    }
+}
+
+function savePendingRewards() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.PENDING_REWARDS, gameState.pendingRewards.toString());
+    } catch (error) {
+        console.error('Error saving rewards:', error);
+    }
 }
 
 function saveHighScore(score) {
@@ -1932,6 +2405,7 @@ async function claimTotalReward() {
         const tx = await gameState.tokenContract.claimGameRewards(weiAmount, { gasLimit: gasEstimate.mul(120).div(100) });
         await tx.wait();
         gameState.pendingRewards = 0;
+        savePendingRewards();
         totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
         totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
         alert("Rewards claimed successfully!");
@@ -2041,6 +2515,19 @@ function setupTouchControls() {
             event.preventDefault();
         }
     }, { passive: false });
+
+    let doubleTapTimer = null;
+    document.addEventListener('touchstart', (event) => {
+        if (doubleTapTimer === null) {
+            doubleTapTimer = setTimeout(() => {
+                doubleTapTimer = null;
+            }, 300);
+        } else {
+            clearTimeout(doubleTapTimer);
+            doubleTapTimer = null;
+            activateSuperpower();
+        }
+    });
 }
 
 function setupKeyboardControls() {
@@ -2048,6 +2535,9 @@ function setupKeyboardControls() {
         gameState.keysPressed[event.key] = true;
         if (event.key === 'p' || event.key === 'P') togglePause();
         if (event.key === 'Escape' && gameState.isStarted && !gameState.isOver) { endGame(); showScreen(startScreen); }
+        if (event.key === ' ') { // Spacebar
+            activateSuperpower();
+        }
     });
     document.addEventListener('keyup', (event) => { gameState.keysPressed[event.key] = false; });
 }
@@ -2211,34 +2701,38 @@ function drawPlayer() {
     if (player.smileTimer > 0) player.smileTimer--;
     if (player.currentImage) {
         const size = player.radius * 2;
-        const posX = player.x - player.radius;
-        const posY = player.y - player.radius;
-        ctx.drawImage(player.currentImage, posX, posY, size, size);
+        // Karakteri %20 küçült
+        const drawSize = size * 0.8;
+        const posX = player.x - (drawSize / 2);
+        const posY = player.y - (drawSize / 2);
+        ctx.drawImage(player.currentImage, posX, posY, drawSize, drawSize);
     } else {
         ctx.fillStyle = '#FFF';
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+        ctx.arc(player.x, player.y, player.radius * 0.8, 0, Math.PI * 2);
         ctx.fill();
     }
+    
+    // Güç-up göstergeleri için de boyutu ayarla
     if (gameState.shieldActive) {
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius + 5, 0, Math.PI * 2);
+        ctx.arc(player.x, player.y, player.radius * 0.85, 0, Math.PI * 2);
         ctx.stroke();
     }
     if (gameState.speedBoostActive) {
         ctx.strokeStyle = '#00FF00';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius + 8, 0, Math.PI * 2);
+        ctx.arc(player.x, player.y, player.radius * 0.9, 0, Math.PI * 2);
         ctx.stroke();
     }
     if (gameState.magnetActive) {
         ctx.strokeStyle = '#FF00FF';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.collectRange, 0, Math.PI * 2);
+        ctx.arc(player.x, player.y, player.collectRange * 0.8, 0, Math.PI * 2);
         ctx.stroke();
     }
 }
@@ -2357,6 +2851,7 @@ function updateCups(deltaTime) {
             gameState.comboCount++;
             totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
             totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
+            savePendingRewards();
             createParticles(player.x, player.y, '#4A2C2A', PARTICLE_COUNT.COFFEE);
             gameObjects.player.smileTimer = SMILE_DURATION;
             scoreElement.textContent = gameState.score;
@@ -2372,22 +2867,34 @@ function updateCups(deltaTime) {
     for (let i = gameObjects.teaCups.length - 1; i >= 0; i--) {
         const cup = gameObjects.teaCups[i];
         if (!cup.active) continue;
+        
         cup.x += cup.dx;
         cup.y += cup.dy;
         cup.rotation += cup.rotationSpeed;
+        
         if (isOutOfBounds(cup)) {
             resetTeaCup(cup);
             gameObjects.teaCups.splice(i, 1);
             continue;
         }
+
+        // Gelişmiş çarpışma kontrolü
         if (checkCollision(player, cup)) {
-            if (!gameState.shieldActive) {
-                gameOver();
-                break;
-            } else {
-                resetTeaCup(cup);
-                gameObjects.teaCups.splice(i, 1);
-                createParticles(cup.x, cup.y, '#8B4513', PARTICLE_COUNT.BREAK);
+            // İlave bir mesafe kontrolü ekle
+            const dx = player.x - cup.x;
+            const dy = player.y - cup.y;
+            const exactDistance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Çarpışma daha kesin bir şekilde kontrol edilir
+            if (exactDistance < (player.radius + cup.radius) * 0.7) {
+                if (!gameState.shieldActive) {
+                    gameOver();
+                    break;
+                } else {
+                    resetTeaCup(cup);
+                    gameObjects.teaCups.splice(i, 1);
+                    createParticles(cup.x, cup.y, '#8B4513', PARTICLE_COUNT.BREAK);
+                }
             }
         }
     }
@@ -2466,6 +2973,326 @@ function spawnCups(currentTime) {
     }
 }
 
+class Boss {
+    constructor(type) {
+        const props = BOSS_PROPERTIES[type];
+        this.type = type;
+        this.health = props.health;
+        this.maxHealth = props.health;
+        this.radius = props.radius;
+        this.speed = props.speed;
+        this.x = gameState.width / 2;
+        this.y = -this.radius;
+        this.active = true;
+        this.lastAttackTime = 0;
+        this.attackInterval = 2000;
+        this.phase = 1;
+        this.lastDamageTime = 0;
+        this.isVulnerable = true;
+        this.currentImage = new Image();
+        this.currentImage.src = SVG_URLS[type === BOSS_TYPES.COFFEE ? 'coffeeBoss' : 'teaBoss'];
+        this.attackCount = 0;  // Saldırı sayacı ekle
+        this.minDistance = 300; // Minimum mesafeyi artır
+        this.maxAttacks = gameState.level >= 10 ? 3 : BOSS_PROPERTIES[type].maxAttacks;
+        this.exitingScreen = false;
+    }
+
+    update(player, deltaTime) {
+        const currentTime = performance.now();
+        if (!this.isVulnerable && currentTime - this.lastDamageTime > BOSS_PROPERTIES[this.type].vulnerableTime) {
+            this.isVulnerable = true;
+        }
+
+        // Eğer son saldırı yapıldıysa ekrandan çık
+        if (this.attackCount >= this.maxAttacks && !this.exitingScreen) {
+            this.exitingScreen = true;
+            // Ekranın dışına çıkış yönünü belirle
+            this.exitDirection = {
+                x: this.x > gameState.width / 2 ? 1 : -1,
+                y: this.y > gameState.height / 2 ? 1 : -1
+            };
+        }
+
+        if (this.exitingScreen) {
+            // Ekranın dışına doğru hareket et
+            this.x += this.exitDirection.x * this.speed * 2;
+            this.y += this.exitDirection.y * this.speed * 2;
+            
+            // Ekranın tamamen dışına çıktığında deaktif et
+            if (Math.abs(this.x - gameState.width/2) > gameState.width || 
+                Math.abs(this.y - gameState.height/2) > gameState.height) {
+                this.active = false;
+                gameState.activeBoss = null;
+            }
+            return;
+        }
+
+        // Normal hareket ve saldırı mantığı
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > this.minDistance) {
+            this.x += (dx / dist) * this.speed;
+            this.y += (dy / dist) * this.speed;
+        }
+
+        if (currentTime - this.lastAttackTime > this.attackInterval && this.attackCount < this.maxAttacks) {
+            this.attack(player);
+            this.attackCount++;
+            this.lastAttackTime = currentTime;
+        }
+    }
+
+    attack(player) {
+        if (this.type === BOSS_TYPES.COFFEE) {
+            this.coffeeAttack();
+        } else {
+            this.teaAttack(player);
+        }
+    }
+
+    coffeeAttack() {
+        const props = BOSS_PROPERTIES[BOSS_TYPES.COFFEE];
+        for (let i = 0; i < props.bulletCount; i++) {
+            const angle = (i / props.bulletCount) * Math.PI * 2;
+            gameObjects.bossBullets.push({
+                x: this.x,
+                y: this.y,
+                radius: CUP_RADIUS * 0.7,
+                dx: Math.cos(angle) * props.bulletSpeed,
+                dy: Math.sin(angle) * props.bulletSpeed,
+                type: 'coffee'
+            });
+        }
+    }
+
+    teaAttack(player) {
+        const props = BOSS_PROPERTIES[BOSS_TYPES.TEA];
+        const angle = Math.atan2(player.y - this.y, player.x - this.x);
+        for (let i = -2; i <= 2; i++) {
+            const spreadAngle = angle + (i * props.spreadAngle / 2);
+            gameObjects.bossBullets.push({
+                x: this.x,
+                y: this.y,
+                radius: CUP_RADIUS * 0.7,
+                dx: Math.cos(spreadAngle) * props.bulletSpeed,
+                dy: Math.sin(spreadAngle) * props.bulletSpeed,
+                type: 'tea'
+            });
+        }
+    }
+
+    damage(amount) {
+        if (!this.isVulnerable) return false;
+        
+        this.health -= amount;
+        this.isVulnerable = false;
+        this.lastDamageTime = performance.now();
+        
+        createParticles(this.x, this.y, 
+            this.type === BOSS_TYPES.COFFEE ? '#4A2C2A' : '#8B4513', 
+            5, 8);
+
+        if (this.health <= this.maxHealth / 2 && this.phase === 1) {
+            this.phase = 2;
+            this.attackInterval *= 0.7;
+            this.speed *= 1.2;
+        }
+
+        return this.health <= 0;
+    }
+}
+
+function drawBoss() {
+    if (!gameState.activeBoss) return;
+
+    const boss = gameState.activeBoss;
+    if (boss.currentImage && boss.currentImage.complete) {
+        ctx.save();
+        ctx.translate(boss.x, boss.y);
+        ctx.drawImage(boss.currentImage, 
+            -boss.radius, -boss.radius, 
+            boss.radius * 2, boss.radius * 2
+        );
+        ctx.restore();
+    }
+
+    // Can barı
+    const healthBarWidth = boss.radius * 2;
+    const healthBarHeight = 10;
+    const healthPercentage = boss.health / boss.maxHealth;
+    
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(boss.x - healthBarWidth/2, boss.y - boss.radius - 20, 
+                 healthBarWidth, healthBarHeight);
+    ctx.fillStyle = '#00FF00';
+    ctx.fillRect(boss.x - healthBarWidth/2, boss.y - boss.radius - 20, 
+                 healthBarWidth * healthPercentage, healthBarHeight);
+}
+
+function drawBossBullets() {
+    for (const bullet of gameObjects.bossBullets) {
+        ctx.save();
+        ctx.translate(bullet.x, bullet.y);
+        ctx.rotate(Math.atan2(bullet.dy, bullet.dx));
+        
+        // Çay objesi çizimi
+        if (IMAGE_CACHE.teaCup) {
+            ctx.drawImage(
+                IMAGE_CACHE.teaCup, 
+                -bullet.radius, 
+                -bullet.radius, 
+                bullet.radius * 2, 
+                bullet.radius * 2
+            );
+        } else {
+            // Yedek basit çizim
+            ctx.fillStyle = bullet.type === 'coffee' ? '#4A2C2A' : '#8B4513';
+            ctx.fillRect(-bullet.radius, -bullet.radius, bullet.radius * 2, bullet.radius * 2);
+        }
+        
+        ctx.restore();
+    }
+}
+
+function updateBoss(deltaTime) {
+    const currentTime = performance.now();
+    
+    if (!gameState.activeBoss && currentTime - gameState.lastBossTime > BOSS_SPAWN_INTERVAL) {
+        gameState.activeBoss = new Boss(
+            Math.random() < 0.5 ? BOSS_TYPES.COFFEE : BOSS_TYPES.TEA
+        );
+        gameState.lastBossTime = currentTime;
+    }
+
+    if (gameState.activeBoss && gameState.activeBoss.active) {
+        gameState.activeBoss.update(gameObjects.player, deltaTime);
+    }
+
+    // Boss mermilerini güncelle
+    for (let i = gameObjects.bossBullets.length - 1; i >= 0; i--) {
+        const bullet = gameObjects.bossBullets[i];
+        bullet.x += bullet.dx;
+        bullet.y += bullet.dy;
+        bullet.rotation = Math.atan2(bullet.dy, bullet.dx);
+
+        if (checkCollision(bullet, gameObjects.player)) {
+            if (!gameState.shieldActive) {
+                gameOver();
+                return;
+            }
+            gameObjects.bossBullets.splice(i, 1);
+            continue;
+        }
+
+        if (isOutOfBounds(bullet)) {
+            gameObjects.bossBullets.splice(i, 1);
+        }
+    }
+}
+
+function activateSuperpower() {
+    if (gameState.superpowerActive || !gameState.isStarted || gameState.isOver || gameState.isPaused) return;
+    
+    const currentTime = performance.now();
+    if (currentTime - gameState.lastSuperpowerTime < SUPERPOWER_COOLDOWN) return;
+    
+    const superpower = SUPERPOWERS[gameState.currentCharacter];
+    if (!superpower) return;
+    
+    gameState.superpowerActive = true;
+    gameState.lastSuperpowerTime = currentTime;
+    
+    // Superpower efektini uygula
+    superpower.effect(gameObjects.player);
+    
+    // Bildirim metnini güncelle
+    const notification = document.getElementById('superpower-notification');
+    document.getElementById('superpower-text').textContent = 'Superpower Active!';
+    notification.classList.add('show');
+    
+    // Süre sonunda reset
+    setTimeout(() => {
+        superpower.reset(gameObjects.player);
+        gameState.superpowerActive = false;
+        notification.classList.remove('show');
+    }, SUPERPOWER_DURATION);
+}
+
+// Süpergüç bildirim fonksiyonunu güncelle
+function updateSuperpowerNotification() {
+    const currentTime = performance.now();
+    const notification = document.getElementById('superpower-notification');
+    
+    if (!gameState.isStarted || gameState.isOver || gameState.isPaused) {
+        notification.classList.remove('show');
+        return;
+    }
+
+    const timeSinceLastUse = currentTime - gameState.lastSuperpowerTime;
+    
+    if (timeSinceLastUse >= SUPERPOWER_COOLDOWN && !gameState.superpowerActive) {
+        notification.classList.add('show');
+        document.getElementById('superpower-text').textContent = 'Superpower Ready! (Press SPACE)';
+    } else if (gameState.superpowerActive) {
+        notification.classList.add('show');
+        document.getElementById('superpower-text').textContent = 'Superpower Active!';
+    } else {
+        notification.classList.remove('show');
+    }
+}
+
+function createCoffeeStorm(player) {
+    const stormParticles = 12;
+    for (let i = 0; i < stormParticles; i++) {
+        const angle = (i / stormParticles) * Math.PI * 2;
+        const radius = 50;
+        createParticles(
+            player.x + Math.cos(angle) * radius,
+            player.y + Math.sin(angle) * radius,
+            '#4A2C2A',
+            1,
+            3
+        );
+    }
+}
+
+function createShadowTrail(player) {
+    createParticles(player.x, player.y, '#000000', 5, 2);
+}
+
+function convertTeaToCoffee() {
+    gameObjects.teaCups.forEach(tea => {
+        if (tea.active) {
+            const coffee = getCoffeeFromPool();
+            if (coffee) {
+                coffee.x = tea.x;
+                coffee.y = tea.y;
+                coffee.dx = tea.dx;
+                coffee.dy = tea.dy;
+                coffee.active = true;
+                gameObjects.coffeeCups.push(coffee);
+            }
+            resetTeaCup(tea);
+        }
+    });
+    gameObjects.teaCups = [];
+}
+
+function createDragonEffects(player) {
+    const particleCount = 20;
+    for (let i = 0; i < particleCount; i++) {
+        createParticles(
+            player.x,
+            player.y,
+            '#FFD700',
+            1,
+            10
+        );
+    }
+}
+
 function gameLoop(timestamp) {
     if (!gameState.isStarted || gameState.isOver) return;
     const currentTime = performance.now();
@@ -2476,12 +3303,19 @@ function gameLoop(timestamp) {
         spawnCups(currentTime);
         handleKeyboardInput();
         updateCups(deltaTime);
+        updateBoss(deltaTime);
         updateParticles();
         drawCoffeeCups();
         drawTeaCups();
         drawPowerUps();
         drawPlayer();
+        drawBoss();
+        drawBossBullets();
         drawParticles();
+        
+        // Süpergüç bildirimini güncelle
+        updateSuperpowerNotification();
+        
         gameState.lastFrameTime = currentTime;
 
         if (gameState.comboCount > 0 && currentTime - gameState.lastCoffeeTime > 2000) {
@@ -2503,10 +3337,13 @@ function startGame() {
     gameState.lastCoffeeTime = performance.now();
     gameState.lastTeaTime = performance.now();
     gameState.lastShieldTime = performance.now();
+    gameState.lastBossTime = performance.now();
+    gameState.activeBoss = null;
     gameObjects.coffeeCups = [];
     gameObjects.teaCups = [];
     gameObjects.powerUps = [];
     gameObjects.particles = [];
+    gameObjects.bossBullets = [];
     gameObjects.player.smileTimer = 0;
     gameObjects.player.x = gameState.width / 2;
     gameObjects.player.y = gameState.height - 100;
@@ -2517,6 +3354,8 @@ function startGame() {
     totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
     hudElement.classList.add('visible');
     hideAllScreens();
+    bossHealthBar.style.display = 'none';
+    bossNameDisplay.style.display = 'none';
     if (backgroundMusic && gameState.musicEnabled) {
         backgroundMusic.play().catch(error => console.warn("Background music playback failed:", error));
     }
@@ -2595,7 +3434,296 @@ async function buyCharacter(characterId) {
     }
 }
 
+const InputManager = {
+    keys: new Set(),
+    mouse: { x: 0, y: 0, pressed: false },
+    touches: new Map(),
+
+    init() {
+        window.addEventListener('keydown', e => this.keys.add(e.key));
+        window.addEventListener('keyup', e => this.keys.delete(e.key));
+        
+        window.addEventListener('mousemove', e => {
+            this.mouse.x = e.clientX;
+            this.mouse.y = e.clientY;
+        });
+        
+        window.addEventListener('touchstart', e => {
+            Array.from(e.touches).forEach(touch => {
+                this.touches.set(touch.identifier, {
+                    x: touch.clientX,
+                    y: touch.clientY
+                });
+            });
+        });
+        
+        window.addEventListener('touchmove', e => {
+            Array.from(e.touches).forEach(touch => {
+                this.touches.set(touch.identifier, {
+                    x: touch.clientX,
+                    y: touch.clientY
+                });
+            });
+        });
+        
+        window.addEventListener('touchend', e => {
+            Array.from(e.changedTouches).forEach(touch => {
+                this.touches.delete(touch.identifier);
+            });
+        });
+    },
+
+    isKeyPressed(key) {
+        return this.keys.has(key);
+    },
+
+    getMousePosition() {
+        return { ...this.mouse };
+    },
+
+    getTouchPositions() {
+        return Array.from(this.touches.values());
+    }
+};
+
+const ObjectPool = {
+    pools: new Map(),
+
+    createPool(type, factory, size) {
+        const pool = Array(size).fill().map(() => ({
+            ...factory(),
+            active: false
+        }));
+        this.pools.set(type, pool);
+        return pool;
+    },
+
+    get(type) {
+        const pool = this.pools.get(type);
+        if (!pool) return null;
+        return pool.find(obj => !obj.active) || null;
+    },
+
+    reset(obj) {
+        obj.active = false;
+        Object.keys(obj).forEach(key => {
+            if (typeof obj[key] === 'number') obj[key] = 0;
+        });
+    }
+};
+
+class GameError extends Error {
+    constructor(code, message) {
+        super(message);
+        this.code = code;
+        this.name = 'GameError';
+    }
+}
+
+const ErrorHandler = {
+    handle(error) {
+        if (error instanceof GameError) {
+            console.error(`[Game Error ${error.code}]: ${error.message}`);
+            this.showErrorMessage(error.message);
+        } else {
+            console.error('[Unexpected Error]:', error);
+            this.showErrorMessage('An unexpected error occurred');
+        }
+    },
+
+    showErrorMessage(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
+    }
+};
+
+const SecurityManager = {
+    validateTransaction(tx) {
+        if (!tx || !tx.hash) {
+            throw new GameError('TX_001', 'Invalid transaction');
+        }
+        return tx;
+    },
+
+    sanitizeInput(input) {
+        return input.replace(/[<>]/g, '');
+    },
+
+    validateScore(score) {
+        if (score < 0 || score > 1000000) {
+            throw new GameError('SCORE_001', 'Invalid score value');
+        }
+        return score;
+    },
+
+    encryptData(data) {
+        return btoa(JSON.stringify(data));
+    },
+
+    decryptData(data) {
+        try {
+            return JSON.parse(atob(data));
+        } catch {
+            throw new GameError('CRYPT_001', 'Invalid encrypted data');
+        }
+    }
+};
+
+const AudioManager = {
+    sounds: new Map(),
+    context: null,
+    masterGain: null,
+
+    init() {
+        try {
+            this.context = new (window.AudioContext || window.webkitAudioContext)();
+            this.masterGain = this.context.createGain();
+            this.masterGain.connect(this.context.destination);
+        } catch (error) {
+            ErrorHandler.handle(new GameError('AUDIO_001', 'Audio initialization failed'));
+        }
+    },
+
+    async loadSound(id, url) {
+        try {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await this.context.decodeAudioData(arrayBuffer);
+            this.sounds.set(id, audioBuffer);
+        } catch (error) {
+            ErrorHandler.handle(new GameError('AUDIO_002', `Failed to load sound: ${id}`));
+        }
+    },
+
+    play(id, options = {}) {
+        try {
+            const sound = this.sounds.get(id);
+            if (!sound) return;
+
+            const source = this.context.createBufferSource();
+            source.buffer = sound;
+            
+            const gainNode = this.context.createGain();
+            gainNode.gain.value = options.volume || 1;
+            
+            source.connect(gainNode);
+            gainNode.connect(this.masterGain);
+            
+            source.start(0);
+            return source;
+        } catch (error) {
+            ErrorHandler.handle(new GameError('AUDIO_003', `Failed to play sound: ${id}`));
+        }
+    },
+
+    setVolume(value) {
+        if (this.masterGain) {
+            this.masterGain.gain.value = Math.max(0, Math.min(1, value));
+        }
+    },
+
+    toggleMute() {
+        if (this.masterGain) {
+            this.masterGain.gain.value = this.masterGain.gain.value > 0 ? 0 : 1;
+        }
+    }
+};
+
+function throttledGameLoop(timestamp) {
+    if (timestamp - gameState.lastFrameTime < 1000 / 60) {
+        requestAnimationFrame(throttledGameLoop);
+        return;
+    }
+    gameLoop(timestamp);
+}
+
 function init() {
+    // Mobil HUD CSS dosyasını yükle
+    const mobileCss = document.createElement('link');
+    mobileCss.rel = 'stylesheet';
+    mobileCss.href = 'mobile-hud.css';
+    document.head.appendChild(mobileCss);
+
+    // HUD elementlerini düzenle
+    const hudElements = ['score-container', 'level-container', 'coffee-container', 
+                        'token-container', 'total-rewards-container'];
+    
+    hudElements.forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            // Label ve value elementlerini oluştur
+            const label = container.querySelector('.hud-label');
+            const value = container.querySelector('.hud-value');
+            
+            if (!label || !value) {
+                const text = container.textContent;
+                container.innerHTML = '';
+                
+                if (!label) {
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = 'hud-label';
+                    labelSpan.textContent = text.split(':')[0] + ':';
+                    container.appendChild(labelSpan);
+                }
+                
+                if (!value) {
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'hud-value';
+                    valueSpan.textContent = text.split(':')[1] || '0';
+                    container.appendChild(valueSpan);
+                }
+            }
+        }
+    });
+
+    // HUD elementlerini mobil için optimize et
+    const hudContainer = document.getElementById('hud');
+    if (hudContainer) {
+        hudContainer.style.display = 'flex';
+        hudContainer.style.flexDirection = 'row';
+        hudContainer.style.flexWrap = 'wrap';
+        hudContainer.style.justifyContent = 'center'; // Changed to center
+        hudContainer.style.alignItems = 'center';
+        hudContainer.style.width = 'auto'; // Changed from 80% to auto
+        hudContainer.style.position = 'absolute';
+        hudContainer.style.top = '0';
+        hudContainer.style.left = '50%'; // Added for centering
+        hudContainer.style.transform = 'translateX(-50%)'; // Added for centering
+        hudContainer.style.padding = '1px'; // Reduced padding
+        hudContainer.style.gap = '2px'; // Reduced gap between elements
+        hudContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        hudContainer.style.fontSize = '12px';
+        hudContainer.style.zIndex = '1000';
+        hudContainer.style.whiteSpace = 'nowrap'; // Added to prevent wrapping
+        hudContainer.style.maxWidth = 'fit-content'; // Added to contain width to content
+
+        // Update individual HUD elements
+        hudElements.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.style.margin = '0 1px';
+                container.style.padding = '1px 2px';
+                container.style.minWidth = '45px'; // Slightly reduced
+                container.style.display = 'inline-block'; // Added to maintain single line
+            }
+        });
+    }
+
+    // Mobile device specific adjustments
+    if (window.innerWidth <= 768) { // Mobil cihaz tespiti
+        hudContainer.style.fontSize = '12px';
+        hudElements.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.style.minWidth = '60px';
+                container.style.margin = '1px 3px';
+            }
+        });
+    }
+
     resizeCanvas();
     setupMouseControls();
     setupTouchControls();
@@ -2653,6 +3781,11 @@ function init() {
     });
 
     window.addEventListener('resize', resizeCanvas);
+
+    // Yeni eklenen fonksiyonları başlat
+    AudioManager.init();
+    InputManager.init();
+    requestAnimationFrame(throttledGameLoop);
 }
 
 init();

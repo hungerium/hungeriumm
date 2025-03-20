@@ -1,135 +1,157 @@
 /* Mobil cihazlar için HUD düzenlemeleri */
 @media screen and (max-width: 768px) {
     #hud {
-        padding: 5px;
-        font-size: 12px;
-    }
-
-    #hud > div {
-        margin: 2px;
-    }
-
-    #score-container, #level-container, 
-    #coffee-container, #token-container, 
-    #total-rewards-container {
-        background: rgba(0, 0, 0, 0.7);
-        padding: 3px 5px;
-        border-radius: 10px;
-        display: inline-flex;
+        display: flex;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start;
         align-items: center;
-        justify-content: center;
-        min-width: 60px;
-    }
-
-    #hud {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-gap: 3px;
+        gap: 1px;
+        background: rgba(0, 0, 0, 0.7);
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        box-sizing: border-box;
-    }
-
-    #score-container {
-        grid-column: 1;
-        grid-row: 1;
-    }
-
-    #level-container {
-        grid-column: 2;
-        grid-row: 1;
-    }
-
-    #coffee-container {
-        grid-column: 1;
-        grid-row: 2;
-    }
-
-    #token-container {
-        grid-column: 2;
-        grid-row: 2;
-    }
-
-    #total-rewards-container {
-        grid-column: 1 / span 2;
-        grid-row: 3;
-        justify-self: center;
-    }
-
-    .hud-label {
-        margin-right: 3px;
+        padding: 1px;
+        height: 20px;
+        min-height: 20px;
+        font-size: 11px; /* 9px'den %20 büyütüldü */
+        overflow-x: auto;
+        overflow-y: hidden;
         white-space: nowrap;
     }
 
-    .hud-value {
-        font-weight: bold;
+    .hud-item {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 2px;
+        margin: 0;
+        font-size: 11px; /* 9px'den %20 büyütüldü */
+        white-space: nowrap;
+        min-width: auto;
+    }
+    .hud-item i {
+        font-size: 11px; /* 9px'den %20 büyütüldü */
+        margin-right: 2px;
+    }
+    .wallet {
+    #score, #level, #coffee-count, #total-rewards-hud, #token-count, #wallet-address {
+        font-size: 11px; /* 9px'den %20 büyütüldü */
+    }   margin: 0 !important;
+    }
+    .wallet {
+        position: static !important;
+        transform: none !important;lemeler */
+        margin: 0 !important; 360px) {
+    }hud {
+       padding: 1px 2px;
+    /* Süpergüç bildirimi için mobil düzenlemeler */        font-size: 10px;
+    .superpower-notification {
+        position: fixed;
+        top: 45% !important; /* Coffy Coin yazısının biraz üstüne konumlandır */
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        padding: 4px 12px !important;
+        border-radius: 12px;
+        font-size: 12px !important;
+        z-index: 1000; /* z-index değerini artırdık */
+        white-space: nowrap;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        width: auto;
+        min-width: 150px;
+        text-align: center;
     }
 
-    #wallet-info {
-        position: fixed;
-        top: 5px;
-        right: 5px;
-        font-size: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        padding: 3px 5px;
-        border-radius: 8px;
+    .superpower-notification.show {
+        display: flex !important;
+    }
+
+    .superpower-notification i {
+        font-size: 12px !important;
+        color: #FFD700;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+    }
+
+    #superpower-text {
+        font-size: 12px !important;
+        font-weight: bold;
     }
 }
 
 /* Çok küçük ekranlar için ek düzenlemeler */
 @media screen and (max-width: 360px) {
-    #hud {
-        font-size: 10px;
-        padding: 3px;
+    #hud {{
+        font-size: 10px; /* 8px'den %20 büyütüldü */
+        display: flex;
+        padding: 1px;
+        height: 18px;around;
+        min-height: 18px;center;
     }
 
-    #hud > div {
-        margin: 1px;
-        padding: 2px 4px;
+    .hud-item {op: 0;
+        font-size: 10px; /* 8px'den %20 büyütüldü */
+        padding: 0 1px;    padding: 5px;
+    }ckground-color: rgba(0, 0, 0, 0.5);
+x;
+    .hud-item i {
+        font-size: 10px; /* 8px'den %20 büyütüldü */
+    }
+
+    #score, #level, #coffee-count, #total-rewards-hud, #token-count, #wallet-address {
+        font-size: 10px; /* 8px'den %20 büyütüldü */
+    }
+
+    .superpower-notification {
+        padding: 3px 10px !important;
+        font-size: 11px !important;
+    }
+
+    .superpower-notification i,
+    #superpower-text {
+        font-size: 11px !important;
     }
 }
 
-/* Yatay mod için düzenlemeler */
-@media screen and (max-height: 500px) and (orientation: landscape) {
+/* Yatay mod için düzenlemeler */       margin-bottom: 5px;
+@media screen and (max-height: 500px) and (orientation: landscape) {    }
     #hud {
-        display: flex;
+        display: flex;, #level, #coffee-count, #total-rewards-hud {
         flex-direction: row;
         justify-content: space-around;
         padding: 3px;
-        background: rgba(0, 0, 0, 0.5);
-    }
-
+        background: rgba(0, 0, 0, 0.5);connect-wallet, #start-button, #restart-button, #resume-button, #claim-total-reward, #main-menu-reward-button {
+    }        font-size: 12px;
+ 8px 12px;
     #hud > div {
         margin: 0 3px;
     }
 
     #total-rewards-container {
-        position: absolute;
-        top: 5px;
+        position: absolute;   padding: 3px;
+        top: 5px;    }
         left: 50%;
         transform: translateX(-50%);
-    }
+    };
 }
 
-#hud {
+#hud {    #score, #level, #coffee-count, #total-rewards-hud {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    position: absolute;
+    align-items: center;connect-wallet, #start-button, #restart-button, #resume-button, #claim-total-reward, #main-menu-reward-button {
+    width: 100%;        font-size: 10px;
+    position: absolute; 6px 10px;
     top: 0;
     left: 0;
-    padding: 5px;
-    background-color: rgba(0, 0, 0, 0.5);
-    font-size: 12px;
-    color: white;
-}
-
-.hud-label {
-    margin-right: 5px;
-}
-
-.hud-value {
+    padding: 5px;    background-color: rgba(0, 0, 0, 0.5);    font-size: 12px;    color: white;}.hud-label {    margin-right: 5px;}.hud-value {
     font-weight: bold;
 }
 
