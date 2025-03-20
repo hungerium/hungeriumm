@@ -1,0 +1,403 @@
+/* Genel sıfırlama ve temel stiller */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    background: #1a202c;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Oyun kapsayıcısı */
+#game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #6F4E37 0%, #513726 50%, #3D2C1E 100%);
+    touch-action: none;
+}
+
+/* Ekran stilleri */
+.screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+    transform: translateY(20px);
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(111, 78, 55, 0.95), rgba(61, 44, 30, 0.95));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.screen.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#start-screen {
+    background: linear-gradient(135deg, rgba(111, 78, 55, 0.9), rgba(61, 44, 30, 0.9));
+}
+
+#game-over-screen {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 10, 5, 0.9));
+    display: none;
+}
+
+#pause-screen {
+    background: rgba(0, 0, 0, 0.75);
+    display: none;
+}
+
+#loading-screen {
+    background: #3D2C1E;
+    z-index: 200;
+    display: flex;
+}
+
+/* Metin stilleri */
+.screen-title {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 600;
+    color: #C8A27A;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.start-description {
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    max-width: 90%;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.total-reward {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    margin-bottom: 1rem;
+}
+
+/* Buton stilleri */
+.game-button {
+    background: linear-gradient(90deg, #6F4E37, #9B7653);
+    color: #fff;
+    border: none;
+    padding: clamp(0.5rem, 1.5vw, 0.7rem);
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0.5rem 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: clamp(140px, 45vw, 220px);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.game-button:hover {
+    background: linear-gradient(90deg, #9B7653, #C8A27A);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.game-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* HUD (Baş Üstü Gösterge) stilleri */
+#hud {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 90;
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    padding: 0.4rem;
+    background: linear-gradient(90deg, rgba(61, 44, 30, 0.8), rgba(81, 55, 38, 0.7));
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: auto;
+    max-width: 90%;
+}
+
+#hud.visible {
+    opacity: 1;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    background: rgba(30, 20, 10, 0.3);
+    color: #fff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(200, 162, 122, 0.15);
+    min-width: 50px;
+    height: 28px;
+}
+
+.hud-item i {
+    font-size: 0.9rem;
+    color: #C8A27A;
+    margin-right: 0.3rem;
+}
+
+.hud-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hud-item.wallet {
+    background: linear-gradient(45deg, rgba(200, 162, 122, 0.3), rgba(155, 118, 83, 0.2));
+    border-color: rgba(200, 162, 122, 0.3);
+}
+
+.hud-item.highlight {
+    background: linear-gradient(45deg, rgba(155, 118, 83, 0.4), rgba(111, 78, 55, 0.3));
+    border-color: rgba(200, 162, 122, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(200, 162, 122, 0.4); }
+    70% { box-shadow: 0 0 0 4px rgba(200, 162, 122, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(200, 162, 122, 0); }
+}
+
+/* Kontrol bilgileri */
+#controls-info {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(61, 44, 30, 0.7));
+    color: #fff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    font-size: clamp(0.6rem, 2vw, 0.8rem);
+    font-weight: 400;
+    max-width: 180px;
+    text-align: right;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#controls-info:hover {
+    opacity: 1;
+}
+
+#final-score-container {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: clamp(0.6rem, 2vw, 0.8rem) clamp(1.2rem, 4vw, 1.5rem);
+    margin: 0.8rem 0;
+    text-align: center;
+    width: clamp(180px, 60vw, 350px);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Parçacıklar */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 80;
+}
+
+.spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0.3rem solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #C8A27A;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 0.8rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Karakterler bölümü */
+.characters-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Mobilde 3 kart yan yana */
+    gap: 10px;
+    width: 100%;
+    max-width: 700px;
+    margin-top: 0;
+}
+
+/* Tarayıcıda 6 kart yan yana */
+@media (min-width: 768px) {
+    .characters-container {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Kart tasarımı */
+.character-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.6rem;
+    border: 1px solid #C8A27A;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.character-item:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.character-item i {
+    font-size: 1.5rem;
+    color: #C8A27A;
+    margin-bottom: 0.3rem;
+}
+
+.character-item .character-name,
+.character-item .character-price {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 0.2rem;
+}
+
+/* Satın al butonu */
+.characters-container .buy-button {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+    color: white;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobil için ayarlar */
+@media (max-width: 480px) {
+    .character-item {
+        padding: 0.5rem;
+    }
+
+    .character-item i {
+        font-size: 1.2rem;
+    }
+
+    .character-item .character-name,
+    .character-item .character-price {
+        font-size: 0.7rem;
+    }
+
+    .characters-container .buy-button {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+    }
+
+    .game-button {
+        padding: clamp(0.4rem, 1vw, 0.6rem);
+        font-size: clamp(0.7rem, 2vw, 0.9rem);
+    }
+}
+
+/* Tarayıcıda karakter kartları */
+@media (min-width: 768px) {
+    .character-item {
+        padding: 0.6rem;
+    }
+
+    .character-item i {
+        font-size: 1.5rem;
+    }
+
+    .character-item .character-name,
+    .character-item .character-price {
+        font-size: 0.75rem;
+    }
+}
+
+/* Başlık */
+.section-title {
+    font-size: 1.2rem;
+    color: #C8A27A;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* Mobil cihazlara özel HUD stilleri */
+@media (max-width: 768px) {
+    #hud {
+        top: 0.2rem;
+        display: flex;
+        flex-wrap: nowrap; /* Öğeler tek satırda kalır */
+        justify-content: center;
+        align-items: center;
+        gap: 0.2rem; /* Öğeler arası boşluk */
+        padding: 0.2rem;
+        width: auto;
+        max-width: 90%; /* Ekranın tamamını kaplamaz */
+        overflow-x: auto; /* Yatay kaydırma çubuğu */
+        white-space: nowrap; /* Alt satıra geçmeyi engeller */
+    }
+
+    .hud-item {
+        padding: 0.2rem 0.4rem; /* Daha az yer kaplar */
+        font-size: 0.7rem; /* Yazı tipi küçültülür */
+        min-width: 40px; /* Minimum genişlik */
+        height: 24px; /* Daha kompakt yükseklik */
+        flex-shrink: 0; /* Öğelerin küçülmesi engellenir */
+    }
+
+    .hud-item i {
+        font-size: 0.8rem; /* Simge boyutu */
+        margin-right: 0.2rem;
+    }
+}

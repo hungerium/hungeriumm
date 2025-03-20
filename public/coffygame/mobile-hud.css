@@ -1,0 +1,174 @@
+/* Mobil cihazlar için HUD düzenlemeleri */
+@media screen and (max-width: 768px) {
+    #hud {
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    #hud > div {
+        margin: 2px;
+    }
+
+    #score-container, #level-container, 
+    #coffee-container, #token-container, 
+    #total-rewards-container {
+        background: rgba(0, 0, 0, 0.7);
+        padding: 3px 5px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+    }
+
+    #hud {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 3px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    #score-container {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    #level-container {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #coffee-container {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    #token-container {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    #total-rewards-container {
+        grid-column: 1 / span 2;
+        grid-row: 3;
+        justify-self: center;
+    }
+
+    .hud-label {
+        margin-right: 3px;
+        white-space: nowrap;
+    }
+
+    .hud-value {
+        font-weight: bold;
+    }
+
+    #wallet-info {
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        font-size: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 3px 5px;
+        border-radius: 8px;
+    }
+}
+
+/* Çok küçük ekranlar için ek düzenlemeler */
+@media screen and (max-width: 360px) {
+    #hud {
+        font-size: 10px;
+        padding: 3px;
+    }
+
+    #hud > div {
+        margin: 1px;
+        padding: 2px 4px;
+    }
+}
+
+/* Yatay mod için düzenlemeler */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    #hud {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 3px;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    #hud > div {
+        margin: 0 3px;
+    }
+
+    #total-rewards-container {
+        position: absolute;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+#hud {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+    color: white;
+}
+
+.hud-label {
+    margin-right: 5px;
+}
+
+.hud-value {
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    #hud {
+        flex-direction: column;
+        align-items: center;
+        padding: 5px;
+    }
+
+    #hud > div {
+        margin-bottom: 5px;
+    }
+
+    #score, #level, #coffee-count, #total-rewards-hud {
+        font-size: 14px;
+    }
+
+    #connect-wallet, #start-button, #restart-button, #resume-button, #claim-total-reward, #main-menu-reward-button {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    #hud {
+        padding: 3px;
+    }
+
+    #hud > div {
+        margin-bottom: 3px;
+    }
+
+    #score, #level, #coffee-count, #total-rewards-hud {
+        font-size: 12px;
+    }
+
+    #connect-wallet, #start-button, #restart-button, #resume-button, #claim-total-reward, #main-menu-reward-button {
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+}

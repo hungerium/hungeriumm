@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bee Adventure</title>
+    <link rel="stylesheet" href="game.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Güncellenmiş Font Awesome CDN bağlantısı -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="loading-screen" class="screen">
+            <div class="spinner"></div>
+            <div class="screen-title">Loading...</div>
+        </div>
+        <div id="start-screen" class="screen">
+            <div class="screen-title">Bee Adventure</div>
+            <p style="color: #fff; max-width: 80%; text-align: center; margin-bottom: 1rem;">Collect flowers, avoid wild bees!</p>
+            <div style="color: #fff; margin-bottom: 1rem;">Total Reward: <span id="total-reward">0</span> HNG</div>
+            <button id="claim-total-reward" class="game-button">CLAIM REWARDS</button>
+            <button id="connect-wallet" class="game-button">CONNECT WALLET</button>
+            <button id="start-button" class="game-button">START GAME</button>
+            <h3 class="section-title">Characters</h3>
+            <div class="characters-container">
+                <div class="character-item">
+                    <i class="fas fa-bug"></i>
+                    <span class="character-name">Worker Bee</span>
+                    <span class="character-price">Free</span>
+                    <button id="character-0" class="buy-button">Select</button>
+                </div>
+                <div class="character-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span class="character-name">Soldier Bee</span>
+                    <span class="character-price">20,000 HNG</span>
+                    <button id="character-1" class="buy-button">Buy</button>
+                </div>
+                <div class="character-item">
+                    <i class="fas fa-magic"></i>
+                    <span class="character-name">Honey Maker</span>
+                    <span class="character-price">40,000 HNG</span>
+                    <button id="character-2" class="buy-button">Buy</button>
+                </div>
+                <div class="character-item">
+                    <i class="fas fa-eye"></i>
+                    <span class="character-name">Scout Bee</span>
+                    <span class="character-price">70,000 HNG</span>
+                    <button id="character-3" class="buy-button">Buy</button>
+                </div>
+                <!-- Güncellenmiş ve stil verilmiş Guard Bee ikonu -->
+                <div class="character-item">
+                    <i class="fas fa-user-shield"></i><!-- İkon burada -->
+                    <span class="character-name">Guard Bee</span>
+                    <span class="character-price">100,000 HNG</span>
+                    <button id="character-4" class="buy-button">Buy</button>
+                </div>
+                <div class="character-item">
+                    <i class="fas fa-crown"></i>
+                    <span class="character-name">Queen's Guard</span>
+                    <span class="character-price">400,000 HNG</span>
+                    <button id="character-5" class="buy-button">Buy</button>
+                </div>
+            </div>
+        </div>
+        <div id="game-over-screen" class="screen" style="display: none;">
+            <div class="screen-title">GAME OVER</div>
+            <div id="final-score-container">
+                <div id="final-score">Score: 0</div>
+                <div id="high-score">High Score: 0</div>
+                <div id="reward">Total Reward: 0 HNG</div>
+            </div>
+            <button id="restart-button" class="game-button">REPLAY</button>
+            <button id="main-menu-reward-button" class="game-button">MAIN MENU & CLAIM REWARD</button>
+        </div>
+        <div id="pause-screen" class="screen" style="display: none;">
+            <div class="screen-title">PAUSED</div>
+            <button id="resume-button" class="game-button">RESUME</button>
+        </div>
+        <div id="hud">
+            <div class="hud-item"><i class="fas fa-star"></i> <span id="score">0</span></div>
+            <div class="hud-item"><i class="fas fa-level-up-alt"></i> <span id="level">1</span></div>
+            <div class="hud-item"><i class="fas fa-leaf"></i> <span id="flower-count">0</span></div>
+            <div class="hud-item"><i class="fas fa-box"></i> <span id="inventory-count">0</span></div>
+            <div class="hud-item"><i class="fas fa-coins"></i> <span id="token-count">0</span></div>
+            <div class="hud-item"><i class="fas fa-trophy"></i> <span id="total-rewards-hud">0</span></div>
+            <div class="hud-item"><i class="fas fa-heart"></i> <span id="lives-count">1</span></div>
+            <div class="hud-item wallet"><i class="fas fa-wallet"></i> <span id="wallet-address">Not Connected</span></div>
+        </div>
+        <div id="controls-info">
+            <p>Keyboard: WASD or Arrow Keys = Move</p>
+            <p>Mouse: Move and Collect</p>
+            <p>P = Pause</p>
+            <p>ESC = Menu</p>
+            <p>Touch: Swipe to Move</p>
+        </div>
+    </div>
+    <audio id="background-music" loop>
+        <source src="background.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="collect-sound">
+        <source src="collect.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="levelup-sound">
+        <source src="levelup.mp3" type="audio/mpeg">
+    </audio>
+    <script src="game.js"></script>
+</body>
+</html>

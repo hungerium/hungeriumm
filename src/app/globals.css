@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 212, 160, 23;
+    --color-secondary: 167, 123, 6;
+    --color-background: 26, 15, 10;
+    --color-surface: 58, 42, 30;
+    --color-text: 232, 213, 181;
+    --shadow-color: 212, 160, 23;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: rgb(var(--color-background));
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply min-h-screen bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] text-[#E8D5B5] antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-[#D4A017] to-[#A77B06] 
+           text-white font-bold py-2 px-6 rounded-full 
+           transition-all duration-300 shadow-[0_4px_14px_rgba(212,160,23,0.4)]
+           hover:shadow-[0_6px_20px_rgba(212,160,23,0.6)] hover:scale-[1.03]
+           active:scale-[0.97] disabled:opacity-50 focus:outline-none
+           focus:ring-2 focus:ring-[#D4A017] focus:ring-opacity-60
+           disabled:cursor-not-allowed;
+  }
+  
+  .card-coffee {
+    @apply bg-[#3A2A1E]/90 p-7 rounded-2xl shadow-xl 
+           border border-[#D4A017]/30
+           hover:shadow-[0_0_25px_rgba(212,160,23,0.5)] 
+           transition-all duration-500 transform 
+           hover:-translate-y-2 backdrop-blur-sm;
+  }
+
+  .glass-morphism {
+    @apply bg-[#3A2A1E]/70 backdrop-filter backdrop-blur-md border border-white/10;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06];
+  }
+  
+  .input-coffee {
+    @apply bg-[#1A0F0A]/80 border border-[#D4A017]/30 rounded-xl px-4 py-3
+           text-[#E8D5B5] focus:outline-none focus:border-[#D4A017]
+           focus:ring-2 focus:ring-[#D4A017]/30 transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .transaction-status {
+    @apply fixed bottom-5 right-5 bg-[#1A0F0A]/95
+           py-3.5 px-6 rounded-xl border border-[#D4A017]/50
+           text-[#D4A017] text-sm font-medium z-50 
+           shadow-[0_4px_20px_rgba(212,160,23,0.3)] backdrop-blur-md;
+    animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .transaction-status a {
+    @apply text-[#D4A017] font-semibold no-underline hover:underline transition-colors;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-steam {
+    animation: steam 4s ease-out infinite;
+  }
+
+  .animate-bean-spin {
+    animation: bean-spin 10s linear infinite;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+}
+
+/* Oyun stilleri */
+.game-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(var(--color-background));
+  position: relative;
+  overflow: hidden;
+}
+
+#hungerium-game,
+#coffy-game {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.game-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgb(var(--color-text));
+  font-size: 1.5rem;
+}
+
+/* iframe styles */
+iframe {
+  background-color: rgb(var(--color-background));
+}
+
+/* Game styles */
+.game-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+.game-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes steam {
+  0% { 
+    transform: scale(1) translateY(0) rotate(-5deg); 
+    opacity: 0.8;
+  }
+  100% { 
+    transform: scale(1.8) translateY(-60px) rotate(10deg); 
+    opacity: 0; 
+  }
+}
+
+@keyframes bean-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Dark mode specific styles */
+.dark .bg-light {
+  @apply bg-[#1A0F0A];
+}
+
+.dark .text-light {
+  @apply text-[#E8D5B5];
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .transaction-status {
+    @apply bottom-3 right-3 left-3 text-center;
+  }
+
+  .animate-float {
+    animation-duration: 4s;
+  }
+}
+
+/* Oyun responsive stilleri */
+@media (max-width: 768px) {
+  .game-container {
+    height: calc(100vh - 60px);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-float,
+  .animate-steam,
+  .animate-bean-spin,
+  .animate-fade-in {
+    animation: none;
+  }
+}
