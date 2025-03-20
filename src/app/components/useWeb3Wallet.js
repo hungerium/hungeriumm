@@ -7,6 +7,8 @@ console.log('Ethers library loaded:', typeof ethers !== 'undefined');
 
 const TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
 const BSC_CHAIN_ID = '0x38'; // Binance Smart Chain Mainnet
+const BSC_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://bsc-dataseed.binance.org/';
+
 // Yeni kontratın tam ABI’sı
 const TOKEN_ABI = [
     {
@@ -1621,7 +1623,6 @@ const TOKEN_ABI = [
 	}
 ]
 
-
 export default function useWeb3Wallet() {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
@@ -1630,34 +1631,31 @@ export default function useWeb3Wallet() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
 
-  // Event listener functions
   const handleAccountsChanged = useCallback((accounts) => {
+    console.log('Accounts changed:', accounts);
     if (accounts.length === 0) {
-      // User disconnected their wallet
       setUserAddress(null);
       setProvider(null);
       setSigner(null);
       setTokenContract(null);
       setConnectionError('Wallet disconnected.');
     } else {
-      // User switched accounts
       setUserAddress(accounts[0]);
     }
   }, []);
 
   const handleChainChanged = useCallback((chainId) => {
-    // When chain changes, we need to reinitialize the provider
+    console.log('Chain changed to:', chainId);
     if (chainId !== BSC_CHAIN_ID) {
       setConnectionError('Please switch to Binance Smart Chain.');
     } else {
       setConnectionError(null);
-      // Refresh the connection with the new chain
       window.location.reload();
     }
   }, []);
 
   const handleDisconnect = useCallback(() => {
-    // Handle wallet disconnection
+    console.log('Wallet disconnected');
     setUserAddress(null);
     setProvider(null);
     setSigner(null);
@@ -1665,13 +1663,11 @@ export default function useWeb3Wallet() {
     setConnectionError('Wallet disconnected.');
   }, []);
 
-  // Setup wallet event listeners
   const setupWalletListeners = useCallback(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
       window.ethereum.on('disconnect', handleDisconnect);
-
       return () => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
@@ -1681,56 +1677,51 @@ export default function useWeb3Wallet() {
   }, [handleAccountsChanged, handleChainChanged, handleDisconnect]);
 
   useEffect(() => {
-    // Sadece event listener'ları kuruyoruz, otomatik bağlantıyı kaldırdık
     const cleanupListeners = setupWalletListeners();
-
-    // Cleanup function
-    return () => {
-      if (cleanupListeners) {
-        cleanupListeners();
-      }
-    };
+    return () => cleanupListeners && cleanupListeners();
   }, [setupWalletListeners]);
 
-  // Check for existing connection on component mount
   useEffect(() => {
     const checkExistingConnection = async () => {
-      if (typeof window !== 'undefined' && window.ethereum) {
+      if (typeof window !== 'undefined') {
         try {
-          // Check if already connected
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          
+          const newProvider = window.ethereum
+            ? new ethers.BrowserProvider(window.ethereum)
+            : new ethers.JsonRpcProvider(BSC_RPC_URL);
+          const accounts = window.ethereum
+            ? await window.ethereum.request({ method: 'eth_accounts' })
+            : [];
           if (accounts.length > 0) {
-            // Create provider and signer
-            const newProvider = new ethers.BrowserProvider(window.ethereum);
             const newSigner = await newProvider.getSigner();
             const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, newSigner);
-            
-            // Update state with existing connection
             setProvider(newProvider);
             setSigner(newSigner);
             setUserAddress(accounts[0]);
             setTokenContract(contract);
-            
-            // Verify we're on the correct chain
             const network = await newProvider.getNetwork();
+            console.log('Connected network chainId:', network.chainId.toString(16));
             if (network.chainId !== parseInt(BSC_CHAIN_ID, 16)) {
               setConnectionError('Please switch to Binance Smart Chain.');
             }
+          } else {
+            // MetaMask bağlı değilse, sabit RPC ile provider oluştur
+            const fallbackProvider = new ethers.JsonRpcProvider(BSC_RPC_URL);
+            const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, fallbackProvider);
+            setProvider(fallbackProvider);
+            setTokenContract(contract);
+            console.log('Fallback provider used with RPC:', BSC_RPC_URL);
           }
         } catch (error) {
           console.error('Error checking existing connection:', error);
         }
       }
     };
-    
     checkExistingConnection();
   }, []);
 
   const connectWallet = async () => {
-    // Prevent multiple concurrent connection attempts
     if (isConnecting) {
-      console.log('Connection already in progress. Please wait.');
+      console.log('Connection already in progress');
       return;
     }
 
@@ -1738,20 +1729,15 @@ export default function useWeb3Wallet() {
     setConnectionError(null);
 
     try {
-      // Check if MetaMask or similar wallet is installed
       if (typeof window === 'undefined' || !window.ethereum) {
-        throw new Error('No Web3 wallet found. Please install MetaMask or another compatible wallet.');
+        throw new Error('No Web3 wallet found. Please install MetaMask.');
       }
 
-      // Create ethers provider
       const newProvider = new ethers.BrowserProvider(window.ethereum);
-      
-      // Request account access
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const newSigner = await newProvider.getSigner();
       const address = await newSigner.getAddress();
 
-      // Verify and switch chain if needed
       const network = await newProvider.getNetwork();
       if (network.chainId !== parseInt(BSC_CHAIN_ID, 16)) {
         try {
@@ -1760,38 +1746,24 @@ export default function useWeb3Wallet() {
             params: [{ chainId: BSC_CHAIN_ID }],
           });
         } catch (switchError) {
-          // This error code indicates that the chain has not been added to MetaMask.
           if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [
-                  {
-                    chainId: BSC_CHAIN_ID,
-                    chainName: 'Binance Smart Chain',
-                    nativeCurrency: {
-                      name: 'BNB',
-                      symbol: 'BNB',
-                      decimals: 18
-                    },
-                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                    blockExplorerUrls: ['https://bscscan.com/']
-                  }
-                ],
-              });
-            } catch (addError) {
-              throw new Error(`Failed to add BSC network: ${addError.message}`);
-            }
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: BSC_CHAIN_ID,
+                chainName: 'Binance Smart Chain',
+                nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
+                rpcUrls: [BSC_RPC_URL],
+                blockExplorerUrls: ['https://bscscan.com/']
+              }],
+            });
           } else {
             throw switchError;
           }
         }
       }
 
-      // Create contract instance with signer
       const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, newSigner);
-      
-      // Update state
       setProvider(newProvider);
       setSigner(newSigner);
       setUserAddress(address);
@@ -1799,22 +1771,13 @@ export default function useWeb3Wallet() {
       console.log('Wallet connected successfully:', address);
     } catch (error) {
       console.error('Wallet connection error:', error);
-      
-      // Handle specific error cases
-      if (error.code === -32002) {
-        setConnectionError('A wallet permission request is already pending. Please check MetaMask and complete the request.');
-      } else if (error.code === 4001) {
-        setConnectionError('User rejected the connection request.');
-      } else {
-        setConnectionError(`Wallet connection failed: ${error.message || 'Unknown error'}`);
-      }
+      setConnectionError(error.message || 'Wallet connection failed');
     } finally {
       setIsConnecting(false);
     }
   };
 
   const disconnectWallet = useCallback(() => {
-    // Clean up the connection
     setUserAddress(null);
     setProvider(null);
     setSigner(null);
@@ -1822,14 +1785,11 @@ export default function useWeb3Wallet() {
     console.log('Wallet disconnected');
   }, []);
 
-  // Function to get user token balance
   const getTokenBalance = useCallback(async () => {
     if (!tokenContract || !userAddress) return null;
-    
     try {
       const balance = await tokenContract.balanceOf(userAddress);
       const decimals = await tokenContract.decimals();
-      // Convert balance to a more readable format
       return ethers.formatUnits(balance, decimals);
     } catch (error) {
       console.error('Error fetching token balance:', error);
@@ -1837,23 +1797,15 @@ export default function useWeb3Wallet() {
     }
   }, [tokenContract, userAddress]);
 
-  // Function to send tokens
   const sendTokens = useCallback(async (recipientAddress, amount) => {
-    if (!tokenContract || !signer) {
-      throw new Error('Wallet not connected');
-    }
-    
+    if (!tokenContract || !signer) throw new Error('Wallet not connected');
     try {
       const decimals = await tokenContract.decimals();
       const amountInWei = ethers.parseUnits(amount.toString(), decimals);
-      
       const tx = await tokenContract.transfer(recipientAddress, amountInWei);
       console.log('Transaction sent:', tx.hash);
-      
-      // Wait for transaction to be mined
       const receipt = await tx.wait();
       console.log('Transaction confirmed:', receipt);
-      
       return receipt;
     } catch (error) {
       console.error('Error sending tokens:', error);
