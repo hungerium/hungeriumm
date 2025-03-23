@@ -176,7 +176,7 @@ export default function Navbar() {
             >
               <i className="fas fa-gamepad mr-2 text-base"></i>
               <div className="flex flex-col items-start min-w-[120px]"> {/* min-width eklendi */}
-                <span className="relative z-10 text-xs">Play to Earn</span>
+                <span className="relative z-10 text-xs">Play to Earn(HNG)</span>
                 <span className="relative z-10 text-sm">Bee Adventure</span>
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] to-[#1E90FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -192,7 +192,7 @@ export default function Navbar() {
             >
               <i className="fas fa-gamepad mr-2 text-base"></i>
               <div className="flex flex-col items-start">
-                <span className="relative z-10 text-xs">Play to Earn</span>
+                <span className="relative z-10 text-xs">Play to Earn(COFFY)</span>
                 <span className="relative z-10 text-sm">Coffy Adventure</span>
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
