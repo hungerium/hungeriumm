@@ -7,33 +7,21 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
   swcMinify: true,
   
-  // Disable image optimization if causing issues
+  // Disable image optimization
   images: {
-    domains: ['coffycoin.com'],
-    formats: ['image/avif', 'image/webp'],
     unoptimized: true,
   },
   
-  // Disable specific optimizations that might be causing issues
-  experimental: {
-    // Disable critters CSS inlining if it's causing problems
-    optimizeCss: false,
-    // Other experimental features you might be using
-    esmExternals: 'loose',
-    scrollRestoration: true,
-  },
-  
-  // Handle specific environment variables if needed
+  // Handle specific environment variables
   env: {
     NEXT_PUBLIC_RPC_URL: process.env.NEXT_PUBLIC_RPC_URL || 'https://bsc-dataseed.binance.org/',
   },
   
-  // Add custom webpack configuration to resolve potential issues
+  // Add custom webpack configuration for Web3
   webpack: (config, { isServer }) => {
-    // Fixes npm packages that depend on `fs` module
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -42,16 +30,9 @@ const nextConfig = {
         tls: false,
       };
     }
-    
     return config;
   },
   
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
-  // Performans iyileştirmeleri
-  poweredByHeader: false,
-  compress: true,
   // Oyun yönlendirmeleri
   async rewrites() {
     return [
