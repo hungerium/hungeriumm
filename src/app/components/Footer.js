@@ -30,14 +30,15 @@ export default function Footer() {
             className="space-y-4"
           >
             <div className="flex items-center space-x-3">
-              <Image 
-                src="/images/coffy-logo.png" 
-                alt="Coffy Logo" 
-                width={48} 
-                height={48} 
-                className="rounded-full animate-float"
-                style={{ width: 'auto', height: 'auto' }}
-              />
+              <div className="flex-shrink-0">
+                <Image 
+                  src="/images/coffy-logo.png" 
+                  alt="Coffy Logo" 
+                  width={48} 
+                  height={48} 
+                  className="rounded-full animate-float"
+                />
+              </div>
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
                 COFFY
               </span>
