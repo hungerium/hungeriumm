@@ -96,7 +96,7 @@ export default function Hero() {
       </div>
 
       {/* Responsive grid yapısı ve animasyonlar */}
-      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -100 }}
@@ -108,18 +108,18 @@ export default function Hero() {
               damping: 20
             }}
             style={{ y }}
-            className="flex flex-col items-center lg:items-start text-center lg:text-left"
+            className="flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#A77B06] to-[#A0522D] leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 sm:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#A77B06] to-[#A0522D] leading-tight">
               COFFY COIN
             </h1>
-            <p className="text-xl text-[#E8D5B5] mb-8 max-w-xl">
+            <p className="text-lg sm:text-xl text-[#E8D5B5] mb-6 sm:mb-8 max-w-xl">
               "Brewing the Future of Coffee with Blockchain! The First{' '}
               <mark className="bg-transparent text-[#D4A017] font-semibold">Drink-to-Earn</mark>,{' '}
               <mark className="bg-transparent text-[#D4A017] font-semibold">Play-to-Earn</mark>, and{' '}
               <mark className="bg-transparent text-[#D4A017] font-semibold">SocialFi</mark> Coin on Binance Smart Chain. Coffy Coin merges DeFi, GameFi, and social engagement into a revolutionary coffee ecosystem!"
             </p>
-            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-6 w-full sm:w-auto mb-12">
+            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 sm:gap-6 w-full sm:w-auto mb-8 sm:mb-12">
               <motion.a
                 href="#"
                 whileHover={{ scale: 1.05 }}
@@ -151,9 +151,9 @@ export default function Hero() {
               damping: 20
             }}
             style={{ y: logoY }}
-            className="flex justify-center lg:justify-end"
+            className="flex justify-center lg:justify-end order-1 lg:order-2 pt-6 md:pt-0"
           >
-            <div className="relative w-72 h-72">
+            <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72">
               <motion.div className="absolute inset-0 bg-[#A0522D]/20 rounded-full blur-2xl animate-pulse" />
               <Image 
                 src="/images/coffy-logo.png" 
@@ -174,21 +174,23 @@ export default function Hero() {
       <style jsx>{`
         @media (max-width: 640px) {
           section {
-            padding-top: 6rem;
-            padding-bottom: 4rem;
+            padding-top: 3.5rem;
+            padding-bottom: 2.5rem;
+            min-height: 95vh;
           }
           h1 {
-            font-size: 2.5rem;
-            line-height: 1.2;
+            font-size: 2rem;
+            line-height: 1.1;
+            margin-top: 0;
           }
         }
         @media (min-width: 641px) and (max-width: 1024px) {
           section {
-            padding-top: 8rem;
-            padding-bottom: 6rem;
+            padding-top: 5rem;
+            padding-bottom: 3.5rem;
           }
           h1 {
-            font-size: 3.5rem;
+            font-size: 2.75rem;
             line-height: 1.1;
           }
         }
