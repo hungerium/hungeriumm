@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -13,24 +14,71 @@ import NetworkBanner from './components/NetworkBanner';
 import Loading from './components/Loading';
 import dynamic from 'next/dynamic';
 
-const Roadmap = dynamic(() => import('./components/Roadmap'));
-const Partners = dynamic(() => import('./components/Partners'));
-const Whitepaper = dynamic(() => import('./components/Whitepaper'));
+// Performans için geç yükleme
+const Roadmap = dynamic(() => import('./components/Roadmap'), { ssr: false });
+const Partners = dynamic(() => import('./components/Partners'), { ssr: false });
+const Whitepaper = dynamic(() => import('./components/Whitepaper'), { ssr: false });
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Sayfa yükleme performans izlemesi
+  useEffect(() => {
+    // Sayfa yüklendiğinde yükleme ekranını kaldır
+    if (document.readyState === 'complete') {
+      setTimeout(() => setIsLoading(false), 500);
+    } else {
+      window.addEventListener('load', () => setTimeout(() => setIsLoading(false), 500));
+      return () => window.removeEventListener('load', () => setIsLoading(false));
+    }
+  }, []);
+  
+  // Kaydırma animasyonları için gözlemci
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !isLoading) {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+      
+      // Tüm reveal-on-scroll sınıfına sahip elementleri izle
+      document.querySelectorAll('.reveal-on-scroll').forEach(element => {
+        observer.observe(element);
+      });
+      
+      return () => observer.disconnect();
+    }
+  }, [isLoading]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <div className="relative">
       <NetworkBanner />
       <Navbar />
-      <Hero />
-      <Staking />
-      <About />
-      <Tokenomics />
-      <ContractInfo />
-      <Roadmap />
-      <Partners />
-      <Whitepaper />
-      <Community />
+      <main id="main-content" className="optimize-gpu">
+        <Hero />
+        <Staking />
+        <About />
+        <Tokenomics />
+        <ContractInfo />
+        <Roadmap />
+        <Partners />
+        <Whitepaper />
+        <Community />
+      </main>
       <Footer />
       <ScrollToTop />
     </div>

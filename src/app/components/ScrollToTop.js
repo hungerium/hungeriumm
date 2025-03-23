@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IoArrowUp } from 'react-icons/io5';
 
-export default function ScrollToTop() {
+const ScrollToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    const toggleVisibility = () => {
-      setIsVisible(window.scrollY > 300);
-    };
-    window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
-  }, []);
+  const toggleVisibility = () => {
+    // Show button when user scrolls down 100px
+    if (window.pageYOffset > 100) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  };
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -21,22 +23,36 @@ export default function ScrollToTop() {
     });
   };
 
+  useEffect(() => {
+    // Initialize visibility check
+    toggleVisibility();
+    
+    // Add scroll event listener
+    window.addEventListener('scroll', toggleVisibility);
+    
+    // Clean up
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.5, y: 50 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 50 }}
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white w-12 h-12 rounded-full shadow-lg hover:shadow-[#D4A017]/50 flex items-center justify-center group"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <i className="fas fa-arrow-up text-xl group-hover:-translate-y-1 transition-transform"></i>
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] rounded-full opacity-0 group-hover:opacity-25 blur-md transition-opacity duration-300"></div>
-        </motion.button>
-      )}
-    </AnimatePresence>
+    <motion.button
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ 
+        opacity: isVisible ? 1 : 0,
+        scale: isVisible ? 1 : 0.8,
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
+      transition={{ duration: 0.3 }}
+      className="fixed bottom-6 right-6 p-3 rounded-full bg-[#D4A017]/90 hover:bg-[#D4A017] text-white shadow-lg z-50 hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4A017]"
+      onClick={scrollToTop}
+      aria-label="Back to top"
+      style={{
+        boxShadow: '0 4px 14px rgba(212, 160, 23, 0.4)'
+      }}
+    >
+      <IoArrowUp size={24} />
+    </motion.button>
   );
-}
+};
+
+export default ScrollToTop;

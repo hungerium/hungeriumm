@@ -7,18 +7,23 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Doğrudan statik dosya erişimi için
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' }
-        ],
-      },
-    ]
+  reactStrictMode: true,
+  swcMinify: true,
+  images: {
+    domains: ['coffycoin.com'],
+    formats: ['image/avif', 'image/webp'],
   },
-  // Basit yönlendirmeler
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Performans iyileştirmeleri
+  poweredByHeader: false,
+  compress: true,
+  // Oyun yönlendirmeleri
   async rewrites() {
     return [
       {

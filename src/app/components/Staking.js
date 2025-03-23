@@ -18,6 +18,7 @@ export default function Staking() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    console.log('useEffect triggered: tokenContract:', tokenContract, 'userAddress:', userAddress);
     if (tokenContract && userAddress) {
       updateStakeInfo();
     }
@@ -28,9 +29,11 @@ export default function Staking() {
 
   const updateStakeInfo = async () => {
     try {
-      // Updated for ethers v6
+      console.log('Updating stake info for:', userAddress);
       const balance = await tokenContract.balanceOf(userAddress);
+      console.log('Balance (raw):', balance.toString());
       const stakeInfo = await tokenContract.getStakeInfo(userAddress);
+      console.log('Stake Info:', stakeInfo);
       setWalletBalance(`${ethers.formatUnits(balance, 18)} COFFY`);
       setStakedBalance(`${ethers.formatUnits(stakeInfo.stakedAmount, 18)} COFFY`);
       setRewards(`${ethers.formatUnits(stakeInfo.pendingReward, 18)} COFFY`);
@@ -45,26 +48,40 @@ export default function Staking() {
     setIsLoading(true);
     setError(null);
     try {
+      console.log(`Starting ${operation} transaction...`);
+      console.log('Token Contract:', tokenContract ? 'Available' : 'Not Available');
+      console.log('User Address:', userAddress);
+      console.log('Amount:', amount);
+
+      if (!tokenContract || !userAddress) {
+        throw new Error('Wallet not connected or token contract not initialized');
+      }
+
       let tx;
       switch (operation) {
         case 'stake':
-          // Updated for ethers v6
+          console.log('Staking amount in Wei:', ethers.parseUnits(amount, 18).toString());
           tx = await tokenContract.stake(ethers.parseUnits(amount, 18));
           break;
         case 'unstake':
-          // Updated for ethers v6
+          console.log('Unstaking amount in Wei:', ethers.parseUnits(amount, 18).toString());
           tx = await tokenContract.unstake(ethers.parseUnits(amount, 18));
           break;
         case 'claim':
           tx = await tokenContract.claimStakingReward();
           break;
+        default:
+          throw new Error('Invalid operation');
       }
+      console.log('Transaction hash:', tx.hash);
       showTransactionStatus(tx.hash);
       await tx.wait();
+      console.log('Transaction confirmed');
       updateStakeInfo();
       return true;
     } catch (err) {
-      setError(err.message);
+      console.error(`${operation} transaction failed:`, err);
+      setError(err.message || 'Transaction failed');
       return false;
     } finally {
       setIsLoading(false);
@@ -90,7 +107,6 @@ export default function Staking() {
 
   return (
     <section className="py-16 bg-[#1A0F0A] relative overflow-hidden" id="staking">
-      {/* Enhanced Background Animation */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0"
@@ -128,7 +144,6 @@ export default function Staking() {
           viewport={{ once: true }}
           className="max-w-lg mx-auto bg-[#3A2A1E] p-6 rounded-xl shadow-lg border border-[#D4A017]"
         >
-          {/* Stats Grid - 2x2 layout */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             {[
               { label: "Balance", value: walletBalance },
@@ -143,7 +158,6 @@ export default function Staking() {
             ))}
           </div>
 
-          {/* Stake Input & Buttons */}
           <input
             type="number"
             value={stakeAmount}
@@ -168,7 +182,7 @@ export default function Staking() {
               Unstake
             </motion.button>
           </div>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             onClick={claimRewards}
@@ -179,7 +193,6 @@ export default function Staking() {
         </motion.div>
       </div>
 
-      {/* Loading Overlay ve Error animasyonları */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
@@ -189,7 +202,7 @@ export default function Staking() {
             className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
           >
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: 360,
                 scale: [1, 1.2, 1]
               }}
@@ -203,7 +216,6 @@ export default function Staking() {
         )}
       </AnimatePresence>
 
-      {/* Error Toast animasyonu */}
       <AnimatePresence>
         {error && (
           <motion.div
@@ -221,7 +233,6 @@ export default function Staking() {
         .animate-slide {
           animation: slide 60s linear infinite;
         }
-
         @keyframes slide {
           0% { transform: translate(0, 0); }
           100% { transform: translate(-50%, -50%); }

@@ -17,11 +17,17 @@
     background-color: rgb(var(--color-background));
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
     text-rendering: optimizeLegibility;
+    /* Eklenen önbellek iyileştirmesi */
+    content-visibility: auto;
+    /* Yazı tipi yükleme performansını artırın */
+    font-display: swap;
   }
 
   body {
     @apply min-h-screen bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] text-[#E8D5B5] antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    /* Daha iyi kaydırma deneyimi */
+    overscroll-behavior: none;
   }
 }
 
@@ -34,6 +40,8 @@
            active:scale-[0.97] disabled:opacity-50 focus:outline-none
            focus:ring-2 focus:ring-[#D4A017] focus:ring-opacity-60
            disabled:cursor-not-allowed;
+    /* Mobil cihazlarda dokunuş iyileştirmesi */
+    touch-action: manipulation;
   }
   
   .card-coffee {
@@ -42,20 +50,28 @@
            hover:shadow-[0_0_25px_rgba(212,160,23,0.5)] 
            transition-all duration-500 transform 
            hover:-translate-y-2 backdrop-blur-sm;
+    /* Performans iyileştirmesi */
+    will-change: transform;
   }
 
   .glass-morphism {
     @apply bg-[#3A2A1E]/70 backdrop-filter backdrop-blur-md border border-white/10;
+    /* Mobil için performans iyileştirmesi */
+    @apply @media (max-width: 768px) { backdrop-filter: blur(8px); }
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06];
+    /* Daha keskin metin için */
+    -webkit-font-smoothing: antialiased;
   }
   
   .input-coffee {
     @apply bg-[#1A0F0A]/80 border border-[#D4A017]/30 rounded-xl px-4 py-3
            text-[#E8D5B5] focus:outline-none focus:border-[#D4A017]
            focus:ring-2 focus:ring-[#D4A017]/30 transition-all duration-300;
+    /* Erişilebilirlik artırımı */
+    @apply focus:ring-offset-2 focus:ring-offset-[#1A0F0A];
   }
 }
 
@@ -90,6 +106,54 @@
   
   .hover-lift {
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  /* Yükleme göstergesi iyileştirmesi */
+  .loading-spinner {
+    @apply w-10 h-10 border-4 border-[#D4A017]/20 border-t-[#D4A017] rounded-full animate-spin;
+  }
+  
+  /* Modern tıklama efekti */
+  .click-effect {
+    @apply relative overflow-hidden;
+  }
+  
+  .click-effect::after {
+    @apply content-[''] absolute w-full h-full top-0 left-0 bg-white/20 
+           scale-0 rounded-full transform-gpu opacity-0 transition-all duration-500;
+  }
+  
+  .click-effect:active::after {
+    @apply scale-150 opacity-100 duration-300;
+  }
+  
+  /* Scroll bazlı animasyon için yardımcı sınıf */
+  .reveal-on-scroll {
+    @apply opacity-0 translate-y-10 transition-all duration-700;
+  }
+  
+  .reveal-on-scroll.revealed {
+    @apply opacity-100 translate-y-0;
+  }
+  
+  /* Mobil dokunuş iyileştirmeleri */
+  @media (max-width: 768px) {
+    .touch-target {
+      @apply min-h-[44px] min-w-[44px]; /* Apple tarafından önerilen minimum dokunma hedefi */
+    }
+    
+    /* Mobil cihazlarda gölgeleri azalt */
+    .card-coffee {
+      @apply shadow-md hover:shadow-lg;
+    }
+  }
+  
+  /* Performans iyileştirmesi */
+  .optimize-gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
   }
 }
 
@@ -207,6 +271,14 @@ iframe {
   .game-container {
     height: calc(100vh - 60px);
   }
+  
+  .btn-primary {
+    @apply py-2 px-4 text-sm;
+  }
+  
+  .card-coffee {
+    @apply p-5;
+  }
 }
 
 /* Reduced motion preferences */
@@ -219,5 +291,37 @@ iframe {
   .animate-bean-spin,
   .animate-fade-in {
     animation: none;
+  }
+}
+
+/* Sayfa geçişleri için animasyon */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms, transform 400ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Performans optimizasyonu */
+@media (prefers-reduced-motion: no-preference) {
+  .optimize-gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 }
