@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+    <circle cx="50" cy="40" r="25" fill="#4a4a4a" />
+    <circle cx="50" cy="40" r="20" fill="#666666" />
+    <!-- Face -->
+    <circle cx="50" cy="40" r="18" fill="#e6b89c" />
+    <!-- Hair -->
+    <path d="M30,40 Q35,25 50,25 Q65,25 70,40 L70,40 Q65,20 50,18 Q35,20 30,40" fill="#594639" />
+    <path d="M35,42 L40,45 M60,42 L65,45" stroke="#594639" stroke-width="1" />
+    <!-- Eyes -->
+    <ellipse cx="43" cy="38" rx="2" ry="2.5" fill="#594639" />
+    <ellipse cx="57" cy="38" rx="2" ry="2.5" fill="#594639" />
+    <path d="M40,35 Q43,33 46,35" fill="none" stroke="#594639" stroke-width="1.5" />
+    <path d="M54,35 Q57,33 60,35" fill="none" stroke="#594639" stroke-width="1.5" />
+    <!-- Nose -->
+    <path d="M50,40 L50,44" fill="none" stroke="#594639" stroke-width="1" />
+    <!-- Mouth (stern expression) -->
+    <path d="M44,46 L56,46" fill="none" stroke="#594639" stroke-width="1.5" />
+    <!-- Clipboard -->
+    <rect x="28" y="65" width="15" height="20" rx="1" fill="#f1f1f1" />
+    <rect x="30" y="69" width="11" height="1" fill="#999" />
+    <rect x="30" y="73" width="11" height="1" fill="#999" />
+    <rect x="30" y="77" width="11" height="1" fill="#999" />
+    <rect x="30" y="81" width="6" height="1" fill="#999" />
+    <rect x="28" y="65" width="15" height="3" rx="1" fill="#a52a2a" />
+    <!-- Pencil -->
+    <rect x="45" y="70" width="8" height="1" fill="#ffcc00" transform="rotate(45,45,70)" />
+    <path d="M52,67 L54,65" stroke="#666" stroke-width="1" transform="rotate(45,52,67)" />
+    <!-- Inspection uniform -->
+    <path d="M38,58 L62,58 L65,85 L35,85 Z" fill="#003366" />
+    <path d="M38,58 Q45,65 50,60 Q55,65 62,58" fill="#004080" />
+    <!-- Badge -->
+    <circle cx="55" cy="65" r="4" fill="#ffd700" />
+    <circle cx="55" cy="65" r="3" fill="#fff" />
+    <path d="M54,62 L56,62 L56,68 L55,67 L54,68 Z" fill="#ffd700" />
+    <!-- Pen in pocket -->
+    <rect x="45" y="62" width="1" height="5" fill="#333" />
+    <!-- Identification tag -->
+    <rect x="40" y="67" width="7" height="5" fill="#fff" />
+    <path d="M41,69 L46,69" stroke="#333" stroke-width="0.5" />
+    <path d="M41,71 L44,71" stroke="#333" stroke-width="0.5" />
+  </svg>

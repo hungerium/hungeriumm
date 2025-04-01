@@ -1,0 +1,52 @@
+{
+  "name": "coffylapse",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "clean-install": "rm -rf node_modules && rm -rf .next && npm install",
+    "postinstall": "node scripts/check-dependencies.js",
+    "fix-deps": "node scripts/install-zustand.js",
+    "fix-polyfills": "node scripts/install-polyfills.js",
+    "dev:safe": "node scripts/start-dev.js",
+    "gen-svg": "node utils/createSvgFiles.js",
+    "gen-sounds": "node scripts/generate-placeholder-sounds.js",
+    "prebuild": "npm run gen-svg && npm run gen-sounds",
+    "export": "next export && touch out/.nojekyll",
+    "deploy": "npm run build && npm run export && node scripts/deploy-size-check.js",
+    "prepare-gh-pages": "node scripts/prepare-gh-pages.js"
+  },
+  "dependencies": {
+    "crypto-browserify": "^3.12.1",
+    "ethers": "^5.7.2",
+    "framer-motion": "^12.6.2",
+    "https-browserify": "^1.0.0",
+    "next": "^13.4.19",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^13.4.19",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3"
+  },
+  "resolutions": {
+    "zustand": "^4.4.7"
+  },
+  "browser": {
+    "fs": false,
+    "net": false,
+    "tls": false
+  }
+}
