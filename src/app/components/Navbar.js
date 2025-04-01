@@ -300,7 +300,7 @@ export default function Navbar() {
                   <i className="fas fa-gamepad mr-2 text-sm"></i>
                   <div className="flex flex-col items-start">
                     <span className="relative z-10 text-xs">Play to Earn</span>
-                    <span className="relative z-10 text-sm">Bee Adventure</span>
+                    <span className="relative z-10 text-sm">Coffy Lapse</span>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] to-[#1E90FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
