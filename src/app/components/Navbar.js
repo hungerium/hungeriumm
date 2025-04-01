@@ -173,7 +173,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3 lg:gap-4">
             {/* Bee Adventure Button */}
             <motion.a
-              href="/hungeriumgame/game.html"
+              href="https://coffylapse.vercel.app" // Güncellenen link
               className="relative group bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] text-white font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#3A5FCD]/50 overflow-hidden flex items-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -270,7 +270,7 @@ export default function Navbar() {
                   key={item}
                   href={`#${item.toLowerCase()}`}
                   onClick={(e) => handleScroll(e, item.toLowerCase())}
-                  className="text-[#E8D5B5] hover:text-[#D4A017] transition duration-200 py-1" 
+                  className="text-[#E8D5B5] hover:text-[#D4D4A017] transition duration-200 py-1" 
                   whileHover={{ scale: 1.05 }}
                 >
                   {item}
@@ -292,7 +292,7 @@ export default function Navbar() {
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
                 <motion.a
-                  href="/hungeriumgame/game.html"
+                  href="https://coffylapse.vercel.app" // Güncellenen link
                   className="relative group bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#3A5FCD]/50 overflow-hidden flex items-center"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
