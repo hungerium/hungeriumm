@@ -171,20 +171,20 @@ export default function Navbar() {
 
           {/* Game and Wallet Buttons */}
           <div className="hidden md:flex items-center gap-3 lg:gap-4">
-            {/* Bee Adventure Button */}
+            {/* Coffy Lapse Button */}
             <motion.a
-              href="https://coffylapse.vercel.app" // Güncellenen link
-              className="relative group bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] text-white font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#3A5FCD]/50 overflow-hidden flex items-center"
+              href="https://coffylapse.vercel.app"
+              className="relative group bg-gradient-to-r from-gray-600 to-black text-white font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-gray-600/50 overflow-hidden flex items-center"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <i className="fas fa-gamepad mr-1.5 text-xs lg:text-sm"></i>
               <div className="flex flex-col items-start">
                 <span className="relative z-10 text-[10px] lg:text-xs">Play to Earn</span>
-                <span className="relative z-10 text-xs lg:text-sm whitespace-nowrap">Bee Adventure</span>
+                <span className="relative z-10 text-xs lg:text-sm whitespace-nowrap">Coffy Lapse</span>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] to-[#1E90FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-black blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
             </motion.a>
 
             {/* Coffy Adventure Button */}
@@ -203,7 +203,7 @@ export default function Navbar() {
               <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
             </motion.a>
 
-            {/* Wallet Connection Button - Added margin-left */}
+            {/* Wallet Connection Button */}
             <motion.button
               onClick={connectWallet}
               whileHover={{ scale: 1.05 }}
@@ -292,8 +292,8 @@ export default function Navbar() {
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
                 <motion.a
-                  href="https://coffylapse.vercel.app" // Güncellenen link
-                  className="relative group bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#3A5FCD]/50 overflow-hidden flex items-center"
+                  href="https://coffylapse.vercel.app"
+                  className="relative group bg-gradient-to-r from-gray-600 to-black text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-gray-600/50 overflow-hidden flex items-center"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -302,8 +302,8 @@ export default function Navbar() {
                     <span className="relative z-10 text-xs">Play to Earn</span>
                     <span className="relative z-10 text-sm">Coffy Lapse</span>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#4169E1] to-[#1E90FF] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#3A5FCD] to-[#1E40AF] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-500 to-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-black blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
               </div>
             </div>
