@@ -10,15 +10,15 @@ body {
     background: #1a202c;
     font-family: 'Poppins', sans-serif;
     color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /* display: flex; */ /* Removed flex properties */
+    /* justify-content: center; */
+    /* align-items: center; */
     height: 100vh;
     width: 100vw;
 }
 
 /* Oyun kapsayıcısı */
-#game-container {
+#game-container { /* Removed flex properties */
     position: fixed;
     top: 0;
     left: 0;
@@ -30,7 +30,8 @@ body {
 #game-canvas {
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, #6F4E37 0%, #513726 50%, #3D2C1E 100%);
+    /* Background is now drawn entirely by JavaScript in drawBackground() */
+    /* background-color property removed */
     touch-action: none;
 }
 
@@ -85,22 +86,41 @@ body {
     font-weight: 600;
     color: #C8A27A;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem; /* Reduced margin */
     letter-spacing: 1px;
     text-align: center;
 }
 
-.start-description {
-    font-size: clamp(0.9rem, 3vw, 1.2rem);
-    max-width: 90%;
+/* Start screen specific styles */
+.start-screen-description {
+    color: #fff;
+    max-width: 80%;
     text-align: center;
-    margin-bottom: 1rem;
+    text-align: center;
 }
 
+/* Buton stilleri */
+.game-button,
+#start-screen .buy-button { /* Apply base styles to both */
+    background: linear-gradient(90deg, #6F4E37, #9B7653);
+    color: #fff;
+    margin-bottom: 0.5rem; /* Reduced margin */
+    font-size: clamp(1rem, 4vw, 1.5rem); /* Keep existing font size clamp */
+}
+
+.start-screen-high-score {
+    color: #fff;
+    margin-bottom: 0.5rem; /* Reduced margin */
+    font-size: clamp(0.9rem, 3.5vw, 1.3rem); /* Slightly smaller than total reward */
+}
+
+/* .total-reward class seems unused, removing for now */
+/*
 .total-reward {
     font-size: clamp(1rem, 4vw, 1.5rem);
     margin-bottom: 1rem;
 }
+*/
 
 /* Buton stilleri */
 .game-button {
@@ -115,41 +135,36 @@ body {
     margin: 0.5rem 0;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    min-width: clamp(140px, 45vw, 220px);
+    min-width: clamp(140px, 40vw, 200px); /* Adjusted clamp for consistency */
+    max-width: 200px; /* Added max-width */
+    width: 80%; /* Try using percentage width */
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
+    touch-action: manipulation; /* Eklenecek */
+    -webkit-tap-highlight-color: rgba(0,0,0,0); /* Eklenecek */
+    user-select: none; /* Eklenecek */
 }
 
-.game-button:hover {
-    background: linear-gradient(90deg, #9B7653, #C8A27A);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.game-button:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* HUD (Baş Üstü Gösterge) stilleri */
+/* HUD (Baş Üstü Gösterge) stilleri - Restored Base Style */
 #hud {
-    position: absolute;
+    position: fixed;
     top: 0.5rem;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 30%; /* Standard centering */
+    transform: translateX(-50%); /* Standard centering */
+    margin: 0; /* Reset margins */
     z-index: 90;
     display: flex;
-    opacity: 0;
+    opacity: 0; /* Initially hidden, shown by JS */
     transition: opacity 0.4s ease;
-    padding: 0.4rem;
+    padding: 0.3rem;
     background: linear-gradient(90deg, rgba(61, 44, 30, 0.8), rgba(81, 55, 38, 0.7));
     border-radius: 12px;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    width: auto;
-    max-width: 90%;
+    width: auto; /* Let width adjust to content */
+    max-width: 90%; /* Limit width */
 }
 
 #hud.visible {
@@ -161,21 +176,21 @@ body {
     align-items: center;
     background: rgba(30, 20, 10, 0.3);
     color: #fff;
-    padding: 0.3rem 0.6rem;
+    padding: 0.2rem 0.5rem; /* Reduced padding */
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* Reduced font size */
     font-weight: 500;
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(200, 162, 122, 0.15);
-    min-width: 50px;
-    height: 28px;
+    min-width: 45px; /* Slightly reduced min-width */
+    height: 26px; /* Reduced height */
 }
 
 .hud-item i {
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* Reduced icon size */
     color: #C8A27A;
-    margin-right: 0.3rem;
+    margin-right: 0.25rem; /* Reduced margin */
 }
 
 .hud-item:hover {
@@ -200,6 +215,19 @@ body {
     70% { box-shadow: 0 0 0 4px rgba(200, 162, 122, 0); }
     100% { box-shadow: 0 0 0 0 rgba(200, 162, 122, 0); }
 }
+
+/* Score Update Animation */
+@keyframes scoreUpdate {
+    0% { transform: scale(1); color: #fff; }
+    50% { transform: scale(1.3); color: #FFD700; } /* Scale up and turn gold */
+    100% { transform: scale(1); color: #fff; }
+}
+
+.score-updated {
+    animation: scoreUpdate 0.4s ease-out;
+}
+
+/* Wallet status indicator styling removed */
 
 /* Kontrol bilgileri */
 #controls-info {
@@ -266,8 +294,8 @@ body {
     width: 100%;
     max-width: 700px;
     margin-top: 0;
-    margin-bottom: 60px; /* Kontrol bilgileri için alt boşluk eklendi */
-    padding-bottom: 20px; /* Ekstra padding */
+    margin-bottom: 10px; /* Reduced bottom margin */
+    padding-bottom: 10px; /* Reduced bottom padding */
 }
 
 /* Tarayıcıda 6 kart yan yana */
@@ -309,18 +337,26 @@ body {
     margin-bottom: 0.2rem;
 }
 
-/* Satın al butonu */
-.characters-container .buy-button {
-    background: linear-gradient(90deg, #4CAF50, #66BB6A);
-    color: white;
-    padding: 0.3rem 0.5rem;
-    font-size: 0.7rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+/* Satın al butonu (Specific color override) */
+#start-screen .buy-button {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A); /* Keep green for buy */
+    padding: 0.3rem 0.5rem; /* Keep specific padding */
+    font-size: 0.7rem; /* Keep specific font size */
+    border-radius: 5px; /* Keep specific radius */
+    /* Inherits width/min/max-width from the combined rule above */
 }
+
+/* Ensure character buy buttons also have consistent sizing */
+.characters-container .buy-button {
+    /* These styles are now mostly handled by the combined rule */
+    /* We only need overrides if necessary */
+    padding: 0.3rem 0.5rem; /* Keep specific padding */
+    font-size: 0.7rem; /* Keep specific font size */
+    width: auto; /* Allow buy buttons in grid to size naturally */
+    min-width: auto;
+    max-width: none;
+}
+
 
 /* Mobil için ayarlar */
 @media (max-width: 480px) {
@@ -350,13 +386,32 @@ body {
     .screen {
         padding-bottom: 70px; /* Alt boşluk arttırıldı */
     }
-    
+
     #controls-info {
         padding: 6px 10px;
         font-size: 11px;
         max-width: 100px;
         bottom: 5px;
         right: 5px;
+    }
+}
+
+/* Mobil cihazlara özel buton iyileştirmeleri */
+@media (max-width: 768px) {
+    .touch-target {
+        padding: clamp(0.7rem, 2vw, 1rem); /* Daha geniş tıklama alanı */
+        margin: 0.8rem 0; /* Butonlar arası boşluğu arttıralım */
+        position: relative;
+        z-index: 150; /* Diğer elementlerin üzerinde olsun */
+        touch-action: manipulation;
+    }
+
+    /* Karakter seçim butonları için iyileştirmeler */
+    .characters-container .buy-button {
+        padding: 0.4rem 0.7rem; /* Daha büyük tıklama alanı */
+        font-size: 0.8rem;
+        z-index: 150;
+        touch-action: manipulation;
     }
 }
 
@@ -387,20 +442,22 @@ body {
     display: block;
 }
 
+/* Skill Tree CSS Removed */
+
 /* Mobil cihazlara özel HUD stilleri */
 @media (max-width: 768px) {
     #hud {
         top: 0.2rem;
         display: flex;
-        flex-wrap: nowrap; /* Öğeler tek satırda kalır */
+        flex-wrap: wrap; /* Allow items to wrap to the next line */
         justify-content: center;
         align-items: center;
-        gap: 0.2rem; /* Öğeler arası boşluk */
-        padding: 0.2rem;
+        gap: 0.3rem; /* Slightly increased gap for wrapped items */
+        padding: 0.3rem; /* Slightly increased padding */
         width: auto;
-        max-width: 90%; /* Ekranın tamamını kaplamaz */
-        overflow-x: auto; /* Yatay kaydırma çubuğu */
-        white-space: nowrap; /* Alt satıra geçmeyi engeller */
+        max-width: 95%; /* Allow slightly more width */
+        /* overflow-x: auto; Removed horizontal scroll */
+        /* white-space: nowrap; Removed nowrap */
     }
 
     .hud-item {
@@ -551,3 +608,157 @@ body {
 #sound-control i {
     font-size: 20px;
 }
+
+/* --- Notification Styles --- */
+#notification-area {
+    /* Container styles already added in utils.js via JS */
+    /* This area is just for individual notification styling */
+}
+
+.notification {
+    padding: 12px 18px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 10px; /* Added via JS gap, but good fallback */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateX(100%); /* Start off-screen right */
+    transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+    min-width: 250px;
+    max-width: 350px;
+    word-wrap: break-word;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Notification Types */
+.notification.info {
+    background: linear-gradient(135deg, #3B82F6, #2563EB); /* Blue */
+    border-left: 5px solid #1D4ED8;
+}
+
+.notification.success {
+    background: linear-gradient(135deg, #10B981, #059669); /* Green */
+    border-left: 5px solid #047857;
+}
+
+.notification.warning {
+    background: linear-gradient(135deg, #F59E0B, #D97706); /* Amber */
+    border-left: 5px solid #B45309;
+}
+
+.notification.error {
+    background: linear-gradient(135deg, #EF4444, #DC2626); /* Red */
+    border-left: 5px solid #B91C1C;
+}
+
+/* Social Share Button Styles */
+.social-share-button {
+    display: inline-flex; /* Use inline-flex for icon alignment */
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+    text-decoration: none; /* Remove underline from link */
+    margin-top: 10px; /* Add some space above */
+}
+
+.social-share-button.twitter {
+    background: linear-gradient(90deg, #1DA1F2, #0c85d0); /* Twitter blue */
+}
+
+.social-share-button.twitter:hover {
+    background: linear-gradient(90deg, #0c85d0, #0a6fa8);
+}
+
+.social-share-button i {
+    font-size: 1.1em; /* Make icon slightly larger */
+}
+
+/* --- Leaderboard Styles --- */
+#leaderboard-screen {
+    justify-content: flex-start; /* Align items to the top */
+    padding-top: 3rem; /* Add padding at the top */
+}
+
+.leaderboard-list {
+    width: 90%;
+    max-width: 500px;
+    max-height: 60vh; /* Limit height and allow scrolling */
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(200, 162, 122, 0.2);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-item .rank {
+    font-weight: bold;
+    color: #C8A27A;
+    min-width: 30px; /* Ensure rank alignment */
+    text-align: right;
+    margin-right: 1rem;
+}
+
+.leaderboard-item .name {
+    flex-grow: 1; /* Allow name to take remaining space */
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 1rem;
+}
+
+.leaderboard-item .score {
+    font-weight: bold;
+    min-width: 60px; /* Ensure score alignment */
+    text-align: right;
+}
+
+.leaderboard-loading,
+.leaderboard-error {
+    text-align: center;
+    padding: 1rem;
+    color: #aaa;
+}
+
+</file_content>
+
+IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
+
+<environment_details>
+# VSCode Visible Files
+game.css
+
+# VSCode Open Tabs
+mobile-controls.js
+game.js
+mobile-hud.css
+game.css
+
+# Current Time
+4/9/2025, 6:20:21 PM (Europe/Istanbul, UTC+3:00)
+# Context Window Usage
+291,472 / 1,048.576K tokens used (28%)
+
+# Current Mode
+ACT MODE
+</environment_details>
