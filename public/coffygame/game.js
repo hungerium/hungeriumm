@@ -1080,24 +1080,36 @@ function drawPowerUps() {
         ctx.save();
         ctx.translate(powerUp.x, powerUp.y);
         let img = null;
-        let fallbackColor = '#FFFFFF';
+        let fallbackColor = '#FFFFFF'; // Default fallback
 
+        // Use specific SVG images from IMAGE_CACHE if available
         switch(powerUp.type) {
             case Const.POWERUP_TYPES.SHIELD:
-                img = IMAGE_CACHE.shieldCoin; fallbackColor = '#FFD700'; break;
+                img = IMAGE_CACHE.shieldPowerup; // Use shieldPowerup SVG
+                fallbackColor = '#ADD8E6'; // Light blue fallback if SVG fails
+                break;
             case Const.POWERUP_TYPES.SPEED:
-                img = IMAGE_CACHE.speedBoost; fallbackColor = '#00FF00'; break;
-             case Const.POWERUP_TYPES.MAGNET:
-                 img = IMAGE_CACHE.magnet; fallbackColor = '#FF00FF'; break;
-             case Const.POWERUP_TYPES.TEA_REPEL: // Draw Tea Repel
-                 // TODO: Add specific image IMAGE_CACHE.teaRepel
-                 fallbackColor = '#4682B4'; // Steel Blue fallback
+                img = IMAGE_CACHE.speedPowerup; // Use speedPowerup SVG
+                fallbackColor = '#90EE90'; // Light green fallback
+                break;
+            case Const.POWERUP_TYPES.MAGNET:
+                 img = IMAGE_CACHE.magnetPowerup; // Use magnetPowerup SVG
+                 fallbackColor = '#EE82EE'; // Violet fallback
                  break;
-              case Const.POWERUP_TYPES.SHOOTING: // Draw shooting powerup
-                  img = IMAGE_CACHE.shootingPowerup; fallbackColor = '#FFFF00'; break;
+            case Const.POWERUP_TYPES.SPEED:
+                img = IMAGE_CACHE.speedPowerup; // Use speedPowerup SVG
+                fallbackColor = '#90EE90'; // Light green fallback
+                break; 
+            case Const.POWERUP_TYPES.SHOOTING:
+                  img = IMAGE_CACHE.shootingPowerup; // Uncommented to use the SVG
+                  fallbackColor = '#FFFF00'; // Yellow fallback
+                  break; 
+            default:
+                 console.warn("Unknown powerup type for drawing:", powerUp.type);
+                 break; // Keep default white fallback for unknown types
          }
 
-        // --- Scaling removed, keep pulse ---
+        // Pulse effect remains
         const pulseScaleFactor = 1 + Math.sin(performance.now() / 200) * 0.1; // Existing pulse
         const size = powerUp.radius * 2 * pulseScaleFactor; // Only pulse scaling
         // --- End Scaling removed ---
@@ -1155,19 +1167,27 @@ function drawBossBullets() {
          if (!bullet.active) return;
          ctx.save();
          ctx.translate(bullet.x, bullet.y);
-         ctx.rotate(bullet.rotation + Math.PI / 2);
+         // Rotation might not be needed for a simple circle, but keep if desired
+         // ctx.rotate(bullet.rotation + Math.PI / 2);
 
-         const img = bullet.type === 'coffee' ? IMAGE_CACHE.coffeeCup : IMAGE_CACHE.teaCup;
-         const size = bullet.radius * 2;
+         const radius = bullet.radius;
 
-         if (img) {
-             ctx.drawImage(img, -size / 2, -size / 2, size, size);
-         } else {
-             ctx.fillStyle = bullet.type === 'coffee' ? '#6f4e37' : '#d9a44e';
-             ctx.beginPath();
-             ctx.arc(0, 0, bullet.radius, 0, Math.PI * 2);
-             ctx.fill();
-         }
+         // Draw all boss bullets as red circles
+         ctx.fillStyle = '#FF0000'; // Red color
+         ctx.shadowColor = 'rgba(255, 0, 0, 0.7)'; // Red glow
+         ctx.shadowBlur = 8;
+
+         ctx.beginPath();
+         ctx.arc(0, 0, radius, 0, Math.PI * 2);
+         ctx.fill();
+
+         // Optional: Add a smaller inner circle for detail
+         ctx.fillStyle = '#CC0000'; // Darker red
+         ctx.shadowBlur = 0; // No shadow for inner circle
+         ctx.beginPath();
+         ctx.arc(0, 0, radius * 0.6, 0, Math.PI * 2);
+         ctx.fill();
+
          ctx.restore();
      });
 }

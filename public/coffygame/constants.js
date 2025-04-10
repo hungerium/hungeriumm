@@ -442,6 +442,111 @@ export const ANIMATION_LIBRARIES = {
 
 // SVG Görseller (Çay ve Kahve tam tersi renklendirildi)
 export const SVG_URLS = {
+    // Powerups
+    shieldPowerup: 'assets/shield_powerup.svg',
+    // Hız güçlendiricisi - Basitleştirilmiş İleri Sarma Simgesi
+    speedPowerup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                 <linearGradient id="speedSimpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                     <stop offset="0%" style="stop-color:#90EE90; stop-opacity:1" /> <!-- LightGreen -->
+                     <stop offset="100%" style="stop-color:#32CD32; stop-opacity:1" /> <!-- LimeGreen -->
+                 </linearGradient>
+                 <filter id="speedSimpleGlow">
+                     <feGaussianBlur stdDeviation="2" result="glow"/>
+                     <feMerge>
+                         <feMergeNode in="glow"/>
+                         <feMergeNode in="SourceGraphic"/>
+                     </feMerge>
+                 </filter>
+            </defs>
+            <g fill="url(#speedSimpleGrad)" stroke="#2E8B57" stroke-width="3" stroke-linejoin="round" filter="url(#speedSimpleGlow)">
+                 <!-- İlk ok -->
+                 <polygon points="25,25 55,50 25,75" />
+                 <!-- İkinci ok -->
+                 <polygon points="45,25 75,50 45,75" />
+            </g>
+        </svg>
+    `),
+    // Mıknatıs güçlendiricisi (mevcut gerçekçi SVG)
+    magnetPowerup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="magnetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#FF0000;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#990000;stop-opacity:1" />
+                </linearGradient>
+                <filter id="magnetGlow">
+                    <feGaussianBlur stdDeviation="2" result="glow"/>
+                    <feMerge>
+                        <feMergeNode in="glow"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#CCCCCC;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:#EEEEEE;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#AAAAAA;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Mıknatısın ana gövdesi - U şekli -->
+            <path d="M30,25 C20,25 15,35 15,50 C15,65 20,75 30,75 L40,75 L40,65 L30,65 C25,65 25,60 25,50 C25,40 25,35 30,35 L40,35 L40,25 L30,25 Z" 
+                  fill="url(#metalGradient)" stroke="#666" stroke-width="2" />
+                  
+            <!-- Mıknatısın sağ kolu -->
+            <path d="M70,25 C80,25 85,35 85,50 C85,65 80,75 70,75 L60,75 L60,65 L70,65 C75,65 75,60 75,50 C75,40 75,35 70,35 L60,35 L60,25 L70,25 Z" 
+                  fill="url(#metalGradient)" stroke="#666" stroke-width="2" />
+                  
+            <!-- Mıknatısın kutupları -->
+            <rect x="30" y="20" width="10" height="15" rx="2" fill="#FF0000" filter="url(#magnetGlow)" />
+            <rect x="60" y="20" width="10" height="15" rx="2" fill="#0000FF" filter="url(#magnetGlow)" />
+            <rect x="30" y="65" width="10" height="15" rx="2" fill="#0000FF" filter="url(#magnetGlow)" />
+            <rect x="60" y="65" width="10" height="15" rx="2" fill="#FF0000" filter="url(#magnetGlow)" />
+            
+            <!-- Manyetik alan çizgileri -->
+            <path d="M35,30 C45,40 55,40 65,30" stroke="#FF00FF" stroke-width="2" fill="none" stroke-dasharray="2,2" opacity="0.7" />
+            <path d="M35,70 C45,60 55,60 65,70" stroke="#FF00FF" stroke-width="2" fill="none" stroke-dasharray="2,2" opacity="0.7" />
+            
+            <!-- Elektrik parıltıları -->
+            <circle cx="40" cy="35" r="3" fill="#FFFF00" opacity="0.8" />
+            <circle cx="60" cy="35" r="2" fill="#FFFF00" opacity="0.7" />
+            <circle cx="40" cy="65" r="2" fill="#FFFF00" opacity="0.6" />
+            <circle cx="60" cy="65" r="3" fill="#FFFF00" opacity="0.8" />
+        </svg>
+    `),
+    // Mermi güçlendiricisi - Basitleştirilmiş Mermi Simgesi
+    shootingPowerup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+             <defs>
+                 <linearGradient id="bulletSimpleShell" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" style="stop-color:#FFEC8B; stop-opacity:1" /> <!-- LightGoldenrod -->
+                     <stop offset="100%" style="stop-color:#DAA520; stop-opacity:1" /> <!-- Goldenrod -->
+                 </linearGradient>
+                 <linearGradient id="bulletSimpleTip" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" style="stop-color:#CD5C5C; stop-opacity:1" /> <!-- IndianRed -->
+                     <stop offset="100%" style="stop-color:#A52A2A; stop-opacity:1" /> <!-- Brown -->
+                 </linearGradient>
+                 <filter id="shootingSimpleGlow">
+                     <feGaussianBlur stdDeviation="2" result="glow"/>
+                     <feMerge>
+                         <feMergeNode in="glow"/>
+                         <feMergeNode in="SourceGraphic"/>
+                     </feMerge>
+                 </filter>
+             </defs>
+             <g transform="translate(50 50) rotate(45)" filter="url(#shootingSimpleGlow)"> <!-- Mermiyi çapraz döndür -->
+                 <!-- Mermi Gövdesi -->
+                 <rect x="-10" y="-30" width="20" height="40" rx="5" fill="url(#bulletSimpleShell)" stroke="#B8860B" stroke-width="2"/>
+                 <!-- Mermi Ucu -->
+                 <path d="M-10 -30 Q 0 -45 10 -30 Z" fill="url(#bulletSimpleTip)" stroke="#8B4513" stroke-width="2"/>
+                 <!-- Mermi Arkası -->
+                 <rect x="-7" y="10" width="14" height="5" fill="#A0522D" stroke="#6F4E37" stroke-width="1"/>
+             </g>
+        </svg>
+    `),
+    // TODO: Add teaRepelPowerup: 'assets/tea_repel_powerup.svg', // Add if you have this asset
+
     // --- Basic Barista ---
     playerNormal_basic: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -1804,104 +1909,6 @@ export const SVG_URLS = {
             <!-- Dekoratif detaylar -->
             <path d="M50,70 S65,60 80,70" stroke="#228B22" stroke-width="3" fill="none"/>
             <path d="M120,70 S135,60 150,70" stroke="#228B22" stroke-width="3" fill="none"/>
-        </svg>
-    `),
-    
-    // Mıknatıs powerup'ı daha gerçekçi görünümlü
-    magnetPowerup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="magnetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FF0000;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#990000;stop-opacity:1" />
-                </linearGradient>
-                <filter id="magnetGlow">
-                    <feGaussianBlur stdDeviation="2" result="glow"/>
-                    <feMerge>
-                        <feMergeNode in="glow"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-                <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#CCCCCC;stop-opacity:1" />
-                    <stop offset="50%" style="stop-color:#EEEEEE;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#AAAAAA;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            
-            <!-- Mıknatısın ana gövdesi - U şekli -->
-            <path d="M30,25 C20,25 15,35 15,50 C15,65 20,75 30,75 L40,75 L40,65 L30,65 C25,65 25,60 25,50 C25,40 25,35 30,35 L40,35 L40,25 L30,25 Z" 
-                  fill="url(#metalGradient)" stroke="#666" stroke-width="2" />
-                  
-            <!-- Mıknatısın sağ kolu -->
-            <path d="M70,25 C80,25 85,35 85,50 C85,65 80,75 70,75 L60,75 L60,65 L70,65 C75,65 75,60 75,50 C75,40 75,35 70,35 L60,35 L60,25 L70,25 Z" 
-                  fill="url(#metalGradient)" stroke="#666" stroke-width="2" />
-                  
-            <!-- Mıknatısın kutupları -->
-            <rect x="30" y="20" width="10" height="15" rx="2" fill="#FF0000" filter="url(#magnetGlow)" />
-            <rect x="60" y="20" width="10" height="15" rx="2" fill="#0000FF" filter="url(#magnetGlow)" />
-            <rect x="30" y="65" width="10" height="15" rx="2" fill="#0000FF" filter="url(#magnetGlow)" />
-            <rect x="60" y="65" width="10" height="15" rx="2" fill="#FF0000" filter="url(#magnetGlow)" />
-            
-            <!-- Manyetik alan çizgileri -->
-            <path d="M35,30 C45,40 55,40 65,30" stroke="#FF00FF" stroke-width="2" fill="none" stroke-dasharray="2,2" opacity="0.7" />
-            <path d="M35,70 C45,60 55,60 65,70" stroke="#FF00FF" stroke-width="2" fill="none" stroke-dasharray="2,2" opacity="0.7" />
-            
-            <!-- Elektrik parıltıları -->
-            <circle cx="40" cy="35" r="3" fill="#FFFF00" opacity="0.8" />
-            <circle cx="60" cy="35" r="2" fill="#FFFF00" opacity="0.7" />
-            <circle cx="40" cy="65" r="2" fill="#FFFF00" opacity="0.6" />
-            <circle cx="60" cy="65" r="3" fill="#FFFF00" opacity="0.8" />
-        </svg>
-    `),
-    
-    // Mermi powerup'ı daha gerçekçi görünümlü
-    shootingPowerup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="bulletGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="shellGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
-                </linearGradient>
-                <filter id="bulletGlow">
-                    <feGaussianBlur stdDeviation="1.5" result="glow"/>
-                    <feMerge>
-                        <feMergeNode in="glow"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-            </defs>
-            
-            <!-- Mermi kutusu -->
-            <rect x="25" y="35" width="50" height="40" rx="5" fill="#556B2F" stroke="#333" stroke-width="2" />
-            <rect x="30" y="40" width="40" height="30" rx="3" fill="#3A5F0B" stroke="#444" stroke-width="1" />
-            
-            <!-- Kutunun üstü - açık kapak -->
-            <path d="M25,35 L20,25 L80,25 L75,35" fill="#556B2F" stroke="#333" stroke-width="2" />
-            
-            <!-- Mermiler -->
-            <g transform="translate(35, 45)">
-                <!-- Birinci mermi -->
-                <rect x="0" y="0" width="10" height="20" rx="2" fill="url(#shellGradient)" stroke="#996515" stroke-width="1" />
-                <circle cx="5" cy="0" r="5" fill="url(#bulletGradient)" filter="url(#bulletGlow)" />
-                
-                <!-- İkinci mermi (biraz döndürülmüş) -->
-                <g transform="translate(20, 0) rotate(15)">
-                    <rect x="0" y="0" width="10" height="20" rx="2" fill="url(#shellGradient)" stroke="#996515" stroke-width="1" />
-                    <circle cx="5" cy="0" r="5" fill="url(#bulletGradient)" filter="url(#bulletGlow)" />
-                </g>
-            </g>
-            
-            <!-- Kutu detayları -->
-            <text x="50" y="85" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFD700">AMMO</text>
-            
-            <!-- Parıltı efekti -->
-            <circle cx="35" cy="45" r="2" fill="#FFFFFF" opacity="0.8" />
-            <circle cx="60" cy="50" r="1.5" fill="#FFFFFF" opacity="0.7" />
         </svg>
     `)
 };
