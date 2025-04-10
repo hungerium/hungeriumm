@@ -9,10 +9,7 @@ import PlayerBullet from './PlayerBullet.js';
 import { PLAYER_STATE } from './constants.js';
 
 // DOM Elemanları (Export needed elements for gameLogic)
-const leaderboardButton = document.getElementById('leaderboard-button');
-const leaderboardScreen = document.getElementById('leaderboard-screen');
-const leaderboardList = document.getElementById('leaderboard-list');
-const closeLeaderboardButton = document.getElementById('close-leaderboard-button');
+// Leaderboard elements removed
 export const canvas = document.getElementById('game-canvas'); // Export if needed by other modules
 export const ctx = canvas.getContext('2d'); // Export if needed
 export const loadingScreen = document.getElementById('loading-screen');
@@ -2017,7 +2014,7 @@ function startGame() {
 
 // --- Screen Management (Keep in game.js) ---
 function hideAllScreens() {
-    const screens = [startScreen, gameOverScreen, pauseScreen, loadingScreen, leaderboardScreen]; // Added leaderboardScreen
+    const screens = [startScreen, gameOverScreen, pauseScreen, loadingScreen]; // Removed leaderboardScreen
     screens.forEach(screen => {
         if (screen) {
             screen.classList.remove('visible');
@@ -2175,12 +2172,7 @@ function init() {
         showScreen(startScreen);
     });
 
-    // Leaderboard listeners
-    leaderboardButton.addEventListener('click', () => showLeaderboard());
-    closeLeaderboardButton.addEventListener('click', () => {
-        console.log("Close Leaderboard button clicked."); // Log button click
-        showScreen(startScreen);
-    });
+    // Leaderboard listeners removed
 
 
     // Add resize listener
@@ -2192,99 +2184,7 @@ function init() {
 // --- Start the game initialization ---
 init();
 
-// --- Leaderboard Functions ---
-async function fetchScores() {
-    try {
-        const response = await fetch('http://localhost:8080/scores'); // Use your server URL
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const scores = await response.json();
-        return scores;
-    } catch (error) {
-        console.error("Error fetching leaderboard scores:", error);
-        showNotification("Could not load leaderboard.", 'error');
-        return null; // Return null on error
-    }
-}
-
-function displayLeaderboard(scores) {
-    if (!leaderboardList) return;
-
-    leaderboardList.innerHTML = ''; // Clear previous list
-
-    if (!scores || scores.length === 0) {
-        leaderboardList.innerHTML = '<div class="leaderboard-error">No scores yet!</div>';
-        return;
-    }
-
-    scores.forEach((entry, index) => {
-        const item = document.createElement('div');
-        item.className = 'leaderboard-item';
-        
-        const rankSpan = document.createElement('span');
-        rankSpan.className = 'rank';
-        rankSpan.textContent = `${index + 1}.`;
-        
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'name';
-        nameSpan.textContent = entry.name; // Already sanitized on server
-        
-        const scoreSpan = document.createElement('span');
-        scoreSpan.className = 'score';
-        scoreSpan.textContent = entry.score;
-        
-        item.appendChild(rankSpan);
-        item.appendChild(nameSpan);
-        item.appendChild(scoreSpan);
-        leaderboardList.appendChild(item);
-    });
-}
-
-async function showLeaderboard() {
-    if (!leaderboardScreen || !leaderboardList) return;
-
-    showScreen(leaderboardScreen);
-    leaderboardList.innerHTML = '<div class="leaderboard-loading">Loading scores...</div>'; // Show loading state
-
-    const scores = await fetchScores();
-    if (scores) { // Only display if fetch was successful
-        displayLeaderboard(scores);
-    } else {
-         leaderboardList.innerHTML = '<div class="leaderboard-error">Failed to load scores.</div>';
-    }
-}
-
-// Function to submit score (called from gameLogic.gameOver)
-// Export it so gameLogic can use it
-    export async function submitScore(name, score) {
-        if (!name || typeof name !== 'string' || name.trim() === '' || typeof score !== 'number') {
-            console.error("Invalid data for submitting score:", { name, score });
-            return;
-        }
-        try {
-            const response = await fetch('http://localhost:8080/scores', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: name.trim(), score: score }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-            }
-
-            const result = await response.json();
-            console.log("Score submission result:", result);
-            showNotification("Score submitted successfully!", 'success');
-
-        } catch (error) {
-            console.error("Error submitting score:", error);
-            showNotification(`Failed to submit score: ${error.message}`, 'error');
-        }
-    }
+// --- Leaderboard Functions Removed ---
 
 
 // Add documentation section to help text element

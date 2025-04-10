@@ -1,6 +1,5 @@
 import * as Const from './constants.js';
 import * as Utils from './utils.js';
-import { submitScore } from './game.js'; // Import submitScore function
 // UI elements and sounds will be passed as parameters where needed.
 
 // --- Game Logic Updates ---
@@ -1192,13 +1191,7 @@ export function gameOver(gameState, uiElements, soundElements, screenHelpers) {
         showScreen(document.getElementById('game-over-screen'));
     }
 
-    // Ask for name and submit score after showing the game over screen
-    setTimeout(() => { // Use setTimeout to avoid blocking UI update
-        const playerName = prompt("Enter your name for the leaderboard (max 20 chars):", "Barista");
-        if (playerName) {
-            submitScore(playerName, gameState.score); // Call imported submitScore
-        }
-    }, 100); // Short delay
+    // Leaderboard submission removed.
 }
 
 // Reset state for returning to menu

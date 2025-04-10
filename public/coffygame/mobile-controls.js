@@ -101,16 +101,23 @@ class TouchControls {
         const x = touch.clientX - rect.left;
         const y = touch.clientY - rect.top;
         
-        console.log(`TouchControls: movement started at ${Math.floor(x)} ${Math.floor(y)}`);
-        
-        // Determine if this is a movement touch (left side) or action touch (right side)
-        if (x < rect.width / 2) {
-            // Left side - movement touch
+        console.log(`TouchControls: touch started at ${Math.floor(x)} ${Math.floor(y)}`);
+
+        // Always register the touch for potential movement tracking
+        // Only register if no other move touch is active
+        if (this.touchState.moveTouch === null) {
             this.touchState.moveTouch = touch.identifier;
             this.touchState.moveStartPos = { x, y };
             this.touchState.lastMovePos = { x, y };
             this.touchState.active = true;
+            console.log(`TouchControls: movement tracking initiated with touch ID ${touch.identifier}`);
         } else {
+             console.log(`TouchControls: movement already active with touch ID ${this.touchState.moveTouch}, ignoring new touch for movement.`);
+        }
+
+
+        // Check if the touch is on the right side for actions
+        if (x >= rect.width / 2) {
             // Right side - action (shoot/superpower)
             if (this.gameState && !this.gameState.isPaused && !this.gameState.isOver) {
                 // Check position to determine action (upper or lower right quadrant)
