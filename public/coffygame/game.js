@@ -786,6 +786,9 @@ function activateSuperpower() {
     }
 }
 
+// Süpergüç fonksiyonunu global scope'a at - önemli!
+window.activateSuperpower = activateSuperpower;
+
 // --- Drawing Functions (Keep in game.js for now) ---
 function drawBackground() {
     const now = performance.now();
@@ -2213,11 +2216,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const helpButton = document.createElement('button');
     helpButton.id = 'help-button';
     helpButton.className = 'game-button';
-    helpButton.innerHTML = '<i class="fas fa-question-circle"></i> Game Guide';
+    helpButton.innerHTML = '<i class="fas fa-question-circle"></i>';
     helpButton.style.position = 'fixed';
-    helpButton.style.bottom = '10px';
-    helpButton.style.left = '10px';
-    helpButton.style.zIndex = '1000';
+    helpButton.style.bottom = '5px';
+    helpButton.style.right = '5px';
+    helpButton.style.zIndex = '90'; // Lower z-index to avoid overlap with character cards
+    helpButton.style.fontSize = '0.7rem';
+    helpButton.style.padding = '3px 6px';
+    helpButton.style.opacity = '0.6';
+    helpButton.style.minWidth = 'auto';
+    helpButton.style.width = 'auto';
+    helpButton.style.height = 'auto';
+    helpButton.style.borderRadius = '50%';
     
     const helpContainer = document.createElement('div');
     helpContainer.id = 'help-container';
@@ -2261,7 +2271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </ul>
         
         <h3>Character Superpowers</h3>
-        <p>Press SPACE bar to activate your character's unique superpower:</p>
+        <p>Press SPACE bar or double-tap screen to activate your character's unique superpower:</p>
         <ul>
             <li><strong>Basic Barista:</strong> Coffee Shield - Protection and double rewards</li>
             <li><strong>Mocha Knight:</strong> Coffee Storm - Pulls and collects coffee cups</li>
@@ -2297,5 +2307,3 @@ document.addEventListener('DOMContentLoaded', function() {
         helpContainer.style.display = 'none';
     });
 });
-
-// Removed game logic functions previously defined here

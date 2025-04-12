@@ -70,11 +70,16 @@ class TouchControls {
             active: false,
             moveTouch: null,
             lastMovePos: { x: 0, y: 0 },
-            moveStartPos: { x: 0, y: 0 }
+            moveStartPos: { x: 0, y: 0 },
+            lastTapTime: 0, // Çift tıklama için son tıklama zamanını sakla
+            tapCount: 0 // Tıklama sayacı
         };
         
         // Movement threshold
         this.minMoveThreshold = 10;
+        
+        // Double tap detection constant
+        this.doubleTapDelay = 300; // 300 ms içinde iki tıklama olursa çift tıklama olarak kabul edilir
         
         // Bind event handlers to this instance
         this.handleTouchStart = this.handleTouchStart.bind(this);
@@ -102,6 +107,35 @@ class TouchControls {
         const y = touch.clientY - rect.top;
         
         console.log(`TouchControls: touch started at ${Math.floor(x)} ${Math.floor(y)}`);
+
+        // Çift tıklama kontrolü
+        const now = performance.now();
+        if (now - this.touchState.lastTapTime < this.doubleTapDelay) {
+            this.touchState.tapCount++;
+            
+            // Çift tıklama tespit edildi, süpergücü tetikle
+            if (this.touchState.tapCount >= 2) {
+                console.log("Double tap detected! Activating superpower");
+                
+                // Süpergüç fonksiyonunu çağır (window veya this.gameState üzerinden)
+                if (window.activateSuperpower) {
+                    window.activateSuperpower();
+                } else if (this.gameState && this.gameState.activateSuperpower) {
+                    this.gameState.activateSuperpower();
+                }
+                
+                // Çift tıklama sayacını sıfırla
+                this.touchState.tapCount = 0;
+                this.touchState.lastTapTime = 0;
+                return; // Süpergüç etkinleştirildiğinde hareketi engelle
+            }
+        } else {
+            // Yeni tıklama serisi başlat
+            this.touchState.tapCount = 1;
+        }
+        
+        // Son tıklama zamanını güncelle
+        this.touchState.lastTapTime = now;
 
         // Always register the touch for potential movement tracking
         // Only register if no other move touch is active
@@ -166,6 +200,12 @@ class TouchControls {
         const deltaY = currentY - this.touchState.moveStartPos.y;
         
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        
+        // Çift tıklama tespiti hareket ettiğinde iptal edilir
+        if (distance > this.minMoveThreshold) {
+            this.touchState.tapCount = 0;
+            this.touchState.lastTapTime = 0;
+        }
         
         // Only move if delta exceeds threshold
         if (distance > this.minMoveThreshold) {

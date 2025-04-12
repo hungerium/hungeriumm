@@ -144,6 +144,9 @@ body {
     touch-action: manipulation; /* Eklenecek */
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* Eklenecek */
     user-select: none; /* Eklenecek */
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+    white-space: nowrap; /* Keep text on one line */
 }
 
 /* HUD (Baş Üstü Gösterge) stilleri - Restored Base Style */
@@ -357,7 +360,6 @@ body {
     max-width: none;
 }
 
-
 /* Mobil için ayarlar */
 @media (max-width: 480px) {
     .character-item {
@@ -404,6 +406,17 @@ body {
         position: relative;
         z-index: 150; /* Diğer elementlerin üzerinde olsun */
         touch-action: manipulation;
+    }
+
+    /* Connect Wallet butonu için özel stiller - Buton diğerleriyle aynı boyutta */
+    #connect-wallet {
+        font-size: 0.7rem; /* Yazı boyutunu küçült */
+        padding: clamp(0.4rem, 1vw, 0.6rem); /* Diğer butonlarla aynı padding */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px; /* Diğer butonlarla aynı genişlik */
+        min-width: clamp(140px, 40vw, 200px); /* Diğer butonlarla aynı min-width */
     }
 
     /* Karakter seçim butonları için iyileştirmeler */
@@ -739,26 +752,3 @@ body {
     padding: 1rem;
     color: #aaa;
 }
-
-</file_content>
-
-IMPORTANT: For any future changes to this file, use the final_file_content shown above as your reference. This content reflects the current state of the file, including any auto-formatting (e.g., if you used single quotes but the formatter converted them to double quotes). Always base your SEARCH/REPLACE operations on this final version to ensure accuracy.
-
-<environment_details>
-# VSCode Visible Files
-game.css
-
-# VSCode Open Tabs
-mobile-controls.js
-game.js
-mobile-hud.css
-game.css
-
-# Current Time
-4/9/2025, 6:20:21 PM (Europe/Istanbul, UTC+3:00)
-# Context Window Usage
-291,472 / 1,048.576K tokens used (28%)
-
-# Current Mode
-ACT MODE
-</environment_details>
