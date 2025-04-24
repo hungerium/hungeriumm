@@ -51,6 +51,11 @@ const nextConfig = {
       {
         source: '/hungeriumgame/:path*',
         destination: '/hungeriumgame/:path*'
+      },
+      // Yeni yönlendirme
+      {
+        source: '/lapse',  // Bu, kullanıcıların gireceği URL
+        destination: 'https://coffylapse.vercel.app', // Vercel'deki oyun linki
       }
     ]
   }
