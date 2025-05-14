@@ -133,10 +133,42 @@ document.addEventListener('click', function initAudio() {
     }
 }, { once: true });
 
-// Mobil cihaz algılama fonksiyonu
+// Mobil cihaz algılaması ve mobil moda otomatik geçiş
 function isMobileDevice() {
-    return window.innerWidth <= 600;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+function enableMobileMode() {
+    if (!window.isMobileMode) {
+        window.isMobileMode = true;
+        document.body.classList.add('mobile-mode'); // body'ye class ekle
+        var mobileStyle = document.getElementById('mobile-style');
+        if (mobileStyle) mobileStyle.media = 'all';
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+            document.documentElement.msRequestFullscreen();
+        }
+        if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
+            window.mobileHud.enable();
+        }
+    }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    if (isMobileDevice()) {
+        enableMobileMode();
+    }
+});
+
+// F12 ile manuel tetikleme (varsa koru)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12') {
+        enableMobileMode();
+    }
+});
 
 // Mobil mod kontrol ve etkinleştirme fonksiyonu
 function checkAndEnableMobileMode() {
