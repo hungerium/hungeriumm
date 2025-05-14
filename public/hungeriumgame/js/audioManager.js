@@ -18,6 +18,8 @@ class AudioManager {
         
         // Audio state
         this.isInitialized = false;
+        this.userInteracted = false; // Track user interaction status
+        this.pendingSounds = []; // Sounds that need to be played once interaction happens
         this.playing = {
             engine: false,
             siren: false,
@@ -36,8 +38,27 @@ class AudioManager {
         window.addEventListener('beforeunload', () => this.cleanup());
         
         // User interaction to enable audio (browser autoplay policy)
-        document.addEventListener('click', () => this.resumeAudio(), { once: true });
-        document.addEventListener('keydown', () => this.resumeAudio(), { once: true });
+        const interactionHandler = () => {
+            this.userInteracted = true;
+            this.resumeAudio();
+            
+            // Play any pending sounds that were requested before interaction
+            this.playPendingSounds();
+        };
+        
+        document.addEventListener('click', interactionHandler, { once: true });
+        document.addEventListener('touchstart', interactionHandler, { once: true });
+        document.addEventListener('keydown', interactionHandler, { once: true });
+        
+        // Check if any UI click targets exist (for mobile)
+        setTimeout(() => {
+            const mobileButtons = document.querySelectorAll('.mobile-btn, #mobile-joystick');
+            if (mobileButtons.length > 0) {
+                mobileButtons.forEach(btn => {
+                    btn.addEventListener('touchstart', interactionHandler, { once: true });
+                });
+            }
+        }, 2000);
     }
     
     initialize() {
@@ -215,14 +236,58 @@ class AudioManager {
         }, 3000);
     }
     
+    // Add method to queue and play pending sounds
+    playPendingSounds() {
+        if (!this.userInteracted || this.pendingSounds.length === 0) return;
+        
+        console.log(`Playing ${this.pendingSounds.length} pending sounds`);
+        
+        while (this.pendingSounds.length > 0) {
+            const soundInfo = this.pendingSounds.shift();
+            switch (soundInfo.type) {
+                case 'engine':
+                    this.playEngineSound(true); // Force play
+                    break;
+                case 'siren':
+                    this.playSirenSound(true); // Force play
+                    break;
+                case 'atmosphere':
+                    this.playAtmosphereSound(soundInfo.weatherType, true); // Force play
+                    break;
+                case 'backgroundMusic':
+                    this.playBackgroundMusic(true); // Force play
+                    break;
+                case 'gunshot':
+                    this.playGunshotSound();
+                    break;
+                case 'missile':
+                    this.playMissileSound();
+                    break;
+                case 'crash':
+                    this.playCrashSound(soundInfo.volume);
+                    break;
+                case 'collision':
+                    this.playCollisionSound(soundInfo.volume);
+                    break;
+            }
+        }
+    }
+    
     // ENGINE SOUND METHODS
-    playEngineSound() {
+    playEngineSound(force = false) {
         if (!this.sounds.engine) return false;
         
         try {
             if (!this.playing.engine) {
                 this.sounds.engine.volume = 0.4;
                 this.sounds.engine.currentTime = 0;
+                
+                // If user hasn't interacted and not forcing, queue for later
+                if (!this.userInteracted && !force) {
+                    this.pendingSounds.push({ type: 'engine' });
+                    return false;
+                }
+                
                 const playPromise = this.sounds.engine.play();
                 
                 if (playPromise !== undefined) {
@@ -230,6 +295,11 @@ class AudioManager {
                         this.playing.engine = true;
                     }).catch(error => {
                         console.error("Engine sound playback failed:", error);
+                        
+                        // If rejected due to no interaction, queue for later
+                        if (!this.userInteracted) {
+                            this.pendingSounds.push({ type: 'engine' });
+                        }
                     });
                 }
             }
@@ -290,13 +360,20 @@ class AudioManager {
     }
     
     // SIREN SOUND METHODS
-    playSirenSound() {
+    playSirenSound(force = false) {
         if (!this.sounds.siren) return false;
         
         try {
             if (!this.playing.siren) {
-                this.sounds.siren.volume = 0.1;
+                this.sounds.siren.volume = 0.3;
                 this.sounds.siren.currentTime = 0;
+                
+                // If user hasn't interacted and not forcing, queue for later
+                if (!this.userInteracted && !force) {
+                    this.pendingSounds.push({ type: 'siren' });
+                    return false;
+                }
+                
                 const playPromise = this.sounds.siren.play();
                 
                 if (playPromise !== undefined) {
@@ -304,6 +381,11 @@ class AudioManager {
                         this.playing.siren = true;
                     }).catch(error => {
                         console.error("Siren sound playback failed:", error);
+                        
+                        // If rejected due to no interaction, queue for later
+                        if (!this.userInteracted) {
+                            this.pendingSounds.push({ type: 'siren' });
+                        }
                     });
                 }
             }
@@ -326,16 +408,27 @@ class AudioManager {
     }
     
     // ATMOSPHERE SOUND METHODS
-    playAtmosphereSound(type = 'clear') {
-        if (!this.sounds.atmosphere) return false;
+    playAtmosphereSound(type = 'clear', force = false) {
+        if (!this.sounds.atmosphere || !this.sounds.atmosphere[type]) return false;
+        
+        const sound = this.sounds.atmosphere[type];
         
         try {
-            // Stop any currently playing atmosphere sounds
-            this.stopAtmosphereSound();
-            
-            // Check if we have the requested weather sound
-            if (this.sounds.atmosphere[type]) {
-                const sound = this.sounds.atmosphere[type];
+            if (!this.playing.atmosphere) {
+                // If user hasn't interacted and not forcing, queue for later
+                if (!this.userInteracted && !force) {
+                    this.pendingSounds.push({ type: 'atmosphere', weatherType: type });
+                    return false;
+                }
+                
+                // Stop any other playing atmosphere sound
+                for (const key in this.sounds.atmosphere) {
+                    if (key !== type && this.sounds.atmosphere[key]) {
+                        this.sounds.atmosphere[key].pause();
+                    }
+                }
+                
+                sound.volume = 0.3;
                 sound.currentTime = 0;
                 const playPromise = sound.play();
                 
@@ -343,16 +436,18 @@ class AudioManager {
                     playPromise.then(() => {
                         this.playing.atmosphere = true;
                     }).catch(error => {
-                        console.error(`${type} atmosphere sound playback failed:`, error);
+                        console.error(`Atmosphere ${type} sound playback failed:`, error);
+                        
+                        // If rejected due to no interaction, queue for later
+                        if (!this.userInteracted) {
+                            this.pendingSounds.push({ type: 'atmosphere', weatherType: type });
+                        }
                     });
                 }
-            } else {
-                console.warn(`No atmosphere sound for weather type: ${type}`);
             }
-            
             return true;
         } catch (error) {
-            console.error("Error playing atmosphere sound:", error);
+            console.error(`Error playing atmosphere ${type} sound:`, error);
             return false;
         }
     }
@@ -375,24 +470,30 @@ class AudioManager {
     
     // Gunshot sound
     playGunshotSound() {
-        if (!this.sounds.gunshot) return;
+        if (!this.sounds.gunshot) return false;
         
         try {
-            // Clone the audio element to allow multiple overlapping shots
-            const gunshot = this.sounds.gunshot.cloneNode();
-            gunshot.volume = Math.random() * 0.1 + 0.2; // Slight volume variation
-            gunshot.playbackRate = Math.random() * 0.2 + 0.9; // Slight pitch variation
+            // If user hasn't interacted, queue for later
+            if (!this.userInteracted) {
+                this.pendingSounds.push({ type: 'gunshot' });
+                return false;
+            }
             
-            gunshot.play().catch(error => {
-                console.error("Gunshot sound playback failed:", error);
-            });
+            // Clone the audio element to allow overlapping sounds
+            const sound = this.sounds.gunshot.cloneNode();
+            sound.volume = 0.5;
+            const playPromise = sound.play();
             
-            // Remove the cloned element after it finishes playing
-            gunshot.onended = () => {
-                gunshot.remove();
-            };
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Gunshot sound playback failed:", error);
+                });
+            }
+            
+            return true;
         } catch (error) {
             console.error("Error playing gunshot sound:", error);
+            return false;
         }
     }
     
@@ -413,61 +514,27 @@ class AudioManager {
         }
         
         try {
-            // Clone the audio element to allow multiple simultaneous missiles
-            const missile = this.sounds.missile.cloneNode();
-            missile.volume = 0.9; // Increased from 0.7
+            // If user hasn't interacted, queue for later
+            if (!this.userInteracted) {
+                this.pendingSounds.push({ type: 'missile' });
+                return false;
+            }
             
-            // Make sure missile sound is loaded before playing
-            if (missile.readyState < 2) {  // HAVE_CURRENT_DATA or higher
-                missile.addEventListener('canplaythrough', () => {
-                    console.log("Missile sound loaded, playing now");
-                    playMissileSound(missile);
+            // Clone the audio element to allow overlapping sounds
+            const sound = this.sounds.missile.cloneNode();
+            sound.volume = 0.7;
+            const playPromise = sound.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Missile sound playback failed:", error);
                 });
-                missile.load();
-            } else {
-                playMissileSound(missile);
             }
             
-            function playMissileSound(sound) {
-                // Force play with robust error handling
-                console.log("Playing missile sound");
-                const playPromise = sound.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log("Missile sound played successfully");
-                    }).catch(error => {
-                        console.error("Missile sound playback failed:", error);
-                        
-                        // Try alternative approach
-                        try {
-                            const altMissile = document.createElement('audio');
-                            altMissile.src = 'assets/sounds/missile.mp3';
-                            altMissile.volume = 0.9;
-                            document.body.appendChild(altMissile);
-                            altMissile.play();
-                            altMissile.onended = () => altMissile.remove();
-                            console.log("Missile sound played with DOM method");
-                        } catch (altError) {
-                            console.error("Alternative missile playback failed:", altError);
-                        }
-                    });
-                }
-            }
-            
-            // Remove the cloned element after it finishes playing
-            missile.onended = () => {
-                missile.remove();
-            };
+            return true;
         } catch (error) {
             console.error("Error playing missile sound:", error);
-            
-            // Last attempt
-            try {
-                new Audio('assets/sounds/missile.mp3').play();
-            } catch (e) {
-                console.error("Final missile fallback failed:", e);
-            }
+            return false;
         }
     }
     
@@ -480,13 +547,20 @@ class AudioManager {
     }
     
     // Background music
-    playBackgroundMusic() {
+    playBackgroundMusic(force = false) {
         if (!this.sounds.backgroundMusic) return false;
         
         try {
             if (!this.playing.backgroundMusic) {
-                this.sounds.backgroundMusic.volume = 0.7;
+                this.sounds.backgroundMusic.volume = 0.3;
                 this.sounds.backgroundMusic.currentTime = 0;
+                
+                // If user hasn't interacted and not forcing, queue for later
+                if (!this.userInteracted && !force) {
+                    this.pendingSounds.push({ type: 'backgroundMusic' });
+                    return false;
+                }
+                
                 const playPromise = this.sounds.backgroundMusic.play();
                 
                 if (playPromise !== undefined) {
@@ -494,6 +568,11 @@ class AudioManager {
                         this.playing.backgroundMusic = true;
                     }).catch(error => {
                         console.error("Background music playback failed:", error);
+                        
+                        // If rejected due to no interaction, queue for later
+                        if (!this.userInteracted) {
+                            this.pendingSounds.push({ type: 'backgroundMusic' });
+                        }
                     });
                 }
             }
@@ -528,60 +607,59 @@ class AudioManager {
     
     // Add method to play crash sound
     playCrashSound(volume = 0.8) {
+        if (!this.sounds.crash) return false;
+        
         try {
-            if (!this.sounds.crash) {
-                // Create crash sound if it doesn't exist yet
-                this.sounds.crash = document.createElement('audio');
-                this.sounds.crash.src = 'assets/sounds/crash.mp3';
-                this.sounds.crash.volume = volume;
-                this.sounds.crash.load();
+            // If user hasn't interacted, queue for later
+            if (!this.userInteracted) {
+                this.pendingSounds.push({ type: 'crash', volume });
+                return false;
             }
             
-            // Reset sound to beginning and play
-            this.sounds.crash.currentTime = 0;
-            this.sounds.crash.volume = volume;
+            // Clone the audio element to allow overlapping sounds
+            const sound = this.sounds.crash.cloneNode();
+            sound.volume = volume;
+            const playPromise = sound.play();
             
-            // Play the sound with error handling
-            const playPromise = this.sounds.crash.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    console.warn("Error playing crash sound:", error);
+                    console.error("Crash sound playback failed:", error);
                 });
             }
+            
+            return true;
         } catch (error) {
-            console.error("Failed to play crash sound:", error);
+            console.error("Error playing crash sound:", error);
+            return false;
         }
     }
     
     // Çarpışma sesi çalmak için fonksiyon ekle
     playCollisionSound(volume = 0.7) {
+        if (!this.sounds.collision) return false;
+        
         try {
-            if (!this.sounds.collision) {
-                // collision.mp3 yoksa crash.mp3 kullan
-                this.sounds.collision = document.createElement('audio');
-                this.sounds.collision.src = 'assets/sounds/collision.mp3';
-                this.sounds.collision.volume = volume;
-                this.sounds.collision.load();
+            // If user hasn't interacted, queue for later
+            if (!this.userInteracted) {
+                this.pendingSounds.push({ type: 'collision', volume });
+                return false;
             }
-            this.sounds.collision.currentTime = 0;
-            this.sounds.collision.volume = volume;
-            const playPromise = this.sounds.collision.play();
+            
+            // Clone the audio element to allow overlapping sounds
+            const sound = this.sounds.collision.cloneNode();
+            sound.volume = volume;
+            const playPromise = sound.play();
+            
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    // collision.mp3 yoksa crash.mp3 ile dene
-                    if (!this.sounds.crash) {
-                        this.sounds.crash = document.createElement('audio');
-                        this.sounds.crash.src = 'assets/sounds/crash.mp3';
-                        this.sounds.crash.volume = volume;
-                        this.sounds.crash.load();
-                    }
-                    this.sounds.crash.currentTime = 0;
-                    this.sounds.crash.volume = volume;
-                    this.sounds.crash.play();
+                    console.error("Collision sound playback failed:", error);
                 });
             }
+            
+            return true;
         } catch (error) {
-            console.error('Failed to play collision sound:', error);
+            console.error("Error playing collision sound:", error);
+            return false;
         }
     }
     

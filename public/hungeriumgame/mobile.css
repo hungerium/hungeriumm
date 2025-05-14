@@ -85,6 +85,15 @@ body.mobile-mode #cameraModeInfoBox {
     pointer-events: auto;
 }
 
+#mobile-joystick, #mobile-joystick * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    outline: none !important;
+    touch-action: none !important;
+}
+
 #mobile-buttons {
     position: absolute;
     right: 18px;
@@ -118,6 +127,14 @@ body.mobile-mode #cameraModeInfoBox {
 .mobile-btn:active {
     background: #ffb300;
     box-shadow: 0 1px 4px #ffd70033;
+}
+.mobile-btn, .mobile-btn * {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    outline: none !important;
+    touch-action: none !important;
 }
 
 #mobile-respawn-container {
@@ -174,8 +191,10 @@ body.mobile-mode #cameraModeInfoBox {
     #mobile-joystick {
         width: 100px;
         height: 100px;
-        left: 12px;
-        bottom: 12px;
+        left: 38px;
+        bottom: 18px;
+        right: auto;
+        top: auto;
     }
     
     #mobile-buttons {

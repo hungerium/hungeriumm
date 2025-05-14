@@ -201,7 +201,7 @@ class Game {
         this.web3Handler = new Web3Handler();
         
         // Add pause state
-        this.isPaused = false;
+        this.paused = false;
         
         // Add vehicle selection properties
         this.playerName = "";
@@ -229,6 +229,14 @@ class Game {
         
         // Minimap/Radar sistemi
         this.minimap = null;
+        
+        // Listen for P key globally to trigger pause menu
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
+                e.preventDefault();
+                this.togglePause();
+            }
+        });
     }
     
     setupPauseListener() {
@@ -256,56 +264,71 @@ class Game {
     }
     
     togglePause() {
-        if (this.isPaused) {
+        // If pauseMenu is visible, resume; otherwise, pause
+        const pauseMenu = document.getElementById('pauseMenu');
+        if (pauseMenu && pauseMenu.style.display === 'block') {
             this.resumeGame();
         } else {
             this.pauseGame();
         }
     }
     
+    // Oyunu duraklatma ve menüyü göster
     pauseGame() {
-        if (this.isPaused) return;
+        if (this.paused) return;
+        this.paused = true;
         
-        this.isPaused = true;
-        
-        // Show pause menu
+        // Pause menu'yü göster
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
-            // Get tokens directly from localStorage for consistency
-            const savedTokens = localStorage.getItem('coffyTokens');
-            const tokenAmount = savedTokens ? parseInt(savedTokens) : 0;
-            
-            document.getElementById('earnedTokens').textContent = tokenAmount;
+            // Menü görünürlüğünü ayarla
             pauseMenu.style.display = 'block';
+            
+            // Mobil modda menünün düzgün konumlanmasını sağla
+            if (window.innerWidth <= 900 || (window.mobileHud && document.body.classList.contains('mobile-mode'))) {
+                pauseMenu.style.position = 'fixed';
+                pauseMenu.style.top = '50%';
+                pauseMenu.style.left = '50%';
+                pauseMenu.style.transform = 'translate(-50%, -50%)';
+                pauseMenu.style.width = '80vw';
+                pauseMenu.style.maxHeight = '80vh';
+                pauseMenu.style.overflow = 'auto';
+                pauseMenu.style.zIndex = '10000';
+            }
+            
+            // Butonların görünür olmasını sağla
+            const resumeButton = document.getElementById('resumeButton');
+            const mainMenuButton = document.getElementById('mainMenuButton');
+            
+            if (resumeButton) {
+                resumeButton.style.display = 'block';
+                resumeButton.style.margin = '10px auto';
+            }
+            
+            if (mainMenuButton) {
+                mainMenuButton.style.display = 'block';
+                mainMenuButton.style.margin = '10px auto';
+            }
         }
         
-        // Disable mouse controls if active
-        if (this.mouseControls) {
-            this.mouseControls.enabled = false;
-        }
-        
-        // Stop all sounds when game pauses
-        if (window.audioManager) {
-            window.audioManager.stopEngineSound();
-            window.audioManager.stopSirenSound();
+        // Show earned tokens in pause menu
+        const earnedTokensElement = document.getElementById('earnedTokens');
+        if (earnedTokensElement && this.web3Handler) {
+            earnedTokensElement.textContent = this.web3Handler.gameTokens;
         }
     }
     
+    // Oyunu devam ettirme ve menüyü gizle
     resumeGame() {
-        if (!this.isPaused) return;
+        if (!this.paused) return;
+        this.paused = false;
         
-        this.isPaused = false;
-        
-        // Hide pause menu
+        // Pause menu'yü gizle
         const pauseMenu = document.getElementById('pauseMenu');
-        if (pauseMenu) {
-            pauseMenu.style.display = 'none';
-        }
+        if (pauseMenu) pauseMenu.style.display = 'none';
         
-        // Re-enable mouse controls
-        if (this.mouseControls) {
-            this.mouseControls.enabled = true;
-        }
+        // Zaman damgasını sıfırla (bu sayede hemen sonra pause tuşuna basıldığında sorun olmaz)
+        this.lastTimeStamp = performance.now();
     }
     
     goToMainMenu() {
@@ -349,7 +372,7 @@ class Game {
         }
         
         // Reset game state
-        this.isPaused = false;
+        this.paused = false;
         
         // Clean up coin manager when going to main menu
         if (this.coinManager) {
@@ -1672,7 +1695,7 @@ class Game {
     
     update(deltaTime) {
         // Skip updates if game is paused
-        if (this.isPaused) return;
+        if (this.paused) return;
         
         const minDelta = Math.min(this.clock.getDelta(), 0.1);
         
@@ -1786,7 +1809,7 @@ class Game {
             this.renderer.render(this.scene, this.camera);
         }
         
-        if (this.isPaused) {
+        if (this.paused) {
             if (window.audioManager) {
                 window.audioManager.stopEngineSound();
                 window.audioManager.stopSirenSound();
@@ -2077,7 +2100,7 @@ class Game {
         requestAnimationFrame(this.animate.bind(this));
         
         // Skip updates if game is paused
-        if (this.isPaused) return;
+        if (this.paused) return;
         
         try {
             const delta = Math.min(this.clock.getDelta(), 0.1);
@@ -2206,7 +2229,7 @@ class Game {
                 }
             }
             
-            if (this.isPaused) {
+            if (this.paused) {
                 if (window.audioManager) {
                     window.audioManager.stopEngineSound();
                     window.audioManager.stopSirenSound();
