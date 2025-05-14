@@ -10,7 +10,7 @@
     function init() {
         const isMobile = window.isMobileMode || 
                          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                         (window.innerWidth <= 600);
+                         (window.innerWidth <= 900);
         
         // Add special behavior for mobiles and small screens
         if (isMobile) {
@@ -110,6 +110,7 @@
                 <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
                     <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
                     <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
+                    <button class="mobile-btn" id="mobile-fullscreen" title="Fullscreen" style="width:50px;height:50px;font-size:18px;">&#x26F6;</button>
                 </div>
             `;
             document.body.appendChild(controls);
@@ -148,6 +149,11 @@
             if (window.game && window.game.vehicle && typeof window.game.vehicle.respawn === 'function') {
                 window.game.vehicle.respawn();
             }
+        });
+        
+        // Setup fullscreen button
+        setupTouchButton('mobile-fullscreen', function() {
+            requestFullscreen();
         });
     }
     
@@ -497,6 +503,12 @@
             // Set global state variable
             window.isMobileMode = true;
             
+            // Try to enter fullscreen mode
+            requestFullscreen();
+            
+            // Prevent scrolling
+            preventScrolling();
+            
             // Check if updateHud can run safely before setting up interval
             let canUpdateHud = true;
             try {
@@ -555,7 +567,37 @@
         // Reset the mobile CSS media query
         const mobileStyle = document.getElementById('mobile-style');
         if (mobileStyle) {
-            mobileStyle.media = '(max-width: 600px)';
+            mobileStyle.media = '(max-width: 900px)';
+        }
+        
+        // Clean up scroll prevention
+        document.documentElement.style.position = '';
+        document.documentElement.style.width = '';
+        document.documentElement.style.height = '';
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.touchAction = '';
+        
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        document.body.style.webkitOverflowScrolling = '';
+        document.body.style.overscrollBehavior = '';
+        document.body.style.top = '';
+        
+        // Remove iOS classes if they exist
+        document.documentElement.classList.remove('ios-fixed');
+        document.body.classList.remove('ios-fixed');
+        
+        // Remove iOS-specific CSS
+        const iosCss = document.getElementById('ios-scroll-fix');
+        if (iosCss) iosCss.remove();
+        
+        // Clear the scroll interval if it exists
+        if (window._scrollFixInterval) {
+            clearInterval(window._scrollFixInterval);
+            window._scrollFixInterval = null;
         }
         
         // Update global state variable
@@ -695,6 +737,124 @@
         });
     }
 
+    function requestFullscreen() {
+        try {
+            // Only try fullscreen on touch devices to avoid desktop issues
+            if (!isTouchSupported()) return;
+            
+            const docEl = document.documentElement;
+            
+            // Try different fullscreen methods depending on browser
+            if (docEl.requestFullscreen) {
+                docEl.requestFullscreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+            } else if (docEl.mozRequestFullScreen) {
+                docEl.mozRequestFullScreen();
+            } else if (docEl.msRequestFullscreen) {
+                docEl.msRequestFullscreen();
+            }
+            
+            // Ensure screen stays on if possible
+            if (navigator.wakeLock) {
+                navigator.wakeLock.request('screen')
+                    .then(() => console.log('Screen wake lock activated'))
+                    .catch(err => console.log('Wake lock error:', err));
+            }
+            
+            console.log("Fullscreen requested");
+        } catch (e) {
+            console.log("Fullscreen request failed:", e);
+        }
+    }
+    
+    function preventScrolling() {
+        try {
+            // Apply more comprehensive fixes for mobile scrolling issues
+            document.documentElement.style.position = 'fixed';
+            document.documentElement.style.width = '100%';
+            document.documentElement.style.height = '100%';
+            document.documentElement.style.overflow = 'hidden';
+            document.documentElement.style.touchAction = 'none';
+            
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.height = '100%';
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+            document.body.style.webkitOverflowScrolling = 'none';
+            document.body.style.overscrollBehavior = 'none';
+            
+            // Handle iOS Safari-specific issues
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // Lock scroll position to prevent iOS bounce effect
+                let scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                document.body.style.top = `-${scrollPosition}px`;
+                
+                // Add classes for iOS specific fixes
+                document.documentElement.classList.add('ios-fixed');
+                document.body.classList.add('ios-fixed');
+                
+                // Add iOS-specific CSS
+                const iosCss = document.createElement('style');
+                iosCss.id = 'ios-scroll-fix';
+                iosCss.textContent = `
+                    .ios-fixed {
+                        position: fixed;
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                        -webkit-overflow-scrolling: none;
+                    }
+                    #mobile-joystick, .mobile-btn {
+                        -webkit-transform: translateZ(0);
+                        transform: translateZ(0);
+                    }
+                `;
+                document.head.appendChild(iosCss);
+            }
+            
+            // Prevent all touch move events with stronger method for iOS
+            const preventDefault = function(e) {
+                // Allow scrolling only within specific elements
+                const allowedElements = ['mobile-joystick'];
+                let isAllowed = false;
+                
+                let target = e.target;
+                while (target && target !== document.body) {
+                    if (allowedElements.some(id => target.id === id)) {
+                        isAllowed = true;
+                        break;
+                    }
+                    target = target.parentElement;
+                }
+                
+                if (!isAllowed) {
+                    e.preventDefault();
+                }
+            };
+            
+            // Add passive:false to ensure preventDefault works on iOS
+            document.addEventListener('touchmove', preventDefault, { passive: false });
+            document.addEventListener('wheel', preventDefault, { passive: false });
+            window.addEventListener('scroll', function() {
+                window.scrollTo(0, 0);
+            });
+            
+            // Force scroll position continually to handle stubborn browsers
+            let scrollInterval = setInterval(function() {
+                window.scrollTo(0, 0);
+            }, 500);
+            
+            // Store the interval ID for cleanup
+            window._scrollFixInterval = scrollInterval;
+            
+            console.log("Enhanced scroll prevention activated");
+        } catch (e) {
+            console.log("Scroll prevention failed:", e);
+        }
+    }
+
     if (typeof window !== 'undefined') {
         const style = document.createElement('style');
         style.innerHTML = `
@@ -768,7 +928,7 @@
             border: 2px solid #ffd70055 !important;
             border-radius: 50% !important;
         }
-        #mobile-respawn {
+        #mobile-respawn, #mobile-fullscreen {
             width: 32px !important;
             height: 32px !important;
             font-size: 16px !important;
@@ -777,6 +937,7 @@
             color: #3a2614 !important;
             border: 2px solid #ffd70055 !important;
             border-radius: 50% !important;
+            margin-bottom: 10px !important;
         }
         #mobile-hud .hud-row {
             width: 100vw;
@@ -816,7 +977,8 @@
         document.head.appendChild(style);
     }
 
-    window.mobileHud = { 
+    // Expose the API publicly
+    window.mobileHud = {
         enable, 
         disable, 
         forceRefresh, 

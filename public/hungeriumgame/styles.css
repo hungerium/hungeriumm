@@ -2,6 +2,12 @@ body {
     margin: 0;
     overflow: hidden;
     font-family: Arial, sans-serif;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    -webkit-overflow-scrolling: none;
+    overscroll-behavior: none;
 }
 
 #loadingScreen {
@@ -58,7 +64,11 @@ body {
     transition: opacity 0.5s, top 0.3s;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+    html, body {
+        font-size: 14px;
+        overflow: hidden !important;
+    }
     #cameraModeInfoBox, #weatherInfoBox {
         font-size: 12px;
         padding: 4px 8px;
@@ -107,6 +117,10 @@ body {
         padding: 10px 2vw !important;
         font-size: 15px !important;
         border-radius: 10px !important;
+    }
+    #loginOverlay .web3-buttons-container {
+        flex-direction: column;
+        gap: 6px;
     }
     .mobile-hide {
         display: none !important;
@@ -338,9 +352,9 @@ html, body {
   gap: 8px;
   margin-top: 6px;
 }
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   #loginOverlay .web3-buttons-container {
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
   }
 }
