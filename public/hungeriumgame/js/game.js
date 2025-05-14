@@ -543,32 +543,29 @@ class Game {
         const connectWalletBtn = document.createElement('button');
         connectWalletBtn.id = 'connect-wallet-btn';
         connectWalletBtn.className = 'web3-button connect-wallet';
-        // --- Coffy Coin SVG Icon ---
-        const coffyCoinSVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700" stroke="#a67c52" stroke-width="2"/><ellipse cx="12" cy="12" rx="5" ry="7" fill="#5a3a1a"/><ellipse cx="12" cy="12" rx="2.2" ry="3.2" fill="#a67c52" opacity=".7"/><path d="M10.5 8.5c.5-1.5 2.5-1.5 3 0" stroke="#fffbe8" stroke-width=".7" stroke-linecap="round"/></svg>';
-        // --- Update wallet buttons to use Coffy coin icon ---
-        connectWalletBtn.innerHTML = coffyCoinSVG + 'Connect Wallet';
+        connectWalletBtn.textContent = 'Connect Wallet';
         connectWalletBtn.disabled = this.web3Handler.currentAccount !== null;
         connectWalletBtn.addEventListener('click', async () => {
-            connectWalletBtn.innerHTML = coffyCoinSVG + 'Requesting...';
+            connectWalletBtn.textContent = 'Requesting...';
             connectWalletBtn.disabled = true;
             this.web3Handler.showNotification("Please check your wallet for connection request", "info");
             try {
                 const connected = await this.web3Handler.connectWallet();
                 if (connected) {
-                    connectWalletBtn.innerHTML = coffyCoinSVG + 'Connected';
+                    connectWalletBtn.textContent = 'Connected';
                     statusValue.textContent = 'Connected';
                     statusValue.style.color = '#4CAF50';
                     balanceValue.textContent = this.web3Handler.getDisplayBalance();
                     claimRewardBtn.disabled = false;
                 } else {
-                    connectWalletBtn.innerHTML = coffyCoinSVG + 'Connect Wallet';
+                    connectWalletBtn.textContent = 'Connect Wallet';
                     connectWalletBtn.disabled = false;
                     statusValue.textContent = 'Not Connected';
                     statusValue.style.color = '#FFA500';
                 }
             } catch (error) {
                 console.error("Wallet connection error:", error);
-                connectWalletBtn.innerHTML = coffyCoinSVG + 'Connect Wallet';
+                connectWalletBtn.textContent = 'Connect Wallet';
                 connectWalletBtn.disabled = false;
                 statusValue.textContent = 'Connection Failed';
                 statusValue.style.color = '#ff0000';
@@ -579,16 +576,16 @@ class Game {
         const claimRewardBtn = document.createElement('button');
         claimRewardBtn.id = 'claim-reward-btn';
         claimRewardBtn.className = 'web3-button claim-reward';
-        claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claim Rewards</span>';
+        claimRewardBtn.textContent = 'Claim Rewards';
         claimRewardBtn.disabled = !this.web3Handler.currentAccount || this.web3Handler.totalEarnedTokens <= 0;
         claimRewardBtn.addEventListener('click', async () => {
-            claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claiming...</span>';
+            claimRewardBtn.textContent = 'Claiming...';
             claimRewardBtn.disabled = true;
             const claimed = await this.web3Handler.claimRewards();
             if (claimed) {
-                claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claimed!</span>';
+                claimRewardBtn.textContent = 'Claimed!';
                 setTimeout(() => {
-                    claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claim Rewards</span>';
+                    claimRewardBtn.textContent = 'Claim Rewards';
                     claimRewardBtn.disabled = true;
                     if (earnedTokensInfo) {
                         earnedTokensInfo.textContent = 'You have 0 COFFY tokens to claim!';
@@ -596,9 +593,9 @@ class Game {
                     balanceValue.textContent = this.web3Handler.getDisplayBalance();
                 }, 2000);
             } else {
-                claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claim Failed</span>';
+                claimRewardBtn.textContent = 'Claim Failed';
                 setTimeout(() => {
-                    claimRewardBtn.innerHTML = '<span style="display:inline-flex;align-items:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right:6px;"><circle cx="12" cy="12" r="10" fill="#ffd700"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#3a2614" font-family="Arial" font-weight="bold">₿</text></svg>Claim Rewards</span>';
+                    claimRewardBtn.textContent = 'Claim Rewards';
                     claimRewardBtn.disabled = false;
                 }, 2000);
             }

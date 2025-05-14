@@ -7,24 +7,90 @@
     let lastDir = { x: 0, y: 0 };
     let updateInterval = null;
 
+    function init() {
+        const isMobile = window.isMobileMode || 
+                         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         (window.innerWidth <= 600);
+        
+        // Add special behavior for mobiles and small screens
+        if (isMobile) {
+            console.log("Mobile device detected, enabling mobile HUD");
+            // Try to enable immediately
+            setTimeout(function() {
+                enable();
+            }, 100);
+            
+            // And again after a short delay to ensure it works
+            setTimeout(function() {
+                if (!document.getElementById(MOBILE_HUD_ID)) {
+                    console.log("Mobile HUD not found after first attempt, retrying");
+                    enable();
+                }
+            }, 500);
+            
+            // And a third time with a longer delay as a fallback
+            setTimeout(function() {
+                if (!document.getElementById(MOBILE_HUD_ID)) {
+                    console.log("Mobile HUD still not found, final attempt");
+                    enable();
+                }
+            }, 2000);
+        }
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
+                console.log("Mobile device detected on DOMContentLoaded, enabling mobile HUD");
+                enable();
+            }
+        });
+        
+        window.addEventListener('load', function() {
+            if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
+                console.log("Mobile device detected on window load, enabling mobile HUD");
+                enable();
+            }
+        });
+        
+        window.addEventListener('orientationchange', function() {
+            if (isMobile) {
+                disable();
+                setTimeout(function() {
+                    enable();
+                }, 300);
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'M' && e.shiftKey) {
+                if (!document.getElementById(MOBILE_HUD_ID)) {
+                    console.log("Shift+M pressed, enabling mobile HUD");
+                    enable();
+                } else {
+                    console.log("Shift+M pressed, disabling mobile HUD");
+                    disable();
+                }
+            }
+        });
+    }
+
     function createHud() {
         hud = document.getElementById(MOBILE_HUD_ID);
-        if (!hud) {
-            hud = document.createElement('div');
-            hud.id = MOBILE_HUD_ID;
-            hud.innerHTML = `
-                <div class="hud-row" style="width:100vw;display:flex;align-items:center;justify-content:center;gap:3px;padding:1px 2px;">
-                    <span class="hud-item" id="mobile-level" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Lv. 1</span>
-                    <span class="hud-item" id="mobile-coffy" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">☕ 0</span>
-                    <span class="hud-item" id="mobile-rescuees" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">👤 0/0</span>
-                    <span class="hud-item" id="mobile-hostage-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Hostage: 0m</span>
-                    <span class="hud-item" id="mobile-police-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">Police: 0m</span>
-                    <span class="hud-item" id="mobile-time" style="font-size:10px;padding:1px 2px;min-width:38px;max-width:54px;text-align:center;background:none;color:#fffbe8;">Time: 00:00</span>
-                    <span class="hud-item" id="mobile-health" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ff4d4d;">Health: 100</span>
-                </div>
-            `;
-            document.body.appendChild(hud);
-        }
+        if (hud) return;
+        
+        hud = document.createElement('div');
+        hud.id = MOBILE_HUD_ID;
+        hud.innerHTML = `
+            <div class="hud-row" style="width:100vw;display:flex;align-items:center;justify-content:center;gap:3px;padding:1px 2px;">
+                <span class="hud-item" id="mobile-level" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Lv. 1</span>
+                <span class="hud-item" id="mobile-coffy" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">☕ 0</span>
+                <span class="hud-item" id="mobile-rescuees" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">👤 0/0</span>
+                <span class="hud-item" id="mobile-hostage-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Hostage: 0m</span>
+                <span class="hud-item" id="mobile-police-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">Police: 0m</span>
+                <span class="hud-item" id="mobile-time" style="font-size:10px;padding:1px 2px;min-width:38px;max-width:54px;text-align:center;background:none;color:#fffbe8;">Time: 00:00</span>
+                <span class="hud-item" id="mobile-health" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ff4d4d;">Health: 100</span>
+            </div>
+        `;
+        document.body.appendChild(hud);
     }
 
     function createControls() {
@@ -41,112 +107,218 @@
                         <button class="mobile-btn" id="mobile-jump" title="Brake">&#11014;</button>
                     </div>
                 </div>
-                <div id="mobile-respawn-container">
-                    <button class="mobile-btn" id="mobile-camera" title="Camera">&#128247;</button>
-                    <button class="mobile-btn" id="mobile-respawn" title="Respawn">&#8635;</button>
+                <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
+                    <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
+                    <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
                 </div>
             `;
             document.body.appendChild(controls);
         }
         fireBtn = document.getElementById('mobile-fire');
         jumpBtn = document.getElementById('mobile-jump');
-        const missileBtn = document.getElementById('mobile-missile');
-        if (missileBtn) {
-            missileBtn.ontouchstart = missileBtn.onclick = function(e) {
-                e.preventDefault();
-                if (window.game && window.game.vehicle && typeof window.game.vehicle.fireMissile === 'function') {
-                    window.game.vehicle.fireMissile();
-                }
-            };
-        }
-        const cameraBtn = document.getElementById('mobile-camera');
-        if (cameraBtn) {
-            cameraBtn.ontouchstart = cameraBtn.onclick = function(e) {
-                e.preventDefault();
-                if (window.game && typeof window.game.toggleCameraMode !== 'function') {
-                    window.game.toggleCameraMode = function() {
-                        if (!window.game || !window.game.cameraMode) return;
-                        const modes = ['follow', 'cockpit', 'orbit', 'cinematic', 'overhead'];
-                        const currentIndex = modes.indexOf(window.game.cameraMode);
-                        window.game.cameraMode = modes[(currentIndex + 1) % modes.length];
-                        if (window.game.orbitControls) {
-                            window.game.orbitControls.enabled = (window.game.cameraMode === 'orbit');
-                        }
-                        if (typeof window.game.updateCamera === 'function') {
-                            window.game.updateCamera();
-                        }
-                    };
-                }
-                if (window.game && typeof window.game.toggleCameraMode === 'function') {
-                    window.game.toggleCameraMode();
-                } else {
-                    alert('Camera mode function not found!');
-                }
-            };
-        }
-        const respawnBtn = document.getElementById('mobile-respawn');
-        if (respawnBtn) {
-            respawnBtn.ontouchstart = respawnBtn.onclick = function(e) {
-                e.preventDefault();
-                if (window.game && window.game.vehicle && typeof window.game.vehicle.respawn === 'function') {
-                    window.game.vehicle.respawn();
-                }
-            };
-        }
+        
+        // Use touch events with fallbacks to ensure responsiveness
+        setupTouchButton('mobile-missile', function() {
+            if (window.game && window.game.vehicle && typeof window.game.vehicle.fireMissile === 'function') {
+                window.game.vehicle.fireMissile();
+            }
+        });
+        
+        setupTouchButton('mobile-camera', function() {
+            if (window.game && typeof window.game.toggleCameraMode !== 'function') {
+                window.game.toggleCameraMode = function() {
+                    if (!window.game || !window.game.cameraMode) return;
+                    const modes = ['follow', 'cockpit', 'orbit', 'cinematic', 'overhead'];
+                    const currentIndex = modes.indexOf(window.game.cameraMode);
+                    window.game.cameraMode = modes[(currentIndex + 1) % modes.length];
+                    if (window.game.orbitControls) {
+                        window.game.orbitControls.enabled = (window.game.cameraMode === 'orbit');
+                    }
+                    if (typeof window.game.updateCamera === 'function') {
+                        window.game.updateCamera();
+                    }
+                };
+            }
+            if (window.game && typeof window.game.toggleCameraMode === 'function') {
+                window.game.toggleCameraMode();
+            }
+        });
+        
+        setupTouchButton('mobile-respawn', function() {
+            if (window.game && window.game.vehicle && typeof window.game.vehicle.respawn === 'function') {
+                window.game.vehicle.respawn();
+            }
+        });
+    }
+    
+    // Helper function to set up consistent touch handling
+    function setupTouchButton(id, callback) {
+        const button = document.getElementById(id);
+        if (!button) return;
+        
+        // Use active state class instead of :active for better mobile response
+        const activeClass = 'mobile-btn-active';
+        
+        // Remove default event handlers that might be causing delays
+        button.ontouchstart = null;
+        button.onclick = null;
+        
+        // Add touch events with preventDefault to avoid delays
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            button.classList.add(activeClass);
+            callback();
+        }, { passive: false });
+        
+        button.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            button.classList.remove(activeClass);
+        }, { passive: false });
+        
+        // Also handle mouse events for desktop testing
+        button.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            button.classList.add(activeClass);
+            callback();
+        });
+        
+        button.addEventListener('mouseup', function() {
+            button.classList.remove(activeClass);
+        });
+        
+        // In case mouse leaves the button while pressed
+        button.addEventListener('mouseleave', function() {
+            button.classList.remove(activeClass);
+        });
     }
 
     function setupJoystick() {
         if (joystickManager) return;
         const joystickZone = document.getElementById('mobile-joystick');
         if (!joystickZone || !window.nipplejs) return;
+        
+        // Improve joystick configuration for better analog control
         joystickManager = window.nipplejs.create({
             zone: joystickZone,
             mode: 'static',
             position: { left: '50%', top: '50%' },
             color: '#ffd700',
-            size: 100,
-            restOpacity: 0.5
+            size: 120,  // Larger size for better precision
+            fadeTime: 100, // Faster fade
+            restJoystick: true, // More responsive
+            restOpacity: 0.7,   // More visible at rest
+            lockX: false,       // Allow full movement
+            lockY: false,       // Allow full movement
+            catchDistance: 150, // Wider catch area
+            dynamicPage: true   // Better for dynamic screens
         });
+        
+        // More responsive event handlers
         joystickManager.on('move', function(evt, data) {
             if (!data || !data.vector) return;
-            lastDir.x = data.vector.x;
-            lastDir.y = data.vector.y;
+            // Use force for more accurate analog values (0-1 range)
+            lastDir.x = data.vector.x * (data.force || 1);
+            lastDir.y = data.vector.y * (data.force || 1);
+            
+            // Immediately map to controls for faster response
+            if (window.game && window.game.vehicle) {
+                mapJoystickToControls();
+            }
         });
+        
         joystickManager.on('end', function() {
             lastDir.x = 0;
             lastDir.y = 0;
+            // Immediately reset controls when joystick is released
+            if (window.game && window.game.vehicle) {
+                const v = window.game.vehicle;
+                v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
+            }
         });
     }
 
     function mapJoystickToControls() {
         if (!window.game || !window.game.vehicle) return;
         const v = window.game.vehicle;
+        
+        // Reset all controls first
         v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
-        if (lastDir.y > 0.2) v.controls.forward = true;
-        if (lastDir.y < -0.2) v.controls.backward = true;
-        if (lastDir.x < -0.2) v.controls.left = true;
-        if (lastDir.x > 0.2) v.controls.right = true;
+        
+        // Apply analog control with gradual values based on force
+        const forwardThreshold = 0.1;  // More sensitive threshold for better responsiveness
+        const sidewaysThreshold = 0.1;
+        
+        // Forward/backward control with analog force
+        if (lastDir.y > forwardThreshold) {
+            v.controls.forward = true;
+            // If we have analog acceleration, apply the value proportionally
+            if (typeof v.controls.forwardAmount === 'number') {
+                v.controls.forwardAmount = Math.min(1.0, Math.abs(lastDir.y));
+            }
+        }
+        
+        if (lastDir.y < -forwardThreshold) {
+            v.controls.backward = true;
+            // If we have analog braking, apply the value proportionally
+            if (typeof v.controls.backwardAmount === 'number') {
+                v.controls.backwardAmount = Math.min(1.0, Math.abs(lastDir.y));
+            }
+        }
+        
+        // Left/right control with analog steering
+        if (lastDir.x < -sidewaysThreshold) {
+            v.controls.left = true;
+            // If we have analog steering, apply the value proportionally
+            if (typeof v.controls.steeringAmount === 'number') {
+                v.controls.steeringAmount = -Math.min(1.0, Math.abs(lastDir.x));
+            }
+        }
+        
+        if (lastDir.x > sidewaysThreshold) {
+            v.controls.right = true;
+            // If we have analog steering, apply the value proportionally
+            if (typeof v.controls.steeringAmount === 'number') {
+                v.controls.steeringAmount = Math.min(1.0, Math.abs(lastDir.x));
+            }
+        }
     }
 
     function setupButtons() {
         if (!fireBtn || !jumpBtn) return;
-        fireBtn.ontouchstart = fireBtn.onclick = function(e) {
-            e.preventDefault();
+        
+        // Use the new touch button handler for fire button
+        setupTouchButton('mobile-fire', function() {
             if (window.game && window.game.vehicle && typeof window.game.vehicle.fireBullet === 'function') {
                 window.game.vehicle.fireBullet();
             }
-        };
-        jumpBtn.ontouchstart = jumpBtn.onclick = function(e) {
-            e.preventDefault();
+        });
+        
+        // Use the new touch button handler for jump/brake button
+        setupTouchButton('mobile-jump', function() {
             if (window.game && window.game.vehicle) {
                 window.game.vehicle.controls.brake = true;
                 if (window.game.vehicle.particleSystem && typeof window.game.vehicle.particleSystem.createJumpEffect === 'function') {
                     const pos = window.game.vehicle.body && window.game.vehicle.body.position;
                     if (pos) window.game.vehicle.particleSystem.createJumpEffect(pos.x, pos.y, pos.z, 1.2);
                 }
-                setTimeout(() => { window.game.vehicle.controls.brake = false; }, 200);
+                setTimeout(() => { 
+                    if (window.game && window.game.vehicle) {
+                        window.game.vehicle.controls.brake = false; 
+                    }
+                }, 200);
             }
-        };
+        });
+        
+        // Add active class for button styling
+        const style = document.createElement('style');
+        style.textContent = `
+            .mobile-btn-active {
+                background: #ffb300 !important;
+                box-shadow: 0 1px 4px #ffd70033 !important;
+                transform: scale(0.95) !important;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     function getDirectionArrow(targetPos, vehicle) {
@@ -178,12 +350,27 @@
 
     function getHostageDirectionAndDistance() {
         if (!window.game || !window.game.vehicle || !window.game.objects || !window.game.objects.rescuees) return null;
+        
+        // Safety check for vehicle body
+        if (!window.game.vehicle.body || !window.game.vehicle.body.position) {
+            return null;
+        }
+        
         const vehicle = window.game.vehicle;
         const rescuees = window.game.objects.rescuees;
+        
+        // Additional safety check
+        if (!Array.isArray(rescuees) || rescuees.length === 0) {
+            return null;
+        }
+        
         let closest = null;
         let minDist = Infinity;
+        
         for (const r of rescuees) {
-            if (r.isCollected || r.isRescued) continue;
+            // Safety check for each rescuee
+            if (!r || !r.position || r.isCollected || r.isRescued) continue;
+            
             const dx = r.position.x - vehicle.body.position.x;
             const dz = r.position.z - vehicle.body.position.z;
             const dist = Math.sqrt(dx*dx + dz*dz);
@@ -192,68 +379,171 @@
                 closest = r;
             }
         }
-        if (!closest) return null;
+        
+        if (!closest || !closest.position) return null;
         return getDirectionArrow(closest.position, vehicle);
     }
 
     function getPoliceDirectionAndDistance() {
-        if (!window.game || !window.game.vehicle || !window.game.objects || !window.game.objects.policeStationPosition) return null;
+        if (!window.game || !window.game.vehicle || !window.game.objects) return null;
+        
+        // Safety check for vehicle body
+        if (!window.game.vehicle.body || !window.game.vehicle.body.position) {
+            return null;
+        }
+        
+        // Check for police station position
+        if (!window.game.objects.policeStationPosition) {
+            return null;
+        }
+        
         const vehicle = window.game.vehicle;
         const policePos = window.game.objects.policeStationPosition;
+        
         return getDirectionArrow(policePos, vehicle);
     }
 
     function updateHud() {
         if (!window.game) return;
-        const level = window.game.vehicle && window.game.vehicle.level ? window.game.vehicle.level : 1;
-        document.getElementById('mobile-level').textContent = 'Lv. ' + level;
-        let coffy = 0;
-        if (window.game.coinManager && typeof window.game.coinManager.getTotalCoffyValue === 'function') {
-            coffy = window.game.coinManager.getTotalCoffyValue();
+        
+        try {
+            // Safely update level
+            const level = window.game.vehicle && window.game.vehicle.level ? window.game.vehicle.level : 1;
+            const levelElement = document.getElementById('mobile-level');
+            if (levelElement) levelElement.textContent = 'Lv. ' + level;
+            
+            // Safely update coffy count
+            let coffy = 0;
+            if (window.game.coinManager && typeof window.game.coinManager.getTotalCoffyValue === 'function') {
+                coffy = window.game.coinManager.getTotalCoffyValue();
+            }
+            const coffyElement = document.getElementById('mobile-coffy');
+            if (coffyElement) coffyElement.textContent = '☕ ' + coffy;
+            
+            // Safely update rescued count
+            let rescued = 0, total = 0;
+            if (window.game.vehicle && typeof window.game.vehicle.rescuedCount !== 'undefined') {
+                rescued = window.game.vehicle.rescuedCount;
+            }
+            if (window.game.objects && Array.isArray(window.game.objects.rescuees)) {
+                total = window.game.objects.rescuees.length;
+            }
+            const rescueesElement = document.getElementById('mobile-rescuees');
+            if (rescueesElement) rescueesElement.textContent = `👤 ${rescued}/${total}`;
+            
+            // Safely update hostage direction
+            const dirObj = getHostageDirectionAndDistance();
+            const hostageElement = document.getElementById('mobile-hostage-dir');
+            if (hostageElement) {
+                if (dirObj) {
+                    hostageElement.textContent = `Hostage: ${dirObj.dist}m`;
+                } else {
+                    hostageElement.textContent = 'Hostage: -';
+                }
+            }
+            
+            // Safely update police direction
+            const policeObj = getPoliceDirectionAndDistance();
+            const policeElement = document.getElementById('mobile-police-dir');
+            if (policeElement) {
+                if (policeObj) {
+                    policeElement.textContent = `Police: ${policeObj.dist}m`;
+                } else {
+                    policeElement.textContent = 'Police: -';
+                }
+            }
+            
+            // Safely update time
+            let time = 0;
+            if (window.game.vehicle && typeof window.game.vehicle.timeRemaining !== 'undefined') {
+                time = window.game.vehicle.timeRemaining;
+            } else if (window.game.vehicle && typeof window.game.vehicle.timeElapsed !== 'undefined') {
+                time = window.game.vehicle.timeElapsed;
+            }
+            time = Math.max(0, Math.floor(time));
+            const min = Math.floor(time / 60);
+            const sec = Math.floor(time % 60);
+            const timeElement = document.getElementById('mobile-time');
+            if (timeElement) timeElement.textContent = `Time: ${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+            
+            // Safely update health
+            let health = 100;
+            if (window.game.vehicle && typeof window.game.vehicle.health !== 'undefined') {
+                health = Math.round(window.game.vehicle.health);
+            }
+            const healthElement = document.getElementById('mobile-health');
+            if (healthElement) healthElement.textContent = `Health: ${health}`;
+        } catch (error) {
+            console.log("Error updating mobile HUD:", error);
         }
-        document.getElementById('mobile-coffy').textContent = '☕ ' + coffy;
-        let rescued = 0, total = 0;
-        if (window.game.vehicle && window.game.vehicle.rescuedCount !== undefined) rescued = window.game.vehicle.rescuedCount;
-        if (window.game.objects && window.game.objects.rescuees) total = window.game.objects.rescuees.length;
-        document.getElementById('mobile-rescuees').textContent = `👤 ${rescued}/${total}`;
-        const dirObj = getHostageDirectionAndDistance();
-        if (dirObj) {
-            document.getElementById('mobile-hostage-dir').textContent = `Hostage: ${dirObj.dist}m`;
-        } else {
-            document.getElementById('mobile-hostage-dir').textContent = 'Hostage: -';
-        }
-        const policeObj = getPoliceDirectionAndDistance();
-        if (policeObj) {
-            document.getElementById('mobile-police-dir').textContent = `Police: ${policeObj.dist}m`;
-        } else {
-            document.getElementById('mobile-police-dir').textContent = 'Police: -';
-        }
-        let time = 0;
-        if (window.game.vehicle && typeof window.game.vehicle.timeRemaining !== 'undefined') {
-            time = window.game.vehicle.timeRemaining;
-        } else if (window.game.vehicle && typeof window.game.vehicle.timeElapsed !== 'undefined') {
-            time = window.game.vehicle.timeElapsed;
-        }
-        time = Math.max(0, Math.floor(time));
-        const min = Math.floor(time / 60);
-        const sec = Math.floor(time % 60);
-        document.getElementById('mobile-time').textContent = `Time: ${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-        let health = 100;
-        if (window.game.vehicle && typeof window.game.vehicle.health !== 'undefined') health = Math.round(window.game.vehicle.health);
-        document.getElementById('mobile-health').textContent = `Health: ${health}`;
     }
 
     function enable() {
         if (document.getElementById(MOBILE_HUD_ID)) return;
-        createHud();
-        createControls();
-        setupJoystick();
-        setupButtons();
-        document.body.classList.add('mobile-mode');
-        updateInterval = setInterval(function() {
-            mapJoystickToControls();
-            updateHud();
-        }, 50);
+        
+        try {
+            createHud();
+            createControls();
+            setupJoystick();
+            setupButtons();
+            document.body.classList.add('mobile-mode');
+            
+            // Force the mobile CSS to be applied regardless of screen size
+            const mobileStyle = document.getElementById('mobile-style');
+            if (mobileStyle) {
+                mobileStyle.media = 'all';
+            }
+            
+            // Set global state variable
+            window.isMobileMode = true;
+            
+            // Check if updateHud can run safely before setting up interval
+            let canUpdateHud = true;
+            try {
+                // Test if we can safely run updateHud without errors
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                    updateHud();
+                }
+            } catch (e) {
+                console.log("Warning: updateHud test failed, will use safe mode:", e);
+                canUpdateHud = false;
+            }
+            
+            // Use different update approach based on safety check
+            if (canUpdateHud) {
+                updateInterval = setInterval(function() {
+                    mapJoystickToControls();
+                    updateHud();
+                }, 50);
+            } else {
+                // Use a safer approach with individual try/catch blocks
+                updateInterval = setInterval(function() {
+                    try {
+                        if (window.game && window.game.vehicle) {
+                            mapJoystickToControls();
+                        }
+                    } catch (e) {
+                        console.log("Error in mapJoystickToControls:", e);
+                    }
+                    
+                    try {
+                        updateHud();
+                    } catch (e) {
+                        console.log("Error in updateHud:", e);
+                    }
+                }, 50);
+            }
+            
+            console.log("Mobile HUD enabled successfully");
+        } catch (error) {
+            console.log("Error enabling mobile HUD:", error);
+            // Try to recover if possible
+            const oldHud = document.getElementById(MOBILE_HUD_ID);
+            if (oldHud) oldHud.remove();
+            const oldControls = document.getElementById(MOBILE_CONTROLS_ID);
+            if (oldControls) oldControls.remove();
+        }
     }
 
     function disable() {
@@ -261,6 +551,148 @@
         if (controls) controls.remove();
         if (updateInterval) clearInterval(updateInterval);
         document.body.classList.remove('mobile-mode');
+        
+        // Reset the mobile CSS media query
+        const mobileStyle = document.getElementById('mobile-style');
+        if (mobileStyle) {
+            mobileStyle.media = '(max-width: 600px)';
+        }
+        
+        // Update global state variable
+        window.isMobileMode = false;
+        
+        console.log("Mobile HUD disabled");
+    }
+
+    function forceRefresh() {
+        console.log("Force refreshing mobile HUD");
+        // First disable (if active)
+        if (document.getElementById(MOBILE_HUD_ID)) {
+            disable();
+        }
+        
+        // Remove any stray elements that might not have been properly cleaned up
+        const oldHud = document.getElementById(MOBILE_HUD_ID);
+        if (oldHud) oldHud.remove();
+        
+        const oldControls = document.getElementById(MOBILE_CONTROLS_ID);
+        if (oldControls) oldControls.remove();
+        
+        // Clear any intervals
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+        
+        // Reset state
+        document.body.classList.remove('mobile-mode');
+        window.isMobileMode = false;
+        
+        // Reset joystick if exists
+        if (joystickManager) {
+            try {
+                joystickManager.destroy();
+            } catch (e) {
+                console.log("Error destroying joystick:", e);
+            }
+            joystickManager = null;
+        }
+        
+        // Reset variables
+        hud = controls = fireBtn = jumpBtn = null;
+        lastDir = { x: 0, y: 0 };
+        
+        // Now enable again
+        setTimeout(function() {
+            enable();
+        }, 100);
+    }
+    
+    // Detect if touch is supported (more reliable than user agent)
+    function isTouchSupported() {
+        return ('ontouchstart' in window) || 
+               (navigator.maxTouchPoints > 0) || 
+               (navigator.msMaxTouchPoints > 0);
+    }
+    
+    // Detect if device is in landscape mode
+    function isLandscapeMode() {
+        return window.innerWidth > window.innerHeight;
+    }
+    
+    // Detect low-end devices for performance optimization
+    function isLowEndDevice() {
+        // Check if device has limited memory or CPU
+        const memory = navigator.deviceMemory || 4; // Default to 4GB if not available
+        const cpuCores = navigator.hardwareConcurrency || 4; // Default to 4 cores if not available
+        
+        return memory < 4 || cpuCores <= 2;
+    }
+    
+    // Optimized joystick setup for low-end devices
+    function setupOptimizedJoystick() {
+        if (joystickManager) return;
+        const joystickZone = document.getElementById('mobile-joystick');
+        if (!joystickZone || !window.nipplejs) return;
+        
+        const isLowEnd = isLowEndDevice();
+        
+        // Create a simpler joystick for low-end devices
+        joystickManager = window.nipplejs.create({
+            zone: joystickZone,
+            mode: 'static',
+            position: { left: '50%', top: '50%' },
+            color: '#ffd700',
+            size: isLowEnd ? 100 : 120,
+            fadeTime: isLowEnd ? 200 : 100,
+            restJoystick: true,
+            restOpacity: 0.7,
+            lockX: false,
+            lockY: false,
+            catchDistance: isLowEnd ? 100 : 150,
+            // Reduce animation frames on low-end devices
+            dataOnly: isLowEnd
+        });
+        
+        // Use simpler event handling for low-end devices
+        if (isLowEnd) {
+            // Throttle move events on low-end devices
+            let lastUpdate = 0;
+            joystickManager.on('move', function(evt, data) {
+                if (!data || !data.vector) return;
+                
+                const now = Date.now();
+                if (now - lastUpdate < 32) return; // Limit to ~30fps updates
+                lastUpdate = now;
+                
+                lastDir.x = data.vector.x * (data.force || 1);
+                lastDir.y = data.vector.y * (data.force || 1);
+                
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                }
+            });
+        } else {
+            // Full quality for better devices
+            joystickManager.on('move', function(evt, data) {
+                if (!data || !data.vector) return;
+                lastDir.x = data.vector.x * (data.force || 1);
+                lastDir.y = data.vector.y * (data.force || 1);
+                
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                }
+            });
+        }
+        
+        joystickManager.on('end', function() {
+            lastDir.x = 0;
+            lastDir.y = 0;
+            if (window.game && window.game.vehicle) {
+                const v = window.game.vehicle;
+                v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
+            }
+        });
     }
 
     if (typeof window !== 'undefined') {
@@ -384,5 +816,18 @@
         document.head.appendChild(style);
     }
 
-    window.mobileHud = { enable, disable };
+    window.mobileHud = { 
+        enable, 
+        disable, 
+        forceRefresh, 
+        isTouchSupported, 
+        isLandscapeMode 
+    };
+    
+    // Use optimized joystick setup instead of standard one
+    const originalSetupJoystick = setupJoystick;
+    setupJoystick = setupOptimizedJoystick;
+    
+    // Call init to set up mobile detection and initialization
+    init();
 })();

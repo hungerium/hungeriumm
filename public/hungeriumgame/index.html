@@ -197,15 +197,33 @@
         
         /* Add wallet connection icons */
         .wallet-icon {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-            vertical-align: middle;
+            display: none;
+        }
+        .connect-wallet, .claim-reward {
+            padding-left: 15px !important;
         }
     </style>
 </head>
 <body>
     <div id="loadingScreen">Loading...</div>
+    <!-- Settings button (gear) -->
+    <button id="settings-btn" style="position:fixed; bottom:14px; right:14px; z-index:9999; background:rgba(40,40,40,0.5); border:none; width:16px; height:16px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,0.18); opacity:0.5; transition:opacity 0.2s;">
+      <svg width="10" height="10" viewBox="0 0 20 20" fill="none" style="display:block; margin:auto;">
+        <circle cx="10" cy="10" r="7" stroke="#ffd700" stroke-width="2" fill="none"/>
+        <path d="M10 3V0M10 20v-3M3 10H0M20 10h-3M15.5 4.5l2-2M2.5 17.5l2-2M15.5 15.5l2 2M2.5 2.5l2 2" stroke="#ffd700" stroke-width="1.2"/>
+      </svg>
+    </button>
+    <!-- Settings menu -->
+    <div id="settings-menu" style="position:fixed; bottom:34px; right:14px; z-index:10000; background:rgba(30,30,40,0.97); color:#ffd700; border-radius:8px; box-shadow:0 2px 8px #00000033; padding:6px 0; min-width:110px; display:none; flex-direction:column; align-items:stretch;">
+      <button id="toggle-mobile-mode" style="background:none; border:none; color:#ffd700; font-size:11px; padding:7px 10px; text-align:left; cursor:pointer; width:100%;">Toggle Mobile Mode</button>
+      <button id="fix-mobile-ui" style="background:none; border:none; color:#ffd700; font-size:11px; padding:7px 10px; text-align:left; cursor:pointer; width:100%;">Fix Mobile UI</button>
+    </div>
+    <!-- Mobile mode instructions - shown only on hover -->
+    <div id="mobile-mode-instructions" style="position:fixed; bottom:40px; right:10px; z-index:9998; background:rgba(0,0,0,0.8); color:white; padding:8px; border-radius:4px; font-size:11px; display:none; max-width:200px; text-align:center; line-height:1.3;">
+        • Press <b>Shift+M</b> for mobile mode<br>
+        • <b>M</b> button toggles mobile UI<br>
+        • <b>F</b> button fixes issues
+    </div>
     <!-- <div id="hud-container">
         <div id="speedometer" style="opacity:0.5;">0 km/h</div>
         <div id="gear-indicator" style="opacity:0.5;">1</div>
@@ -247,6 +265,29 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.5/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/web3@4.5.0/dist/web3.min.js"></script>
+    
+    <!-- Force mobile detection and initial setup -->
+    <script>
+        // More reliable mobile detection function
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 600);
+        }
+        
+        // Initialize mobile detection immediately
+        window.isMobileDevice = isMobileDevice;
+        window.isMobileMode = isMobileDevice();
+        
+        // Force apply mobile class immediately if needed
+        if (window.isMobileMode) {
+            document.body.classList.add('mobile-mode');
+            // Force mobile CSS
+            var mobileStyle = document.getElementById('mobile-style');
+            if (mobileStyle) {
+                mobileStyle.media = 'all';
+            }
+            console.log("Mobile mode detected and initialized on page load");
+        }
+    </script>
     
     <!-- Three.js eklentilerini yükle -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/OrbitControls.js"></script>
@@ -304,6 +345,97 @@
                     loadingScreen.style.display = 'none';
                 }
                 
+                // Show mobile toggle button after loading
+                const mobileToggleBtn = document.getElementById('mobile-mode-toggle');
+                const mobileInstructions = document.getElementById('mobile-mode-instructions');
+                const forceRefreshBtn = document.getElementById('force-refresh-btn');
+                
+                if (mobileToggleBtn) {
+                    mobileToggleBtn.style.display = 'block';
+                    mobileToggleBtn.addEventListener('click', function() {
+                        enableMobileMode();
+                    });
+                    
+                    // Add hover functionality for instructions
+                    mobileToggleBtn.addEventListener('mouseenter', function() {
+                        if (mobileInstructions) {
+                            mobileInstructions.style.display = 'block';
+                        }
+                    });
+                    
+                    mobileToggleBtn.addEventListener('mouseleave', function() {
+                        if (mobileInstructions) {
+                            setTimeout(function() {
+                                // Don't hide if hovering over the instructions or the refresh button
+                                if (!mobileInstructions.matches(':hover') && 
+                                    (forceRefreshBtn && !forceRefreshBtn.matches(':hover'))) {
+                                    mobileInstructions.style.display = 'none';
+                                }
+                            }, 300);
+                        }
+                    });
+                }
+                
+                // Setup force refresh button
+                if (forceRefreshBtn) {
+                    forceRefreshBtn.style.display = 'block';
+                    forceRefreshBtn.addEventListener('click', function() {
+                        if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
+                            window.mobileHud.forceRefresh();
+                            window.showNotification("Mobile UI reset complete", 2000);
+                        } else {
+                            window.showNotification("Mobile HUD not available", 2000);
+                        }
+                    });
+                    
+                    // Add hover functionality for instructions
+                    forceRefreshBtn.addEventListener('mouseenter', function() {
+                        if (mobileInstructions) {
+                            mobileInstructions.style.display = 'block';
+                        }
+                    });
+                    
+                    forceRefreshBtn.addEventListener('mouseleave', function() {
+                        if (mobileInstructions) {
+                            setTimeout(function() {
+                                // Don't hide if hovering over the instructions or the mobile button
+                                if (!mobileInstructions.matches(':hover') && 
+                                    (mobileToggleBtn && !mobileToggleBtn.matches(':hover'))) {
+                                    mobileInstructions.style.display = 'none';
+                                }
+                            }, 300);
+                        }
+                    });
+                    
+                    // Handle hover on instructions itself
+                    if (mobileInstructions) {
+                        mobileInstructions.addEventListener('mouseleave', function() {
+                            setTimeout(function() {
+                                if (!mobileToggleBtn.matches(':hover') && !forceRefreshBtn.matches(':hover')) {
+                                    mobileInstructions.style.display = 'none';
+                                }
+                            }, 300);
+                        });
+                    }
+                }
+                
+                // Make sure mobile mode is applied correctly on page load
+                const isMobile = window.isMobileDevice ? window.isMobileDevice() : 
+                   (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 600));
+                
+                if (isMobile && window.mobileHud && !document.getElementById('mobile-hud')) {
+                    console.log("Mobile device detected on window load, forcing mobile HUD");
+                    window.mobileHud.enable();
+                }
+                
+                // Force mobile mode initialization after a delay
+                setTimeout(function() {
+                    if (window.mobileHud && !document.getElementById('mobile-hud') && window.innerWidth <= 800) {
+                        console.log("Delayed mobile initialization - forcing mobile HUD");
+                        window.mobileHud.enable();
+                    }
+                }, 3000);
+                
                 // Make sure weather HUD is visible
                 if (window.game && window.game.environment) {
                     if (typeof window.game.environment.forceDisplayWeatherHUD === 'function') {
@@ -355,6 +487,17 @@
             }
         };
 
+        // Global function to force mobile mode
+        window.forceMobileMode = function() {
+            if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
+                console.log("Manually forcing mobile HUD");
+                window.mobileHud.enable();
+                window.showNotification("Mobile mode activated", 2000);
+                return true;
+            }
+            return false;
+        };
+
         // Add beforeunload handler to clean up audio resources
         window.addEventListener('beforeunload', function() {
             // Clean up any open audio contexts when page unloads
@@ -382,25 +525,74 @@
         // Mobile mode activation
         window.isMobileMode = false;
         function enableMobileMode() {
-            if (!window.isMobileMode) {
-                window.isMobileMode = true;
-                document.getElementById('mobile-style').media = 'all';
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
-                if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
-                    window.mobileHud.enable();
-                }
+            if (!window.isMobileMode && window.mobileHud && typeof window.mobileHud.enable === 'function') {
+                console.log("Mobile mode toggle pressed, enabling mobile mode");
+                window.mobileHud.enable();
+                return true;
+            } else if (window.isMobileMode && window.mobileHud && typeof window.mobileHud.disable === 'function') {
+                console.log("Mobile mode toggle pressed, disabling mobile mode");
+                window.mobileHud.disable();
+                return true;
             }
+            return false;
         }
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12') {
+            // Change from F12 to Shift+M for toggling mobile mode
+            if (e.key === 'M' && e.shiftKey) {
+                e.preventDefault();
                 enableMobileMode();
             }
+        });
+    </script>
+    <script>
+        // Ayar butonu ve menü kontrolü
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const toggleMobileModeBtn = document.getElementById('toggle-mobile-mode');
+        const fixMobileUiBtn = document.getElementById('fix-mobile-ui');
+
+        // Menü aç/kapat
+        settingsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (settingsMenu.style.display === 'flex') {
+                settingsMenu.style.display = 'none';
+            } else {
+                settingsMenu.style.display = 'flex';
+            }
+        });
+        // Menü dışına tıklanınca kapat
+        document.addEventListener('click', function(e) {
+            if (settingsMenu.style.display === 'flex' && !settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+                settingsMenu.style.display = 'none';
+            }
+        });
+        // Mobil Modu Aç/Kapat
+        toggleMobileModeBtn.addEventListener('click', function() {
+            if (typeof enableMobileMode === 'function') {
+                enableMobileMode();
+            } else if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
+                if (!window.isMobileMode) {
+                    window.mobileHud.enable();
+                } else if (typeof window.mobileHud.disable === 'function') {
+                    window.mobileHud.disable();
+                }
+            }
+            settingsMenu.style.display = 'none';
+        });
+        // Mobil UI'yi Düzelt
+        fixMobileUiBtn.addEventListener('click', function() {
+            if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
+                window.mobileHud.forceRefresh();
+                window.showNotification("Mobil UI sıfırlandı", 2000);
+            }
+            settingsMenu.style.display = 'none';
+        });
+        // Ayar butonuna hover olunca opaklığı artır
+        settingsBtn.addEventListener('mouseenter', function() {
+            settingsBtn.style.opacity = '1';
+        });
+        settingsBtn.addEventListener('mouseleave', function() {
+            settingsBtn.style.opacity = '0.5';
         });
     </script>
 </body>

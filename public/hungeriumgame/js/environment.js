@@ -150,6 +150,7 @@ class Environment {
                 }
             } else {
                 console.warn("RenderPass not available");
+                // Don't continue if we can't add a render pass
                 this.composer = null;
                 return;
             }

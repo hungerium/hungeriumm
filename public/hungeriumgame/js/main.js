@@ -133,50 +133,39 @@ document.addEventListener('click', function initAudio() {
     }
 }, { once: true });
 
-// Mobil cihaz algılaması ve mobil moda otomatik geçiş
+// Mobil cihaz algılama fonksiyonu
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 600);
 }
 
-function enableMobileMode() {
-    if (!window.isMobileMode) {
-        window.isMobileMode = true;
-        document.body.classList.add('mobile-mode'); // body'ye class ekle
-        var mobileStyle = document.getElementById('mobile-style');
-        if (mobileStyle) mobileStyle.media = 'all';
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        } else if (document.documentElement.webkitRequestFullscreen) {
-            document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) {
-            document.documentElement.msRequestFullscreen();
-        }
-        if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
-            window.mobileHud.enable();
-        }
+// Add a resize handler to detect mobile mode on window resize
+window.addEventListener('resize', function() {
+    // Avoid handling resize while initialization is still happening
+    if (document.readyState !== 'complete') return;
+    
+    const isMobile = isMobileDevice();
+    const isMobileModeActive = document.body.classList.contains('mobile-mode');
+    
+    // If window size changed to mobile size but mobile mode isn't active
+    if (isMobile && !isMobileModeActive && window.mobileHud) {
+        console.log("Mobile size detected on resize, enabling mobile HUD");
+        window.mobileHud.enable();
+    } 
+    // If window size changed to desktop size but mobile mode is still active
+    else if (!isMobile && isMobileModeActive && window.mobileHud && window.innerWidth > 600) {
+        console.log("Desktop size detected on resize, disabling mobile HUD");
+        window.mobileHud.disable();
     }
-}
+});
 
+// Mobilde otomatik HUD ve tam ekran
 window.addEventListener('DOMContentLoaded', function() {
-    if (isMobileDevice()) {
-        enableMobileMode();
-    }
-});
-
-// F12 ile manuel tetikleme (varsa koru)
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12') {
-        enableMobileMode();
-    }
-});
-
-// Mobil mod kontrol ve etkinleştirme fonksiyonu
-function checkAndEnableMobileMode() {
     if (isMobileDevice()) {
         // Mobil HUD'u etkinleştir
         if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
             window.mobileHud.enable();
         } else {
+            // mobileHud henüz yüklenmediyse biraz bekle ve tekrar dene
             setTimeout(function() {
                 if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
                     window.mobileHud.enable();
@@ -224,20 +213,8 @@ function checkAndEnableMobileMode() {
             }, { once: true });
             document.body.appendChild(guide);
         }
-    } else {
-        // Masaüstüne dönülürse mobil HUD'u kapat
-        if (window.mobileHud && typeof window.mobileHud.disable === 'function') {
-            window.mobileHud.disable();
-        }
     }
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-    checkAndEnableMobileMode();
-    // F12 hard refresh sonrası mobil simülasyon için gecikmeli tekrar kontrol
-    setTimeout(checkAndEnableMobileMode, 300);
 });
-window.addEventListener('resize', checkAndEnableMobileMode);
 
 // Mobilde scroll/zoom engelleme
 if (typeof window !== 'undefined') {
