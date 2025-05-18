@@ -110,7 +110,7 @@
                 <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
                     <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
                     <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
-                    <button class="mobile-btn" id="mobile-fullscreen" title="Fullscreen" style="width:50px;height:50px;font-size:18px;">&#x26F6;</button>
+                    <button class="mobile-btn" id="mobile-mainmenu" title="Main Menu" style="width:50px;height:50px;font-size:18px;">&#9776;</button>
                 </div>
             `;
             document.body.appendChild(controls);
@@ -151,9 +151,14 @@
             }
         });
         
-        // Setup fullscreen button
-        setupTouchButton('mobile-fullscreen', function() {
-            requestFullscreen();
+        // Setup main menu button
+        setupTouchButton('mobile-mainmenu', function() {
+            if (window.game && typeof window.game.goToMainMenu === 'function') {
+                window.game.goToMainMenu();
+            } else {
+                // Fallback: reload the page if main menu function is not available
+                window.location.reload();
+            }
         });
     }
     
@@ -928,7 +933,7 @@
             border: 2px solid #ffd70055 !important;
             border-radius: 50% !important;
         }
-        #mobile-respawn, #mobile-fullscreen {
+        #mobile-respawn, #mobile-mainmenu {
             width: 32px !important;
             height: 32px !important;
             font-size: 16px !important;
