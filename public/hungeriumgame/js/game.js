@@ -229,14 +229,6 @@ class Game {
         
         // Minimap/Radar sistemi
         this.minimap = null;
-        
-        // Listen for P key globally to trigger pause menu
-        document.addEventListener('keydown', (e) => {
-            if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
-                e.preventDefault();
-                this.togglePause();
-            }
-        });
     }
     
     setupPauseListener() {
@@ -2105,6 +2097,13 @@ class Game {
         try {
             const delta = Math.min(this.clock.getDelta(), 0.1);
             
+            // Performans optimizasyonu: Frame sınırlaması (15ms'den hızlı güncelleme yapmıyor)
+            const now = performance.now();
+            if (this.lastFrameTime && (now - this.lastFrameTime) < 15) {
+                return;
+            }
+            this.lastFrameTime = now;
+            
             // Update physics
             if (this.physicsManager) {
                 this.physicsManager.update(delta);
@@ -2114,8 +2113,8 @@ class Game {
             if (this.vehicle) {
                 this.vehicle.update(delta);
                 
-                // Update engine sound with current vehicle data
-                if (window.audioManager) {
+                // Update engine sound with current vehicle data - optimize by updating less frequently
+                if (window.audioManager && (!this.lastSoundUpdate || now - this.lastSoundUpdate > 100)) {
                     // Get vehicle speed and throttle data
                     const speed = this.vehicle.currentVehicleSpeed || 0;
                     const throttle = this.vehicle.controls.forward ? 1.0 : 
@@ -2126,22 +2125,24 @@ class Game {
                     
                     // Update engine sound with RPM and load (throttle position)
                     window.audioManager.updateEngineSound(rpm, throttle);
+                    this.lastSoundUpdate = now;
                 }
             }
             
             // Update objects (WorldObjects)
             if (this.objects) {
-                this.objects.update(delta); // <-- rescuee'ler burada güncellenir
+                this.objects.update(delta);
             }
             
-            // Update particles
-            if (this.particleSystem) {
+            // Update particles - optimize by limiting updates based on player distance
+            if (this.particleSystem && this.vehicle) {
                 this.particleSystem.update(delta);
             }
             
-            // Update environment
-            if (this.environment && this.environment.update) {
+            // Update environment less frequently
+            if (this.environment && this.environment.update && (!this.lastEnvUpdate || now - this.lastEnvUpdate > 100)) {
                 this.environment.update(this.camera);
+                this.lastEnvUpdate = now;
             }
             
             // Update coins and check for collection
