@@ -638,6 +638,13 @@ class Game {
         nameInput.style.color = '#3a2614';
         nameInput.style.fontWeight = '500';
         loginForm.appendChild(nameInput);
+        // Inputa otomatik focus ver ve eventleri logla
+        setTimeout(() => {
+            nameInput.focus();
+        }, 350);
+        nameInput.addEventListener('focus', () => console.log('Input focused'));
+        nameInput.addEventListener('touchstart', () => console.log('Input touchstart'));
+        nameInput.addEventListener('click', () => console.log('Input click'));
         // Vehicle selection (modern, mobile-friendly)
         const vehicleSelection = document.createElement('div');
         vehicleSelection.style.display = 'flex';
@@ -1033,9 +1040,10 @@ class Game {
                 G - Fire Missile<br>
                 P - Pause Game<br>
                 R - Respawn Vehicle<br>
-                T - Respawn Robots<br>
-                F3 - Debug Info
+                F3 - Debug Info<br>
+                C - Change Camera<br>
             `;
+            instructionsDiv.style.background = 'rgba(30,30,40,0.3)';
         }
     }
     
@@ -2291,8 +2299,8 @@ class Game {
         // Make sure control instructions are visible
         const instructions = document.getElementById('instructions');
         if (instructions) {
-            instructions.style.opacity = '1';
-            instructions.style.display = 'block';
+            instructions.style.opacity = '0.85';
+            instructions.style.background = 'rgba(30,30,40,0.3)';
         }
         
         console.log("HUD elements initialized");

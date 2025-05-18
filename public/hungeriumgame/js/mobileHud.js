@@ -88,11 +88,21 @@
         if (typeof window !== 'undefined') {
             const style = document.createElement('style');
             style.innerHTML = `
-                * {
+                /* Sadece oyun içi HUD ve butonlar için user-select: none */
+                .hud-row, .mobile-btn, #mobile-hud, #mobile-controls {
                     -webkit-user-select: none !important;
                     -moz-user-select: none !important;
                     -ms-user-select: none !important;
                     user-select: none !important;
+                }
+                /* Login ekranı ve inputlar için seçim ve tıklama serbest */
+                #loginOverlay, #loginOverlay input, #loginOverlay textarea {
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
+                    user-select: text !important;
+                    pointer-events: auto !important;
+                    -webkit-touch-callout: auto !important;
                 }
                 html, body {
                     -webkit-touch-callout: none !important;
@@ -100,9 +110,19 @@
                 }
             `;
             document.head.appendChild(style);
-            document.addEventListener('selectstart', function(e) { e.preventDefault(); }, { passive: false });
-            document.addEventListener('copy', function(e) { e.preventDefault(); }, { passive: false });
         }
+
+        // Seçim ve kopyalama engelleyicileri sadece oyun içi HUD ve butonlar için uygula
+        document.addEventListener('selectstart', function(e) {
+            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
+        document.addEventListener('copy', function(e) {
+            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
     }
 
     function createHud() {
@@ -112,7 +132,7 @@
         hud = document.createElement('div');
         hud.id = MOBILE_HUD_ID;
         hud.innerHTML = `
-            <div class="hud-row" style="width:100vw;display:flex;align-items:center;justify-content:center;gap:3px;padding:1px 2px;">
+            <div class="hud-row" style="width:100vw;display:flex;align-items:center;justify-content:center;gap:3px;padding:1px 2px;background:rgba(30,30,40,0.3);">
                 <span class="hud-item" id="mobile-level" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Lv. 1</span>
                 <span class="hud-item" id="mobile-coffy" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">☕ 0</span>
                 <span class="hud-item" id="mobile-rescuees" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">👤 0/0</span>
@@ -120,6 +140,7 @@
                 <span class="hud-item" id="mobile-police-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">Police: 0m</span>
                 <span class="hud-item" id="mobile-time" style="font-size:10px;padding:1px 2px;min-width:38px;max-width:54px;text-align:center;background:none;color:#fffbe8;">Time: 00:00</span>
                 <span class="hud-item" id="mobile-health" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ff4d4d;">Health: 100</span>
+                <span class="hud-item" id="mobile-camera-mode" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Camera: -</span>
             </div>
         `;
         document.body.appendChild(hud);
@@ -142,7 +163,7 @@
                 <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
                     <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
                     <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
-                    <button class="mobile-btn" id="mobile-mainmenu" title="Main Menu" style="width:50px;height:50px;font-size:18px;">&#9776;</button>
+                    <button class="mobile-btn" id="mobile-mainmenu" title="Pause/Menu" style="width:50px;height:50px;font-size:18px;">&#9776;</button>
                 </div>
             `;
             document.body.appendChild(controls);
@@ -184,14 +205,9 @@
             }
         });
         
-        // Setup main menu button
+        // Pause/Menu butonu mobilde pause overlay açacak
         setupTouchButton('mobile-mainmenu', function() {
-            if (window.game && typeof window.game.goToMainMenu === 'function') {
-                window.game.goToMainMenu();
-            } else {
-                // Fallback: reload the page if main menu function is not available
-                window.location.reload();
-            }
+            showMobilePauseOverlay();
         });
     }
     
@@ -517,6 +533,16 @@
             }
             const healthElement = document.getElementById('mobile-health');
             if (healthElement) healthElement.textContent = `Health: ${health}`;
+            
+            // Kamera modunu güncelle
+            const cameraModeElement = document.getElementById('mobile-camera-mode');
+            if (cameraModeElement) {
+                let mode = '-';
+                if (window.game && window.game.cameraMode) {
+                    mode = window.game.cameraMode.charAt(0).toUpperCase() + window.game.cameraMode.slice(1);
+                }
+                cameraModeElement.textContent = `Camera: ${mode}`;
+            }
         } catch (error) {
             console.log("Error updating mobile HUD:", error);
         }
@@ -715,16 +741,22 @@
     // Optimized joystick setup for low-end devices
     function setupOptimizedJoystick() {
         if (joystickManager) return;
-        const joystickZone = document.getElementById('mobile-joystick');
+        // Use the whole screen as the joystick zone for dynamic mode
+        const joystickZone = document.body;
         if (!joystickZone || !window.nipplejs) return;
         
         const isLowEnd = isLowEndDevice();
         
-        // Create a simpler joystick for low-end devices
+        // Remove old joystick if exists
+        const oldJoystick = document.getElementById('mobile-joystick');
+        if (oldJoystick) {
+            oldJoystick.style.display = 'none'; // Hide the static joystick area
+        }
+        
+        // Create a dynamic joystick that appears where the user touches
         joystickManager = window.nipplejs.create({
             zone: joystickZone,
-            mode: 'static',
-            position: { left: '50%', top: '50%' },
+            mode: 'dynamic', // Dynamic mode: joystick appears where user touches
             color: '#ffd700',
             size: isLowEnd ? 100 : 120,
             fadeTime: isLowEnd ? 200 : 100,
@@ -733,7 +765,6 @@
             lockX: false,
             lockY: false,
             catchDistance: isLowEnd ? 100 : 150,
-            // Reduce animation frames on low-end devices
             dataOnly: isLowEnd
         });
         
@@ -743,14 +774,11 @@
             let lastUpdate = 0;
             joystickManager.on('move', function(evt, data) {
                 if (!data || !data.vector) return;
-                
                 const now = Date.now();
                 if (now - lastUpdate < 32) return; // Limit to ~30fps updates
                 lastUpdate = now;
-                
                 lastDir.x = data.vector.x * (data.force || 1);
                 lastDir.y = data.vector.y * (data.force || 1);
-                
                 if (window.game && window.game.vehicle) {
                     mapJoystickToControls();
                 }
@@ -761,7 +789,6 @@
                 if (!data || !data.vector) return;
                 lastDir.x = data.vector.x * (data.force || 1);
                 lastDir.y = data.vector.y * (data.force || 1);
-                
                 if (window.game && window.game.vehicle) {
                     mapJoystickToControls();
                 }
@@ -943,6 +970,60 @@
         }
     }
 
+    // Mobil pause overlay fonksiyonu
+    function showMobilePauseOverlay() {
+        // Eğer overlay zaten varsa tekrar ekleme
+        if (document.getElementById('mobile-pause-overlay')) return;
+        // Oyun durdurulsun
+        if (window.game && typeof window.game.pauseGame === 'function') {
+            window.game.pauseGame();
+        }
+        // Overlay oluştur
+        const overlay = document.createElement('div');
+        overlay.id = 'mobile-pause-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.background = 'rgba(30,30,40,0.92)';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = '99999';
+        overlay.style.fontFamily = 'Arial, sans-serif';
+        overlay.style.boxSizing = 'border-box';
+        overlay.style.overflow = 'auto';
+        overlay.style.padding = 'env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)';
+        overlay.innerHTML = `
+            <div style="color:#ffd700;font-size:28px;font-weight:bold;margin-bottom:32px;">Game Paused</div>
+            <button id="mobile-resume-btn" style="width:220px;height:60px;font-size:22px;margin-bottom:18px;border-radius:12px;background:#ffd700;color:#3a2614;font-weight:bold;border:none;box-shadow:0 2px 8px #00000033;">Resume Game</button>
+            <button id="mobile-mainmenu-btn" style="width:220px;height:60px;font-size:22px;border-radius:12px;background:#3a2614;color:#ffd700;font-weight:bold;border:none;box-shadow:0 2px 8px #00000033;">Main Menu</button>
+        `;
+        document.body.appendChild(overlay);
+        // Resume butonu
+        document.getElementById('mobile-resume-btn').onclick = function() {
+            overlay.remove();
+            if (window.game && typeof window.game.resumeGame === 'function') {
+                window.game.resumeGame();
+            }
+        };
+        // Main Menu butonu
+        document.getElementById('mobile-mainmenu-btn').onclick = function() {
+            // Önce overlay'i kaldır
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+            // Sonra ana menüye dön
+            if (window.game && typeof window.game.goToMainMenu === 'function') {
+                window.game.goToMainMenu();
+            } else {
+                window.location.reload();
+            }
+        };
+    }
+
     if (typeof window !== 'undefined') {
         const style = document.createElement('style');
         style.innerHTML = `
@@ -957,6 +1038,13 @@
             bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
             width: 120px !important;
             height: 120px !important;
+        }
+        /* Joystick (nipplejs) custom opacity: 50% more transparent */
+        .nipple .back {
+            background: rgba(255, 215, 0, 0.25) !important;
+        }
+        .nipple .front {
+            background: rgba(255, 215, 0, 0.18) !important;
         }
         .mobile-btn {
             background: linear-gradient(135deg, #a67c52 60%, #ffd7a0 100%) !important;
@@ -1042,9 +1130,10 @@
             gap: 3px;
             margin-top: 4px;
             padding: 2px 2px;
+            background: rgba(30,30,40,0.3) !important;
         }
         #mobile-hud .hud-item {
-            background: rgba(30,30,40,0.85);
+            background: rgba(30,30,40,0.3) !important;
             color: #ffd700;
             font-size: 11px;
             font-weight: 500;
@@ -1068,6 +1157,9 @@
         }
         #mobile-hud .hud-item.rescued {
             color: #aaddff;
+        }
+        #top-hud, #level-display, #time-display, #rescued-display {
+            background: rgba(30,30,40,0.3) !important;
         }
         `
         document.head.appendChild(style);
