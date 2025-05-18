@@ -15,6 +15,13 @@ const sharedBeanMaterial = new THREE.MeshStandardMaterial({
     emissiveIntensity: 0.1
 });
 
+// Helper function to detect mobile devices
+function isMobileDevice() {
+    return window.isMobileMode || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+        window.innerWidth <= 950;
+}
+
 class Coin {
     constructor(scene, physics, position, value = 1) {
         this.scene = scene;
@@ -370,9 +377,25 @@ class CoinManager {
         this.totalValue = 0; // Total coin value collected
         this.coffyPerCoin = 1; // Her coin 1 COFFY değerinde
         this.soundEnabled = true;
-        // Add collision sound
-        this.collisionAudio = new Audio('assets/sounds/collision.mp3');
-        this.collisionAudio.volume = 0.7;
+        
+        // Check if running on mobile
+        this.isMobileDevice = isMobileDevice();
+        
+        // Audio throttling
+        this.lastSoundTime = 0;
+        this.soundThrottleTime = this.isMobileDevice ? 300 : 50; // ms between sounds
+        
+        // Add collision sound with adjusted volume for mobile
+        if (!this.isMobileDevice) {
+            // Full quality audio on desktop
+            this.collisionAudio = new Audio('assets/sounds/collision.mp3');
+            this.collisionAudio.volume = 0.7;
+        } else {
+            // Lower volume on mobile
+            this.collisionAudio = new Audio('assets/sounds/collision.mp3');
+            this.collisionAudio.volume = 0.4;
+        }
+        
         // Setup audio for coin collection
         this.setupAudio();
         // Create UI for coin counter
@@ -399,9 +422,16 @@ class CoinManager {
     setupAudio() {
         // Simple audio context setup
         try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Only create audio context if needed and not on low-end mobile
+            if (!this.isMobileDevice || !window.lowGraphicsMode) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log("Audio context initialized for coin sounds");
+            } else {
+                console.log("Audio context skipped for coins on low-end mobile");
+                this.soundEnabled = false;
+            }
         } catch (e) {
-            console.warn("WebAudio not supported");
+            console.warn("WebAudio not supported", e);
             this.soundEnabled = false;
         }
     }
@@ -635,14 +665,37 @@ class CoinManager {
     }
     
     playCollectionSound() {
+        // Check if sound is enabled and not throttled
+        if (!this.soundEnabled) return;
+        
+        const now = Date.now();
+        if (this.isMobileDevice && now - this.lastSoundTime < this.soundThrottleTime) {
+            // Skip sounds that are too close together on mobile
+            return;
+        }
+        this.lastSoundTime = now;
+        
         // Play collision.mp3 from assets/sounds/
         if (this.collisionAudio) {
+            // On mobile, only play sometimes to reduce load
+            if (this.isMobileDevice && Math.random() < 0.5) {
+                return; // Skip 50% of sounds on mobile
+            }
+            
             // Restart sound if already playing
             this.collisionAudio.currentTime = 0;
-            this.collisionAudio.play();
+            
+            // Play with error handling
+            const playPromise = this.collisionAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Error playing coin collection sound:", error);
+                });
+            }
         }
+        
         // Also play any other sound if needed
-        if (window.audioManager) {
+        if (!this.isMobileDevice && window.audioManager) {
             window.audioManager.playCoinSound && window.audioManager.playCoinSound();
         }
     }

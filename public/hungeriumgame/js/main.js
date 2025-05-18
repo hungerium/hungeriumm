@@ -324,21 +324,87 @@ window.lowGraphicsMode = false;
     if (!isMobileDevice()) return;
     let lastTime = performance.now();
     let frameCount = 0;
+    let consecutiveLowFPS = 0;
+    const MAX_LOW_FPS_COUNT = 3;
+    
     function checkFPS() {
         frameCount++;
         const now = performance.now();
         if (now - lastTime > 2000) { // 2 saniyede bir kontrol
             const fps = frameCount / ((now - lastTime) / 1000);
+            console.log(`Current FPS: ${fps.toFixed(1)}`);
+            
             if (fps < 30) {
-                window.lowGraphicsMode = true;
-                if (window.showNotification) window.showNotification('Düşük grafik modu etkin!', 2000);
+                consecutiveLowFPS++;
+                if (consecutiveLowFPS >= MAX_LOW_FPS_COUNT) {
+                    window.lowGraphicsMode = true;
+                    if (window.showNotification) window.showNotification('Düşük grafik modu etkin!', 2000);
+                    
+                    // Disable audio features on performance issues
+                    disableHeavyAudioFeatures();
+                } else {
+                    console.log(`Low FPS detected (${consecutiveLowFPS}/${MAX_LOW_FPS_COUNT})`);
+                }
+            } else {
+                consecutiveLowFPS = 0;
             }
+            
             lastTime = now;
             frameCount = 0;
         }
         requestAnimationFrame(checkFPS);
     }
+    
+    function disableHeavyAudioFeatures() {
+        console.log("Disabling heavy audio features due to performance issues");
+        
+        // Check if audioManager exists
+        if (window.audioManager) {
+            // Stop all background sounds first
+            if (typeof window.audioManager.stopBackgroundMusic === 'function') {
+                window.audioManager.stopBackgroundMusic();
+            }
+            
+            if (typeof window.audioManager.stopAtmosphereSound === 'function') {
+                window.audioManager.stopAtmosphereSound();
+            }
+            
+            // Mark audio manager to use minimum audio
+            window.audioManager.isMobileDevice = true;
+            
+            // Set aggressive sound limiters
+            if (window.audioManager.audioLimiters) {
+                window.audioManager.audioLimiters.maxSimultaneousSounds = 1;
+                window.audioManager.audioLimiters.minTimeBetweenSounds = 500; 
+            }
+        }
+    }
+    
+    // Start monitoring FPS
     requestAnimationFrame(checkFPS);
+    
+    // Also listen for visible freezes
+    let lastAnimationTime = performance.now();
+    function detectFreeze() {
+        const now = performance.now();
+        const elapsed = now - lastAnimationTime;
+        
+        // If more than 500ms between frames, we had a freeze
+        if (elapsed > 500) {
+            console.log(`Detected frame freeze: ${elapsed.toFixed(0)}ms`);
+            window.lowGraphicsMode = true;
+            disableHeavyAudioFeatures();
+            
+            if (window.showNotification) {
+                window.showNotification('Performans iyileştirildi!', 2000);
+            }
+        }
+        
+        lastAnimationTime = now;
+        requestAnimationFrame(detectFreeze);
+    }
+    
+    requestAnimationFrame(detectFreeze);
 })();
 
 window.game.toggleCameraMode = function() {

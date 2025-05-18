@@ -413,10 +413,20 @@ class Environment {
         // Mevcut hava durumunu güncelle
         this.currentWeather = weatherType;
         
+        // Check if mobile and in low graphics mode
+        const isMobile = window.isMobileMode || 
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+            window.innerWidth <= 950;
+        
         // Hava durumuna göre uygun ses efektlerini çal
         if (window.audioManager) {
-            console.log(`Playing atmosphere sound for weather: ${weatherType}`);
-            window.audioManager.playAtmosphereSound(weatherType);
+            // Skip atmospheric sounds on mobile with low graphics to improve performance
+            if (isMobile && window.lowGraphicsMode) {
+                console.log(`Skipping atmosphere sound for weather: ${weatherType} (low graphics mode)`);
+            } else {
+                console.log(`Playing atmosphere sound for weather: ${weatherType}`);
+                window.audioManager.playAtmosphereSound(weatherType);
+            }
         }
         
         // Hava durumuna göre görselleri güncelle

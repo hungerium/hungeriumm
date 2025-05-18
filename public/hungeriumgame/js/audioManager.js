@@ -25,6 +25,16 @@ class AudioManager {
             atmosphere: false
         };
         
+        // Mobile optimization flags
+        this.isMobileDevice = this.detectMobileDevice();
+        this.audioLimiters = {
+            maxSimultaneousSounds: this.isMobileDevice ? 3 : 10,
+            minTimeBetweenSounds: this.isMobileDevice ? 100 : 0, // ms between sounds on mobile
+            lastSoundPlayedTime: 0,
+            activeSoundCount: 0,
+            pendingSounds: []
+        };
+        
         // Audio notifications
         this.notificationElement = null;
         this.setupNotifications();
@@ -38,6 +48,19 @@ class AudioManager {
         // User interaction to enable audio (browser autoplay policy)
         document.addEventListener('click', () => this.resumeAudio(), { once: true });
         document.addEventListener('keydown', () => this.resumeAudio(), { once: true });
+    }
+    
+    // Detect if the device is mobile
+    detectMobileDevice() {
+        const isMobile = window.isMobileMode || 
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+            (window.innerWidth <= 950);
+        
+        if (isMobile) {
+            console.log("Mobile device detected - using optimized audio settings");
+        }
+        
+        return isMobile;
     }
     
     initialize() {
@@ -59,60 +82,71 @@ class AudioManager {
     }
     
     preloadAudioAssets() {
-        // Create engine sound
+        // Lower sound quality for mobile
+        const soundQualityPrefix = this.isMobileDevice ? 'low_' : '';
+        
+        // Create engine sound (always load this one - essential)
         this.sounds.engine = document.createElement('audio');
-        this.sounds.engine.src = 'assets/sounds/engine.mp3';
+        this.sounds.engine.src = `assets/sounds/engine.mp3`;
         this.sounds.engine.loop = true;
         this.sounds.engine.volume = 0.0;
         this.sounds.engine.load();
         
-        // Create siren sound
+        // Create siren sound (always load this one - essential)
         this.sounds.siren = document.createElement('audio');
-        this.sounds.siren.src = 'assets/sounds/siren.mp3';
+        this.sounds.siren.src = `assets/sounds/siren.mp3`;
         this.sounds.siren.loop = true;
         this.sounds.siren.volume = 0.0;
         this.sounds.siren.load();
+        
+        // Skip non-essential sounds on low-end mobile devices
+        if (this.isMobileDevice && window.lowGraphicsMode) {
+            console.log("Using minimal audio set for low-end mobile device");
+            return;
+        }
         
         // Create atmosphere sounds for different weather
         // Clear weather ambient sound
         this.sounds.atmosphere.clear = document.createElement('audio');
         this.sounds.atmosphere.clear.src = 'assets/sounds/ambient_city.mp3';
         this.sounds.atmosphere.clear.loop = true;
-        this.sounds.atmosphere.clear.volume = 0.25;
+        this.sounds.atmosphere.clear.volume = this.isMobileDevice ? 0.15 : 0.25;
         this.sounds.atmosphere.clear.load();
         
         // Rain sound
         this.sounds.atmosphere.rain = document.createElement('audio');
         this.sounds.atmosphere.rain.src = 'assets/sounds/rain.mp3';
         this.sounds.atmosphere.rain.loop = true;
-        this.sounds.atmosphere.rain.volume = 0.3;
+        this.sounds.atmosphere.rain.volume = this.isMobileDevice ? 0.2 : 0.3;
         this.sounds.atmosphere.rain.load();
         
         // Snow/wind sound
         this.sounds.atmosphere.snow = document.createElement('audio');
         this.sounds.atmosphere.snow.src = 'assets/sounds/wind.mp3';
         this.sounds.atmosphere.snow.loop = true;
-        this.sounds.atmosphere.snow.volume = 0.2;
+        this.sounds.atmosphere.snow.volume = this.isMobileDevice ? 0.1 : 0.2;
         this.sounds.atmosphere.snow.load();
         
         // Gunshot sound
         this.sounds.gunshot = document.createElement('audio');
         this.sounds.gunshot.src = 'assets/sounds/gunshot.mp3';
-        this.sounds.gunshot.volume = 0.5;
+        this.sounds.gunshot.volume = this.isMobileDevice ? 0.3 : 0.5;
         this.sounds.gunshot.load();
         
         // Missile launch sound
         this.sounds.missile = document.createElement('audio');
         this.sounds.missile.src = 'assets/sounds/missile.mp3';
-        this.sounds.missile.volume = 0.9;
+        this.sounds.missile.volume = this.isMobileDevice ? 0.6 : 0.9;
         this.sounds.missile.load();
         
-        // Background music
-        this.sounds.backgroundMusic = document.createElement('audio');
-        this.sounds.backgroundMusic.src = 'assets/sounds/background_music.mp3';
-        this.sounds.backgroundMusic.loop = true;
-        this.sounds.backgroundMusic.volume = 0.7;
-        this.sounds.backgroundMusic.load();
+        // Background music - don't preload on mobile to save memory
+        if (!this.isMobileDevice) {
+            this.sounds.backgroundMusic = document.createElement('audio');
+            this.sounds.backgroundMusic.src = 'assets/sounds/background_music.mp3';
+            this.sounds.backgroundMusic.loop = true;
+            this.sounds.backgroundMusic.volume = 0.7;
+            this.sounds.backgroundMusic.load();
+        }
         
         // Add loading error handlers to all sounds
         for (const key in this.sounds) {
@@ -123,13 +157,38 @@ class AudioManager {
                 };
             } else if (key === 'atmosphere') {
                 for (const weatherType in this.sounds.atmosphere) {
-                    this.sounds.atmosphere[weatherType].onerror = () => {
-                        console.error(`Failed to load sound: atmosphere.${weatherType}`);
-                        this.showNotification(`Failed to load sound: atmosphere.${weatherType}`, "error");
-                    };
+                    if (this.sounds.atmosphere[weatherType]) {
+                        this.sounds.atmosphere[weatherType].onerror = () => {
+                            console.error(`Failed to load sound: atmosphere.${weatherType}`);
+                            this.showNotification(`Failed to load sound: atmosphere.${weatherType}`, "error");
+                        };
+                    }
                 }
             }
         }
+    }
+    
+    // Helper method to handle sound throttling on mobile
+    canPlayNewSound() {
+        const now = Date.now();
+        
+        // If we're under the limit of simultaneous sounds
+        if (this.audioLimiters.activeSoundCount < this.audioLimiters.maxSimultaneousSounds) {
+            // And enough time has passed since last sound
+            if (now - this.audioLimiters.lastSoundPlayedTime >= this.audioLimiters.minTimeBetweenSounds) {
+                this.audioLimiters.lastSoundPlayedTime = now;
+                this.audioLimiters.activeSoundCount++;
+                return true;
+            }
+        }
+        
+        // Can't play now - too many sounds or too soon
+        return false;
+    }
+    
+    // Track when a sound is finished
+    soundFinished() {
+        this.audioLimiters.activeSoundCount = Math.max(0, this.audioLimiters.activeSoundCount - 1);
     }
     
     resumeAudio() {
@@ -329,6 +388,12 @@ class AudioManager {
     playAtmosphereSound(type = 'clear') {
         if (!this.sounds.atmosphere) return false;
         
+        // Skip on mobile low graphics mode to improve performance
+        if (this.isMobileDevice && window.lowGraphicsMode) {
+            console.log("Atmosphere sound skipped on low-end mobile device");
+            return false;
+        }
+        
         try {
             // Stop any currently playing atmosphere sounds
             this.stopAtmosphereSound();
@@ -377,102 +442,95 @@ class AudioManager {
     playGunshotSound() {
         if (!this.sounds.gunshot) return;
         
+        // Skip on mobile if we can't play more sounds
+        if (this.isMobileDevice && !this.canPlayNewSound()) {
+            return;
+        }
+        
         try {
-            // Clone the audio element to allow multiple overlapping shots
-            const gunshot = this.sounds.gunshot.cloneNode();
-            gunshot.volume = Math.random() * 0.1 + 0.2; // Slight volume variation
-            gunshot.playbackRate = Math.random() * 0.2 + 0.9; // Slight pitch variation
-            
-            gunshot.play().catch(error => {
-                console.error("Gunshot sound playback failed:", error);
-            });
-            
-            // Remove the cloned element after it finishes playing
-            gunshot.onended = () => {
-                gunshot.remove();
-            };
+            // Don't clone on mobile devices - reuse the same audio element
+            if (this.isMobileDevice) {
+                this.sounds.gunshot.currentTime = 0;
+                this.sounds.gunshot.volume = Math.random() * 0.1 + 0.2;
+                this.sounds.gunshot.play()
+                    .catch(error => console.error("Gunshot sound playback failed:", error));
+                
+                // Count as finished after 1 second
+                setTimeout(() => this.soundFinished(), 1000);
+            } else {
+                // Clone the audio element on desktop to allow multiple overlapping shots
+                const gunshot = this.sounds.gunshot.cloneNode();
+                gunshot.volume = Math.random() * 0.1 + 0.2; // Slight volume variation
+                gunshot.playbackRate = Math.random() * 0.2 + 0.9; // Slight pitch variation
+                
+                gunshot.play().catch(error => {
+                    console.error("Gunshot sound playback failed:", error);
+                    this.soundFinished();
+                });
+                
+                // Remove the cloned element after it finishes playing
+                gunshot.onended = () => {
+                    gunshot.remove();
+                    this.soundFinished();
+                };
+            }
         } catch (error) {
             console.error("Error playing gunshot sound:", error);
+            this.soundFinished();
         }
     }
     
     // Missile launch sound
     playMissileSound() {
+        // Skip on mobile if we can't play more sounds
+        if (this.isMobileDevice && !this.canPlayNewSound()) {
+            return;
+        }
+        
         if (!this.sounds.missile) {
             console.error("Missile sound not loaded properly!");
-            // Create on-demand if not available
-            try {
-                const tempMissile = new Audio('assets/sounds/missile.mp3');
-                tempMissile.volume = 0.9;
-                tempMissile.play().catch(e => console.error("Failed to play emergency missile sound:", e));
-                return;
-            } catch (e) {
-                console.error("Emergency missile sound creation failed:", e);
-                return;
-            }
+            this.soundFinished();
+            return;
         }
         
         try {
-            // Clone the audio element to allow multiple simultaneous missiles
-            const missile = this.sounds.missile.cloneNode();
-            missile.volume = 0.9; // Increased from 0.7
-            
-            // Make sure missile sound is loaded before playing
-            if (missile.readyState < 2) {  // HAVE_CURRENT_DATA or higher
-                missile.addEventListener('canplaythrough', () => {
-                    console.log("Missile sound loaded, playing now");
-                    playMissileSound(missile);
-                });
-                missile.load();
-            } else {
-                playMissileSound(missile);
-            }
-            
-            function playMissileSound(sound) {
-                // Force play with robust error handling
-                console.log("Playing missile sound");
-                const playPromise = sound.play();
+            // Simple approach for mobile
+            if (this.isMobileDevice) {
+                this.sounds.missile.currentTime = 0;
+                this.sounds.missile.play()
+                    .catch(error => console.error("Missile sound playback failed:", error));
                 
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log("Missile sound played successfully");
-                    }).catch(error => {
-                        console.error("Missile sound playback failed:", error);
-                        
-                        // Try alternative approach
-                        try {
-                            const altMissile = document.createElement('audio');
-                            altMissile.src = 'assets/sounds/missile.mp3';
-                            altMissile.volume = 0.9;
-                            document.body.appendChild(altMissile);
-                            altMissile.play();
-                            altMissile.onended = () => altMissile.remove();
-                            console.log("Missile sound played with DOM method");
-                        } catch (altError) {
-                            console.error("Alternative missile playback failed:", altError);
-                        }
-                    });
-                }
+                // Count as finished after 1 second
+                setTimeout(() => this.soundFinished(), 1500);
+                return;
             }
             
-            // Remove the cloned element after it finishes playing
+            // Desktop - clone for multiple sounds
+            const missile = this.sounds.missile.cloneNode();
+            missile.volume = 0.9;
+            
+            // Simple playback
+            missile.play().catch(error => {
+                console.error("Missile sound playback failed:", error);
+                this.soundFinished();
+            });
+            
+            // Remove the element when done
             missile.onended = () => {
                 missile.remove();
+                this.soundFinished();
             };
         } catch (error) {
             console.error("Error playing missile sound:", error);
-            
-            // Last attempt
-            try {
-                new Audio('assets/sounds/missile.mp3').play();
-            } catch (e) {
-                console.error("Final missile fallback failed:", e);
-            }
+            this.soundFinished();
         }
     }
     
     // Completely new implementation for coin sound playback
     playCoinSound() {
+        // Skip on mobile to reduce audio load
+        if (this.isMobileDevice) return;
+        
         // Use a different sound or silence for coin collection
         // If you have a coin sound, use it here. Otherwise, do nothing.
         // Example: if (this.sounds.coin) { ... } else { return; }
@@ -481,11 +539,26 @@ class AudioManager {
     
     // Background music
     playBackgroundMusic() {
+        // Skip on mobile low graphics mode
+        if (this.isMobileDevice && window.lowGraphicsMode) {
+            return false;
+        }
+        
+        // Create backgroundMusic on-demand for mobile
+        if (this.isMobileDevice && !this.sounds.backgroundMusic) {
+            this.sounds.backgroundMusic = document.createElement('audio');
+            this.sounds.backgroundMusic.src = 'assets/sounds/background_music.mp3';
+            this.sounds.backgroundMusic.loop = true;
+            this.sounds.backgroundMusic.volume = 0.5; // Lower volume on mobile
+            this.sounds.backgroundMusic.load();
+        }
+        
         if (!this.sounds.backgroundMusic) return false;
         
         try {
             if (!this.playing.backgroundMusic) {
-                this.sounds.backgroundMusic.volume = 0.7;
+                const volume = this.isMobileDevice ? 0.5 : 0.7;
+                this.sounds.backgroundMusic.volume = volume;
                 this.sounds.backgroundMusic.currentTime = 0;
                 const playPromise = this.sounds.backgroundMusic.play();
                 
@@ -520,7 +593,9 @@ class AudioManager {
         if (!this.sounds.backgroundMusic) return;
         
         try {
-            this.sounds.backgroundMusic.volume = Math.min(Math.max(volume, 0), 1);
+            // Lower max volume on mobile
+            const maxVolume = this.isMobileDevice ? 0.6 : 1.0;
+            this.sounds.backgroundMusic.volume = Math.min(Math.max(volume, 0), maxVolume);
         } catch (error) {
             console.error("Error setting background music volume:", error);
         }
@@ -528,60 +603,90 @@ class AudioManager {
     
     // Add method to play crash sound
     playCrashSound(volume = 0.8) {
+        // Skip on mobile if we can't play more sounds
+        if (this.isMobileDevice && !this.canPlayNewSound()) {
+            return;
+        }
+        
         try {
+            // Adjust volume for mobile
+            const actualVolume = this.isMobileDevice ? Math.min(volume, 0.5) : volume;
+            
             if (!this.sounds.crash) {
                 // Create crash sound if it doesn't exist yet
                 this.sounds.crash = document.createElement('audio');
                 this.sounds.crash.src = 'assets/sounds/crash.mp3';
-                this.sounds.crash.volume = volume;
+                this.sounds.crash.volume = actualVolume;
                 this.sounds.crash.load();
             }
             
             // Reset sound to beginning and play
             this.sounds.crash.currentTime = 0;
-            this.sounds.crash.volume = volume;
+            this.sounds.crash.volume = actualVolume;
             
             // Play the sound with error handling
             const playPromise = this.sounds.crash.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
+                playPromise.then(() => {
+                    // Count as finished after the sound duration
+                    setTimeout(() => this.soundFinished(), 1000);
+                }).catch(error => {
                     console.warn("Error playing crash sound:", error);
+                    this.soundFinished();
                 });
             }
         } catch (error) {
             console.error("Failed to play crash sound:", error);
+            this.soundFinished();
         }
     }
     
     // Çarpışma sesi çalmak için fonksiyon ekle
     playCollisionSound(volume = 0.7) {
+        // Skip on mobile if we can't play more sounds
+        if (this.isMobileDevice && !this.canPlayNewSound()) {
+            return;
+        }
+        
         try {
+            // Adjust volume for mobile
+            const actualVolume = this.isMobileDevice ? Math.min(volume, 0.4) : volume;
+            
             if (!this.sounds.collision) {
                 // collision.mp3 yoksa crash.mp3 kullan
                 this.sounds.collision = document.createElement('audio');
                 this.sounds.collision.src = 'assets/sounds/collision.mp3';
-                this.sounds.collision.volume = volume;
+                this.sounds.collision.volume = actualVolume;
                 this.sounds.collision.load();
             }
             this.sounds.collision.currentTime = 0;
-            this.sounds.collision.volume = volume;
+            this.sounds.collision.volume = actualVolume;
             const playPromise = this.sounds.collision.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => {
+                playPromise.then(() => {
+                    // Count as finished after the sound duration
+                    setTimeout(() => this.soundFinished(), 1000);
+                }).catch(error => {
                     // collision.mp3 yoksa crash.mp3 ile dene
                     if (!this.sounds.crash) {
                         this.sounds.crash = document.createElement('audio');
                         this.sounds.crash.src = 'assets/sounds/crash.mp3';
-                        this.sounds.crash.volume = volume;
+                        this.sounds.crash.volume = actualVolume;
                         this.sounds.crash.load();
                     }
                     this.sounds.crash.currentTime = 0;
-                    this.sounds.crash.volume = volume;
-                    this.sounds.crash.play();
+                    this.sounds.crash.volume = actualVolume;
+                    this.sounds.crash.play().then(() => {
+                        setTimeout(() => this.soundFinished(), 1000);
+                    }).catch(e => {
+                        console.error('Failed to play crash sound fallback:', e);
+                        this.soundFinished();
+                    });
                 });
             }
         } catch (error) {
             console.error('Failed to play collision sound:', error);
+            this.soundFinished();
         }
     }
     
