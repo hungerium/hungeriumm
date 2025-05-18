@@ -638,13 +638,16 @@ class Game {
         nameInput.style.color = '#3a2614';
         nameInput.style.fontWeight = '500';
         loginForm.appendChild(nameInput);
-        // Inputa otomatik focus ver ve eventleri logla
-        setTimeout(() => {
-            nameInput.focus();
-        }, 350);
+        // Otomatik focus kodunu kaldırdım. Sadece kullanıcı tıklayınca/touch edince focus ver.
         nameInput.addEventListener('focus', () => console.log('Input focused'));
-        nameInput.addEventListener('touchstart', () => console.log('Input touchstart'));
-        nameInput.addEventListener('click', () => console.log('Input click'));
+        nameInput.addEventListener('touchend', () => {
+            setTimeout(() => nameInput.focus(), 10);
+            console.log('Input touchend, focus verildi');
+        });
+        nameInput.addEventListener('click', () => {
+            setTimeout(() => nameInput.focus(), 10);
+            console.log('Input click, focus verildi');
+        });
         // Vehicle selection (modern, mobile-friendly)
         const vehicleSelection = document.createElement('div');
         vehicleSelection.style.display = 'flex';
@@ -717,7 +720,7 @@ class Game {
         startButton.textContent = 'START';
         startButton.className = 'web3-button';
         startButton.style.display = 'block';
-        startButton.style.margin = '18px auto 0 auto';
+        startButton.style.margin = '18px auto 24px auto'; // Altına ekstra margin
         startButton.style.width = '80%';
         // Remove old inline styles that conflict with .web3-button
         startButton.style.background = '';
@@ -798,29 +801,47 @@ class Game {
         function updateLoginOverlayResponsive() {
             const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth < 900;
             if (isLandscape) {
-                loginOverlay.style.alignItems = 'flex-start';
-                loginOverlay.style.justifyContent = 'flex-start';
-                loginOverlay.style.overflowY = 'auto';
+                loginOverlay.style.alignItems = 'center';
+                loginOverlay.style.justifyContent = 'center';
+                loginOverlay.style.overflow = 'hidden';
                 loginOverlay.style.height = '100vh';
-                loginOverlay.style.paddingTop = '10px';
+                loginOverlay.style.minHeight = '100vh';
+                loginOverlay.style.display = 'flex';
+                loginOverlay.style.flexDirection = 'column';
                 loginForm.style.width = '96vw';
                 loginForm.style.maxWidth = '420px';
                 loginForm.style.minWidth = '220px';
-                loginForm.style.margin = '10px auto';
+                loginForm.style.margin = '0 auto';
                 loginForm.style.fontSize = '15px';
                 loginForm.style.padding = '10px 4vw';
+                loginForm.style.height = 'auto';
+                loginForm.style.maxHeight = 'none';
+                loginForm.style.overflow = 'visible';
+                loginForm.style.display = 'flex';
+                loginForm.style.flexDirection = 'column';
+                loginForm.style.justifyContent = 'center';
+                loginForm.style.alignItems = 'center';
             } else {
                 loginOverlay.style.alignItems = 'center';
                 loginOverlay.style.justifyContent = 'center';
-                loginOverlay.style.overflowY = '';
+                loginOverlay.style.overflow = '';
                 loginOverlay.style.height = '100%';
-                loginOverlay.style.paddingTop = '';
+                loginOverlay.style.minHeight = '';
+                loginOverlay.style.display = 'flex';
+                loginOverlay.style.flexDirection = '';
                 loginForm.style.width = '320px';
                 loginForm.style.maxWidth = '';
                 loginForm.style.minWidth = '';
                 loginForm.style.margin = '';
                 loginForm.style.fontSize = '';
                 loginForm.style.padding = '20px';
+                loginForm.style.height = '';
+                loginForm.style.maxHeight = '';
+                loginForm.style.overflow = '';
+                loginForm.style.display = '';
+                loginForm.style.flexDirection = '';
+                loginForm.style.justifyContent = '';
+                loginForm.style.alignItems = '';
             }
         }
         updateLoginOverlayResponsive();

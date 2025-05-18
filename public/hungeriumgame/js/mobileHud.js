@@ -104,6 +104,15 @@
                     pointer-events: auto !important;
                     -webkit-touch-callout: auto !important;
                 }
+                /* Joystick görünürlüğü için daha opak ve belirgin renk */
+                .nipple .back {
+                    background: rgba(255, 215, 0, 0.8) !important;
+                    opacity: 0.8 !important;
+                }
+                .nipple .front {
+                    background: rgba(255, 215, 0, 1) !important;
+                    opacity: 0.8 !important;
+                }
                 html, body {
                     -webkit-touch-callout: none !important;
                     -webkit-tap-highlight-color: transparent !important;
@@ -732,63 +741,59 @@
     // Optimized joystick setup for low-end devices
     function setupOptimizedJoystick() {
         if (joystickManager) return;
-        // Use the whole screen as the joystick zone for dynamic mode
-        const joystickZone = document.body;
-        if (!joystickZone || !window.nipplejs) return;
-        
+        // Sadece ekranın sol yarısında joystick tetiklensin
+        let joystickZone = document.getElementById('joystick-zone-left');
+        if (!joystickZone) {
+            joystickZone = document.createElement('div');
+            joystickZone.id = 'joystick-zone-left';
+            joystickZone.style.position = 'fixed';
+            joystickZone.style.left = '0';
+            joystickZone.style.top = '0';
+            joystickZone.style.width = '50vw';
+            joystickZone.style.height = '100vh';
+            joystickZone.style.zIndex = '9998';
+            joystickZone.style.touchAction = 'none';
+            joystickZone.style.background = 'transparent';
+            document.body.appendChild(joystickZone);
+        }
+        if (!window.nipplejs) return;
         const isLowEnd = isLowEndDevice();
-        
         // Remove old joystick if exists
         const oldJoystick = document.getElementById('mobile-joystick');
         if (oldJoystick) {
-            oldJoystick.style.display = 'none'; // Hide the static joystick area
+            oldJoystick.style.display = 'none';
         }
-        
-        // Create a dynamic joystick that appears where the user touches
         joystickManager = window.nipplejs.create({
             zone: joystickZone,
-            mode: 'dynamic', // Dynamic mode: joystick appears where user touches
+            mode: 'dynamic',
             color: '#ffd700',
-            size: isLowEnd ? 100 : 120,
-            fadeTime: isLowEnd ? 200 : 100,
+            size: 120,
+            fadeTime: 100,
             restJoystick: true,
             restOpacity: 0.7,
             lockX: false,
             lockY: false,
             catchDistance: isLowEnd ? 100 : 150,
-            dataOnly: isLowEnd
+            dynamicPage: true
         });
         
-        // Use simpler event handling for low-end devices
-        if (isLowEnd) {
-            // Throttle move events on low-end devices
-            let lastUpdate = 0;
-            joystickManager.on('move', function(evt, data) {
-                if (!data || !data.vector) return;
-                const now = Date.now();
-                if (now - lastUpdate < 32) return; // Limit to ~30fps updates
-                lastUpdate = now;
-                lastDir.x = data.vector.x * (data.force || 1);
-                lastDir.y = data.vector.y * (data.force || 1);
-                if (window.game && window.game.vehicle) {
-                    mapJoystickToControls();
-                }
-            });
-        } else {
-            // Full quality for better devices
-            joystickManager.on('move', function(evt, data) {
-                if (!data || !data.vector) return;
-                lastDir.x = data.vector.x * (data.force || 1);
-                lastDir.y = data.vector.y * (data.force || 1);
-                if (window.game && window.game.vehicle) {
-                    mapJoystickToControls();
-                }
-            });
-        }
+        // More responsive event handlers
+        joystickManager.on('move', function(evt, data) {
+            if (!data || !data.vector) return;
+            // Use force for more accurate analog values (0-1 range)
+            lastDir.x = data.vector.x * (data.force || 1);
+            lastDir.y = data.vector.y * (data.force || 1);
+            
+            // Immediately map to controls for faster response
+            if (window.game && window.game.vehicle) {
+                mapJoystickToControls();
+            }
+        });
         
         joystickManager.on('end', function() {
             lastDir.x = 0;
             lastDir.y = 0;
+            // Immediately reset controls when joystick is released
             if (window.game && window.game.vehicle) {
                 const v = window.game.vehicle;
                 v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
@@ -1032,10 +1037,12 @@
         }
         /* Joystick (nipplejs) custom opacity: 50% more transparent */
         .nipple .back {
-            background: rgba(255, 215, 0, 0.25) !important;
+            background: rgba(255, 215, 0, 0.8) !important;
+            opacity: 0.8 !important;
         }
         .nipple .front {
-            background: rgba(255, 215, 0, 0.18) !important;
+            background: rgba(255, 215, 0, 1) !important;
+            opacity: 0.8 !important;
         }
         .mobile-btn {
             background: linear-gradient(135deg, #a67c52 60%, #ffd7a0 100%) !important;
