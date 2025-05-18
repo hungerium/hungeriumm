@@ -473,11 +473,16 @@ class Robot {
             window.game.coinManager.addRobotKillCoins();
         }
         
-        // --- NEW: Play crash sound at 5% volume ---
-        if (window.audioManager && typeof window.audioManager.playCrashSound === 'function') {
-            window.audioManager.playCrashSound(0.05);
+        // --- Using our specialized robot death sound function ---
+        if (window.audioManager) {
+            if (typeof window.audioManager.playCrashSoundForRobot === 'function') {
+                // Use the specialized function for robots with minimal volume
+                window.audioManager.playCrashSoundForRobot(0.03);
+            } else if (typeof window.audioManager.playCrashSound === 'function') {
+                // Fallback to normal crash sound with very low volume
+                window.audioManager.playCrashSound(0.02);
+            }
         }
-        // --- END NEW ---
         
         // Full cleanup will be handled by the Game class
     }

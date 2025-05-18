@@ -407,6 +407,60 @@ window.lowGraphicsMode = false;
     requestAnimationFrame(detectFreeze);
 })();
 
+// Mobil cihazlar için ses ayarları yapılandırma fonksiyonu
+function configureMobileAudio() {
+    // Sadece mobil cihazlarda çalış
+    if (!isMobileDevice()) return;
+    
+    console.log("Configuring mobile audio settings...");
+    
+    // AudioManager hazır olduğunda çalıştır
+    const configureAudio = function() {
+        if (!window.audioManager) {
+            console.log("AudioManager not ready yet, retrying in 500ms");
+            setTimeout(configureAudio, 500);
+            return;
+        }
+        
+        // Siren sesini mobil cihazlarda çok düşük seviyeye ayarla
+        if (window.audioManager.sounds && window.audioManager.sounds.siren) {
+            console.log("Adjusting siren volume for mobile");
+            window.audioManager.sounds.siren.volume = 0.05;
+        }
+        
+        // Arka plan müziğini düşür veya kapat
+        if (window.audioManager.sounds && window.audioManager.sounds.backgroundMusic) {
+            if (window.lowGraphicsMode) {
+                console.log("Disabling background music for low-end mobile");
+                window.audioManager.stopBackgroundMusic();
+            } else {
+                console.log("Reducing background music volume for mobile");
+                window.audioManager.setBackgroundMusicVolume(0.3);
+            }
+        }
+        
+        // Robot ölüm sesini mobilde tamamen kapatma özelliğini aktif et
+        window.audioManager.disableRobotDeathSounds = window.lowGraphicsMode;
+        
+        // AudioManager'a özel mobil ses limitleyicileri ayarla
+        if (window.audioManager.audioLimiters) {
+            window.audioManager.audioLimiters.maxSimultaneousSounds = window.lowGraphicsMode ? 2 : 3;
+            window.audioManager.audioLimiters.minTimeBetweenSounds = window.lowGraphicsMode ? 300 : 150;
+        }
+        
+        console.log("Mobile audio configuration complete");
+    };
+    
+    // İlk yapılandırmayı başlat
+    configureAudio();
+    
+    // Oyun başladıktan sonra da bir kez daha ayarla (daha emin olmak için)
+    setTimeout(configureAudio, 3000);
+}
+
+// Sayfa yüklendiğinde mobil ses yapılandırmasını çalıştır
+window.addEventListener('DOMContentLoaded', configureMobileAudio);
+
 window.game.toggleCameraMode = function() {
     if (!window.game || !window.game.cameraMode) return;
     const modes = ['follow', 'cockpit', 'orbit', 'cinematic', 'overhead'];

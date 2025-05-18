@@ -35,6 +35,9 @@ class AudioManager {
             pendingSounds: []
         };
         
+        // Special behavior flags
+        this.disableRobotDeathSounds = false; // Can be set to true by mobile optimizations
+        
         // Audio notifications
         this.notificationElement = null;
         this.setupNotifications();
@@ -353,8 +356,17 @@ class AudioManager {
         if (!this.sounds.siren) return false;
         
         try {
+            // If already playing siren but on mobile, use lower volume
+            if (this.isMobileDevice && this.playing.siren) {
+                // On mobile, keep volume very low
+                this.sounds.siren.volume = 0.05;
+                return true;
+            }
+            
             if (!this.playing.siren) {
-                this.sounds.siren.volume = 0.1;
+                // Set very low volume on mobile
+                const volume = this.isMobileDevice ? 0.05 : 0.1;
+                this.sounds.siren.volume = volume;
                 this.sounds.siren.currentTime = 0;
                 const playPromise = this.sounds.siren.play();
                 
@@ -686,6 +698,50 @@ class AudioManager {
             }
         } catch (error) {
             console.error('Failed to play collision sound:', error);
+            this.soundFinished();
+        }
+    }
+    
+    // Add method to check if robot death sound should play
+    playCrashSoundForRobot(volume = 0.05) {
+        // On mobile devices or if robot sounds are disabled, completely disable robot death sounds
+        if (this.isMobileDevice || this.disableRobotDeathSounds) {
+            return;
+        }
+        
+        // On desktop, play at very low volume
+        try {
+            // Skip on mobile if we can't play more sounds
+            if (!this.canPlayNewSound()) {
+                return;
+            }
+            
+            // Use a super low volume
+            const actualVolume = Math.min(volume, 0.05);
+            
+            if (!this.sounds.crash) {
+                // Create crash sound if it doesn't exist yet
+                this.sounds.crash = document.createElement('audio');
+                this.sounds.crash.src = 'assets/sounds/crash.mp3';
+                this.sounds.crash.volume = actualVolume;
+                this.sounds.crash.load();
+            }
+            
+            // Reset sound to beginning and play
+            this.sounds.crash.currentTime = 0;
+            this.sounds.crash.volume = actualVolume;
+            
+            // Play with error handling
+            const playPromise = this.sounds.crash.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setTimeout(() => this.soundFinished(), 500);
+                }).catch(error => {
+                    this.soundFinished();
+                });
+            }
+        } catch (error) {
+            console.error("Failed to play robot crash sound:", error);
             this.soundFinished();
         }
     }

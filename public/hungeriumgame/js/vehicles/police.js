@@ -546,71 +546,73 @@ class PoliceVehicle extends Vehicle {
 
     // updateSiren metodunu da ekleyelim (veya güncelleyelim)
     updateSiren(delta) {
-        // Siren durumuna göre ışıkları ve sesi güncelle
-        if (this.sirenOn) {
-            this.sirenTime += delta;
+        // update the siren lights (red and blue flashing)
+        if (this.sirenEnabled) {
+            const sirenSpeed = 8; // Frequency of siren flashes
+            const time = Date.now() * 0.001; // Current time in seconds
             
-            // Yanıp sönen ışık efekti - 2Hz frekansta
-            const flashFreq = 2; // Hz
-            const phase = (Math.sin(this.sirenTime * flashFreq * Math.PI * 2) + 1) / 2;
+            // Siren lights flash cycle
+            const flashCycle = Math.sin(time * sirenSpeed);
+            const redActive = flashCycle > 0;
+            const blueActive = flashCycle <= 0;
             
-            // Işıkları güncelle - sırayla yanıp sönsün
-            if (Array.isArray(this.sirenLights)) {
-                for (let i = 0; i < this.sirenLights.length; i++) {
-                    const light = this.sirenLights[i];
-                    const lightPhase = i % 2 === 0 ? phase : 1 - phase;
-                    
-                    // SpotLight güncelleme
-                    if (light && typeof light === 'object') {
-                        if (light.visible !== undefined) { // SpotLight
-                            light.visible = true;
-                            light.intensity = lightPhase * 12;
-                        } else if (light.material) { // Mesh
-                            light.material.emissiveIntensity = lightPhase * 2.5;
-                            light.material.opacity = 0.4 + lightPhase * 0.6;
-                        }
-                    }
-                }
+            // Set light colors and intensity
+            if (this.sirenLightRed && this.sirenLightBlue) {
+                this.sirenLightRed.material.emissiveIntensity = redActive ? 2.5 : 0.2;
+                this.sirenLightBlue.material.emissiveIntensity = blueActive ? 2.5 : 0.2;
             }
             
-            // Only play siren sound for player-controlled police vehicles, not NPCs
-            if (window.audioManager) {
+            // Play siren sound - check for mobile and low graphics mode
+            const isMobile = window.isMobileMode || 
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                window.innerWidth <= 950;
+            
+            // On mobile with low graphics mode, don't play siren sound at all
+            if (isMobile && window.lowGraphicsMode) {
+                if (window.audioManager && typeof window.audioManager.stopSirenSound === 'function') {
+                    window.audioManager.stopSirenSound();
+                }
+            } 
+            // Otherwise, play the sound with appropriate volume
+            else if (window.audioManager && typeof window.audioManager.playSirenSound === 'function') {
                 window.audioManager.playSirenSound();
             }
             
-            // Point light'ları da güncelle
-            if (this.redPointLight) {
-                this.redPointLight.intensity = phase * 5;
-            }
-            if (this.bluePointLight) {
-                this.bluePointLight.intensity = (1-phase) * 5;
-            }
-            
-        } else {
-            // Işıklar kapalı - SpotLight ve mesh'leri güncelle
-            if (Array.isArray(this.sirenLights)) {
-                for (const light of this.sirenLights) {
-                    if (light && typeof light === 'object') {
-                        if (light.visible !== undefined) { // SpotLight
-                            light.visible = false;
-                            light.intensity = 0;
-                        } else if (light.material) { // Mesh
-                            light.material.emissiveIntensity = 0.1;
-                            light.material.opacity = 0.6;
-                        }
+            // Create siren light effect particle
+            if (this.particleSystem && Math.random() < 0.05) {
+                // On mobile with low graphics, don't create particles
+                if (!(isMobile && window.lowGraphicsMode)) {
+                    const lightColor = redActive ? 0xff0000 : 0x0000ff;
+                    
+                    // Reduce particle amount on mobile
+                    if (!isMobile || Math.random() < 0.5) {
+                        const lightDirection = new THREE.Vector3(
+                            (Math.random() - 0.5) * 2,
+                            Math.random(),
+                            (Math.random() - 0.5) * 2
+                        ).normalize();
+                        
+                        this.particleSystem.createSirenLightEffect(
+                            this.body.position.x,
+                            this.body.position.y + 2,
+                            this.body.position.z,
+                            lightColor,
+                            lightDirection
+                        );
                     }
                 }
             }
-            
-            // Only stop siren sound if it was playing and for player vehicles
-            if (window.audioManager && this.sirenPlaying && !this.isAI) {
-                window.audioManager.stopSirenSound();
-                this.sirenPlaying = false;
+        } else {
+            // Turn off siren lights if disabled
+            if (this.sirenLightRed && this.sirenLightBlue) {
+                this.sirenLightRed.material.emissiveIntensity = 0.1;
+                this.sirenLightBlue.material.emissiveIntensity = 0.1;
             }
             
-            // Point light'ları da kapat
-            if (this.redPointLight) this.redPointLight.intensity = 0;
-            if (this.bluePointLight) this.bluePointLight.intensity = 0;
+            // Turn off siren sound
+            if (window.audioManager && typeof window.audioManager.stopSirenSound === 'function') {
+                window.audioManager.stopSirenSound();
+            }
         }
     }
 
