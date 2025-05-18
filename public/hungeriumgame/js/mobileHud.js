@@ -99,7 +99,7 @@
             controls = document.createElement('div');
             controls.id = MOBILE_CONTROLS_ID;
             controls.innerHTML = `
-                <div id="mobile-joystick" style="position:absolute;left:18px;bottom:18px;"></div>
+                <div id="mobile-joystick"></div>
                 <div id="mobile-buttons">
                     <button class="mobile-btn" id="mobile-missile" title="Missile">&#128165;</button>
                     <div id="mobile-fire-jump-row" style="display:flex;flex-direction:row;gap:8px;">
@@ -109,8 +109,8 @@
                 </div>
                 <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
                     <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
-                    <button class="mobile-btn" id="mobile-exit" title="Exit" style="width:50px;height:50px;font-size:18px;background:linear-gradient(135deg,#e53935 60%,#ffd7a0 100%) !important;color:#fff !important;">&#10006;</button>
                     <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
+                    <button class="mobile-btn" id="mobile-fullscreen" title="Fullscreen" style="width:50px;height:50px;font-size:18px;">&#x26F6;</button>
                 </div>
             `;
             document.body.appendChild(controls);
@@ -151,11 +151,9 @@
             }
         });
         
-        // Remove menu button setup, add exit button setup
-        setupTouchButton('mobile-exit', function() {
-            if (window.game && typeof window.game.goToMainMenu === 'function') {
-                window.game.goToMainMenu();
-            }
+        // Setup fullscreen button
+        setupTouchButton('mobile-fullscreen', function() {
+            requestFullscreen();
         });
     }
     
@@ -218,113 +216,31 @@
             lockX: false,       // Allow full movement
             lockY: false,       // Allow full movement
             catchDistance: 150, // Wider catch area
-            dynamicPage: true,   // Better for dynamic screens
-            maxNumberOfNipples: 1
+            dynamicPage: true   // Better for dynamic screens
         });
         
-        // Use simpler event handling for low-end devices
-        const isLowEnd = isLowEndDevice();
-        if (isLowEnd) {
-            // Throttle move events on low-end devices
-            let lastUpdate = 0;
-            joystickManager.on('move', function(evt, data) {
-                if (!data || !data.vector) return;
-                
-                const now = Date.now();
-                if (now - lastUpdate < 32) return; // Limit to ~30fps updates
-                lastUpdate = now;
-                
-                lastDir.x = data.vector.x * (data.force || 1);
-                lastDir.y = data.vector.y * (data.force || 1);
-                
-                if (window.game && window.game.vehicle) {
-                    mapJoystickToControls();
-                }
-            });
-        } else {
-            // Full quality for better devices
-            joystickManager.on('move', function(evt, data) {
-                if (!data || !data.vector) return;
-                lastDir.x = data.vector.x * (data.force || 1);
-                lastDir.y = data.vector.y * (data.force || 1);
-                
-                if (window.game && window.game.vehicle) {
-                    mapJoystickToControls();
-                }
-            });
-        }
-        
-        // Add error handlers for better robustness
-        joystickManager.on('error', function(err) {
-            console.error("Joystick error:", err);
-            // Auto-recover after 500ms
-            setTimeout(window._resetJoystick, 500);
+        // More responsive event handlers
+        joystickManager.on('move', function(evt, data) {
+            if (!data || !data.vector) return;
+            // Use force for more accurate analog values (0-1 range)
+            lastDir.x = data.vector.x * (data.force || 1);
+            lastDir.y = data.vector.y * (data.force || 1);
+            
+            // Immediately map to controls for faster response
+            if (window.game && window.game.vehicle) {
+                mapJoystickToControls();
+            }
         });
         
         joystickManager.on('end', function() {
             lastDir.x = 0;
             lastDir.y = 0;
+            // Immediately reset controls when joystick is released
             if (window.game && window.game.vehicle) {
                 const v = window.game.vehicle;
                 v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
             }
         });
-        
-        // Add automatic recovery for stuck joystick
-        window.addEventListener('blur', function() {
-            // When app loses focus, reset the joystick to prevent stuck state
-            lastDir.x = 0;
-            lastDir.y = 0;
-            if (window.game && window.game.vehicle) {
-                const v = window.game.vehicle;
-                v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
-            }
-        });
-        
-        // Periodic health check for joystick (self-healing)
-        const healthCheckInterval = setInterval(function() {
-            if (!joystickManager || !document.getElementById('mobile-joystick')) {
-                clearInterval(healthCheckInterval);
-                return;
-            }
-            
-            try {
-                // Check if joystick is in an inconsistent state
-                const nipples = joystickManager.get();
-                
-                // Safety check - make sure nipples is iterable
-                if (!nipples || !Array.isArray(nipples)) {
-                    console.log("Joystick manager returned non-array, auto-healing...");
-                    window._resetJoystick();
-                    return;
-                }
-                
-                // If no nipples, nothing to check
-                if (nipples.length === 0) return;
-                
-                // Check for stuck joystick (data exists but UI is inconsistent)
-                for (let i = 0; i < nipples.length; i++) {
-                    const nipple = nipples[i];
-                    if (!nipple) continue;
-                    
-                    if (nipple.ui && nipple.ui.active && 
-                        nipple.ui.front && 
-                        !nipple.ui.front.classList.contains('active')) {
-                        console.log("Detected inconsistent joystick state, auto-healing...");
-                        window._resetJoystick();
-                        break;
-                    }
-                }
-            } catch (e) {
-                console.error("Health check error:", e);
-                // Auto-reset on any error
-                try {
-                    window._resetJoystick();
-                } catch (resetError) {
-                    console.error("Reset error:", resetError);
-                }
-            }
-        }, 2000); // Check every 2 seconds
     }
 
     function mapJoystickToControls() {
@@ -717,20 +633,6 @@
         // Reset joystick if exists
         if (joystickManager) {
             try {
-                // More thorough joystick cleanup
-                if (joystickManager.get && joystickManager.get().length > 0) {
-                    joystickManager.get().forEach(joystick => {
-                        try {
-                            // Remove all event listeners
-                            joystick.off('start move end dir plain error');
-                            // Destroy individual joystick
-                            joystick.destroy();
-                        } catch (e) {
-                            console.log("Error cleaning up individual joystick:", e);
-                        }
-                    });
-                }
-                // Destroy manager
                 joystickManager.destroy();
             } catch (e) {
                 console.log("Error destroying joystick:", e);
@@ -738,31 +640,14 @@
             joystickManager = null;
         }
         
-        // Clean up any nipple elements that might be left in DOM
-        const nipples = document.querySelectorAll('.nipple');
-        nipples.forEach(nipple => nipple.remove());
-        
-        // Remove any added styles
-        const joystickStyles = document.getElementById('ios-scroll-fix');
-        if (joystickStyles) joystickStyles.remove();
-        
         // Reset variables
         hud = controls = fireBtn = jumpBtn = null;
         lastDir = { x: 0, y: 0 };
         
-        // Now enable again with a delay to ensure clean state
+        // Now enable again
         setTimeout(function() {
             enable();
-            
-            // Double-check joystick after a short delay
-            setTimeout(function() {
-                const joystickZone = document.getElementById('mobile-joystick');
-                if (joystickZone && !joystickManager) {
-                    console.log("Joystick not properly initialized, retrying...");
-                    setupOptimizedJoystick();
-                }
-            }, 300);
-        }, 200);
+        }, 100);
     }
     
     // Detect if touch is supported (more reliable than user agent)
@@ -794,70 +679,6 @@
         
         const isLowEnd = isLowEndDevice();
         
-        // Apply anti-selection styles directly to joystick zone
-        joystickZone.style.webkitUserSelect = 'none';
-        joystickZone.style.userSelect = 'none';
-        joystickZone.style.webkitTouchCallout = 'none';
-        joystickZone.style.touchAction = 'none';
-        joystickZone.style.msTouchAction = 'none';
-        
-        // Add style to prevent blue highlight
-        const noHighlightStyle = document.createElement('style');
-        noHighlightStyle.textContent = `
-            #mobile-joystick * {
-                -webkit-user-select: none !important;
-                user-select: none !important;
-                -webkit-touch-callout: none !important;
-                touch-action: none !important;
-                -ms-touch-action: none !important;
-            }
-            #mobile-joystick .front {
-                pointer-events: none !important;
-            }
-            .nipple {
-                touch-action: none !important;
-                user-select: none !important;
-                -webkit-touch-callout: none !important;
-            }
-        `;
-        document.head.appendChild(noHighlightStyle);
-        
-        // Add joystick reset function to handle edge cases
-        window._resetJoystick = function() {
-            try {
-                if (!joystickManager) return;
-                
-                // Clean up old joystick
-                const joystickZone = document.getElementById('mobile-joystick');
-                if (!joystickZone) return;
-                
-                // Make sure mobile joystick element is visible with proper size
-                joystickZone.style.display = 'block';
-                joystickZone.style.width = '120px';
-                joystickZone.style.height = '120px';
-                
-                // Remove all children
-                while (joystickZone.firstChild) {
-                    joystickZone.removeChild(joystickZone.firstChild);
-                }
-                
-                // Destroy existing joystick 
-                joystickManager.destroy();
-                joystickManager = null;
-                
-                // Clear velocity values and reset state
-                lastDir = { x: 0, y: 0 };
-                
-                // Create new joystick with a delay to ensure DOM is ready
-                setTimeout(() => {
-                    console.log("Creating new joystick after reset");
-                    setupOptimizedJoystick();
-                }, 100);
-            } catch (error) {
-                console.error("Error resetting joystick:", error);
-            }
-        };
-        
         // Create a simpler joystick for low-end devices
         joystickManager = window.nipplejs.create({
             zone: joystickZone,
@@ -872,10 +693,7 @@
             lockY: false,
             catchDistance: isLowEnd ? 100 : 150,
             // Reduce animation frames on low-end devices
-            dataOnly: isLowEnd,
-            // Improved options to prevent selection issues
-            dynamicPage: true,
-            maxNumberOfNipples: 1
+            dataOnly: isLowEnd
         });
         
         // Use simpler event handling for low-end devices
@@ -909,13 +727,6 @@
             });
         }
         
-        // Add error handlers for better robustness
-        joystickManager.on('error', function(err) {
-            console.error("Joystick error:", err);
-            // Auto-recover after 500ms
-            setTimeout(window._resetJoystick, 500);
-        });
-        
         joystickManager.on('end', function() {
             lastDir.x = 0;
             lastDir.y = 0;
@@ -924,48 +735,6 @@
                 v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
             }
         });
-        
-        // Add automatic recovery for stuck joystick
-        window.addEventListener('blur', function() {
-            // When app loses focus, reset the joystick to prevent stuck state
-            lastDir.x = 0;
-            lastDir.y = 0;
-            if (window.game && window.game.vehicle) {
-                const v = window.game.vehicle;
-                v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
-            }
-        });
-        
-        // Periodic health check for joystick (self-healing)
-        const healthCheckInterval = setInterval(function() {
-            if (!joystickManager || !document.getElementById('mobile-joystick')) {
-                clearInterval(healthCheckInterval);
-                return;
-            }
-            try {
-                const nipples = joystickManager.get && joystickManager.get();
-                if (!Array.isArray(nipples)) {
-                    console.log("Joystick manager returned non-array, skipping auto-healing to avoid loop.");
-                    return;
-                }
-                if (nipples.length === 0) return;
-                for (let i = 0; i < nipples.length; i++) {
-                    const nipple = nipples[i];
-                    if (!nipple) continue;
-                    if (nipple.ui && nipple.ui.active && nipple.ui.front && !nipple.ui.front.classList.contains('active')) {
-                        console.log("Detected inconsistent joystick state, auto-healing...");
-                        window._resetJoystick();
-                        break;
-                    }
-                }
-            } catch (e) {
-                console.error("Health check error:", e);
-                // Only reset if not in a loop
-                if (typeof window._resetJoystick === 'function') {
-                    window._resetJoystick();
-                }
-            }
-        }, 2000);
     }
 
     function requestFullscreen() {
@@ -1015,19 +784,6 @@
             document.body.style.touchAction = 'none';
             document.body.style.webkitOverflowScrolling = 'none';
             document.body.style.overscrollBehavior = 'none';
-            
-            // Prevent text selection during touch events (blue highlight issue)
-            document.body.style.webkitUserSelect = 'none';
-            document.body.style.userSelect = 'none';
-            document.body.style.webkitTouchCallout = 'none';
-            
-            // Prevent context menu on long press
-            document.addEventListener('contextmenu', function(e) {
-                if (e.target.closest('#mobile-joystick, .mobile-btn, #mobile-controls')) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
             
             // Handle iOS Safari-specific issues
             if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -1172,16 +928,16 @@
             border: 2px solid #ffd70055 !important;
             border-radius: 50% !important;
         }
-        #mobile-exit {
-            margin-bottom: 10px !important;
+        #mobile-respawn, #mobile-fullscreen {
             width: 32px !important;
             height: 32px !important;
             font-size: 16px !important;
             opacity: 0.7 !important;
-            background: linear-gradient(135deg, #e53935 60%, #ffd7a0 100%) !important;
-            color: #fff !important;
+            background: linear-gradient(135deg, #a67c52 60%, #ffd7a0 100%) !important;
+            color: #3a2614 !important;
             border: 2px solid #ffd70055 !important;
             border-radius: 50% !important;
+            margin-bottom: 10px !important;
         }
         #mobile-hud .hud-row {
             width: 100vw;
@@ -1234,6 +990,6 @@
     const originalSetupJoystick = setupJoystick;
     setupJoystick = setupOptimizedJoystick;
     
-    // Initialize on script load
+    // Call init to set up mobile detection and initialization
     init();
 })();

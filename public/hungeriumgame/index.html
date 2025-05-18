@@ -6,9 +6,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
-    <meta name="HandheldFriendly" content="true">
     <title>Open World Driving Game</title>
     <link rel="stylesheet" href="styles.css">
     <link id="mobile-style" rel="stylesheet" href="mobile.css" media="(max-width: 900px)">
@@ -17,12 +14,6 @@
             margin: 0;
             overflow: hidden;
             font-family: Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent !important;
-            -webkit-touch-callout: none !important;
-            user-select: none !important;
-            -webkit-user-select: none !important;
-            outline: none !important;
-            touch-action: none !important;
         }
         
         #loadingScreen {
@@ -214,164 +205,9 @@
         .connect-wallet, .claim-reward {
             padding-left: 15px !important;
         }
-        
-        /* Fix for login overlay in landscape mode */
-        @media (orientation: landscape) and (max-width: 900px) {
-            #loginOverlay {
-                align-items: center !important;
-                justify-content: center !important;
-                overflow: auto !important;
-                position: fixed !important;
-                width: 100% !important;
-                height: 100% !important;
-                top: 0 !important;
-                left: 0 !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                box-sizing: border-box !important;
-                display: flex !important;
-                flex-direction: row !important; /* Yan ekranda iki sütunlu görünüm */
-            }
-            
-            #loginOverlay > div {
-                max-height: 100vh !important;
-                max-width: 100vw !important;
-                width: 100% !important;
-                transform: none !important;
-                margin: 0 !important;
-                padding: 8px !important;
-                border-radius: 0 !important;
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important; /* İki sütunlu grid */
-                grid-gap: 5px !important;
-                align-items: center !important;
-                justify-content: center !important;
-                overflow: auto !important;
-            }
-            
-            /* Başlık ve alt başlık için stil */
-            #loginOverlay h2 {
-                font-size: 16px !important;
-                margin: 0 0 5px 0 !important;
-                grid-column: 1 / -1 !important;
-            }
-            
-            #loginOverlay div[style*="subtitle"] {
-                font-size: 12px !important;
-                margin-bottom: 5px !important;
-                grid-column: 1 / -1 !important;
-            }
-            
-            /* Wallet bölümünü sol sütuna yerleştir */
-            #loginOverlay .wallet-section {
-                grid-column: 1 / 2 !important;
-                grid-row: 2 / 5 !important;
-                font-size: 12px !important;
-                padding: 5px !important;
-            }
-            
-            /* Araç seçimi ve başlat butonunu sağ sütuna yerleştir */
-            #loginOverlay #vehicleSelection {
-                grid-column: 2 / 3 !important;
-                grid-row: 2 / 3 !important;
-                display: flex !important;
-                flex-wrap: wrap !important;
-                justify-content: center !important;
-                gap: 5px !important;
-                margin-bottom: 5px !important;
-            }
-            
-            #loginOverlay input[type="text"] {
-                grid-column: 2 / 3 !important;
-                grid-row: 3 / 4 !important;
-                height: 30px !important;
-                margin: 5px 0 !important;
-                padding: 5px !important;
-                font-size: 14px !important;
-            }
-            
-            /* START butonunu her zaman görünür yap */
-            #loginOverlay button[onclick*="startGame"] {
-                grid-column: 2 / 3 !important;
-                grid-row: 4 / 5 !important;
-                background-color: #4CAF50 !important;
-                color: white !important;
-                font-weight: bold !important;
-                font-size: 18px !important;
-                margin: 5px 0 !important;
-                padding: 10px 0 !important;
-                height: auto !important;
-                min-height: 40px !important;
-                border-radius: 25px !important;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
-                animation: pulse-green 2s infinite !important;
-                position: sticky !important;
-                bottom: 10px !important;
-                z-index: 2000 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            
-            #loginOverlay #vehicleSelection > div {
-                flex: 0 0 30% !important;
-                min-width: 60px !important;
-                padding: 5px !important;
-            }
-            
-            #loginOverlay .web3-buttons-container {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 5px !important;
-            }
-            
-            #loginOverlay button {
-                margin: 3px 0 !important;
-                padding: 8px 0 !important;
-                font-size: 14px !important;
-                min-height: 35px !important;
-            }
-            
-            /* Separator'ı gizle */
-            #loginOverlay hr {
-                display: none !important;
-            }
-            
-            /* Fix for game menu buttons */
-            #pauseMenu {
-                max-height: 90vh !important;
-                overflow: auto !important;
-                width: 80vw !important;
-                top: 50% !important;
-                left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                position: fixed !important;
-                z-index: 2000 !important;
-            }
-            
-            #pauseMenu button {
-                width: 100% !important;
-                margin: 8px 0 !important;
-                padding: 12px 0 !important;
-                font-size: 16px !important;
-            }
-        }
-        
-        /* Ensure everything is centered in the login overlay */
-        #loginOverlay {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-        
-        /* Fix for MetaMask connection issues */
-        .web3modal-modal-card {
-            max-height: 90vh !important;
-            overflow: auto !important;
-        }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
     <div id="loadingScreen">Loading...</div>
     <!-- Settings button (gear) -->
     <button id="settings-btn" style="position:fixed; bottom:14px; right:14px; z-index:9999; background:rgba(40,40,40,0.5); border:none; width:16px; height:16px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(0,0,0,0.18); opacity:0.5; transition:opacity 0.2s;">
@@ -455,25 +291,6 @@
             console.log("Mobile mode detected and initialized on page load");
         }
     </script>
-    
-    <!-- Three.js library (ESM formatı kullanılana kadar uyarı susturulacak) -->
-    <script>
-        // Suppress Three.js deprecation warning by defining custom console.warn
-        const originalWarn = console.warn;
-        console.warn = function() {
-            // Filter out Three.js deprecation warnings about build files
-            if (arguments.length > 0 && 
-                typeof arguments[0] === 'string' && 
-                arguments[0].includes('three.js') && 
-                arguments[0].includes('deprecated')) {
-                // Ignore this specific warning
-                return;
-            }
-            // Pass through all other warnings
-            return originalWarn.apply(console, arguments);
-        };
-    </script>
-    <!-- CDN üzerinden three.js zaten yüklenmiştir, yerel build referanslarına gerek yok -->
     
     <!-- Three.js eklentilerini yükle -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/OrbitControls.js"></script>
@@ -779,42 +596,6 @@
         });
         settingsBtn.addEventListener('mouseleave', function() {
             settingsBtn.style.opacity = '0.5';
-        });
-    </script>
-    <script>
-        // iOS specific fixes for text selection issues
-        document.addEventListener('touchstart', function(e) {
-            if (e.target.closest('#mobile-joystick, .mobile-btn, #mobile-controls')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        // Prevent double-tap zoom on iOS
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(e) {
-            const now = Date.now();
-            if (now - lastTouchEnd < 300) {
-                e.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, { passive: false });
-        
-        // Prevent browser native behaviors on mobile
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-    </script>
-    <script>
-        // Prevent context menu globally for joystick, mobile buttons, and body
-        ['contextmenu', 'selectstart'].forEach(function(evtName) {
-            document.addEventListener(evtName, function(e) {
-                if (
-                    e.target.closest('#mobile-joystick, .mobile-btn, #mobile-controls, body')
-                ) {
-                    e.preventDefault();
-                    return false;
-                }
-            }, { passive: false });
         });
     </script>
 </body>

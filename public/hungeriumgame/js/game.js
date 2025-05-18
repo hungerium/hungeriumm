@@ -201,7 +201,7 @@ class Game {
         this.web3Handler = new Web3Handler();
         
         // Add pause state
-        this.paused = false;
+        this.isPaused = false;
         
         // Add vehicle selection properties
         this.playerName = "";
@@ -256,71 +256,56 @@ class Game {
     }
     
     togglePause() {
-        // If pauseMenu is visible, resume; otherwise, pause
-        const pauseMenu = document.getElementById('pauseMenu');
-        if (pauseMenu && pauseMenu.style.display === 'block') {
+        if (this.isPaused) {
             this.resumeGame();
         } else {
             this.pauseGame();
         }
     }
     
-    // Oyunu duraklatma ve menüyü göster
     pauseGame() {
-        if (this.paused) return;
-        this.paused = true;
+        if (this.isPaused) return;
         
-        // Pause menu'yü göster
+        this.isPaused = true;
+        
+        // Show pause menu
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
-            // Menü görünürlüğünü ayarla
+            // Get tokens directly from localStorage for consistency
+            const savedTokens = localStorage.getItem('coffyTokens');
+            const tokenAmount = savedTokens ? parseInt(savedTokens) : 0;
+            
+            document.getElementById('earnedTokens').textContent = tokenAmount;
             pauseMenu.style.display = 'block';
-            
-            // Mobil modda menünün düzgün konumlanmasını sağla
-            if (window.innerWidth <= 900 || (window.mobileHud && document.body.classList.contains('mobile-mode'))) {
-                pauseMenu.style.position = 'fixed';
-                pauseMenu.style.top = '50%';
-                pauseMenu.style.left = '50%';
-                pauseMenu.style.transform = 'translate(-50%, -50%)';
-                pauseMenu.style.width = '80vw';
-                pauseMenu.style.maxHeight = '80vh';
-                pauseMenu.style.overflow = 'auto';
-                pauseMenu.style.zIndex = '10000';
-            }
-            
-            // Butonların görünür olmasını sağla
-            const resumeButton = document.getElementById('resumeButton');
-            const mainMenuButton = document.getElementById('mainMenuButton');
-            
-            if (resumeButton) {
-                resumeButton.style.display = 'block';
-                resumeButton.style.margin = '10px auto';
-            }
-            
-            if (mainMenuButton) {
-                mainMenuButton.style.display = 'block';
-                mainMenuButton.style.margin = '10px auto';
-            }
         }
         
-        // Show earned tokens in pause menu
-        const earnedTokensElement = document.getElementById('earnedTokens');
-        if (earnedTokensElement && this.web3Handler) {
-            earnedTokensElement.textContent = this.web3Handler.gameTokens;
+        // Disable mouse controls if active
+        if (this.mouseControls) {
+            this.mouseControls.enabled = false;
+        }
+        
+        // Stop all sounds when game pauses
+        if (window.audioManager) {
+            window.audioManager.stopEngineSound();
+            window.audioManager.stopSirenSound();
         }
     }
     
-    // Oyunu devam ettirme ve menüyü gizle
     resumeGame() {
-        if (!this.paused) return;
-        this.paused = false;
+        if (!this.isPaused) return;
         
-        // Pause menu'yü gizle
+        this.isPaused = false;
+        
+        // Hide pause menu
         const pauseMenu = document.getElementById('pauseMenu');
-        if (pauseMenu) pauseMenu.style.display = 'none';
+        if (pauseMenu) {
+            pauseMenu.style.display = 'none';
+        }
         
-        // Zaman damgasını sıfırla (bu sayede hemen sonra pause tuşuna basıldığında sorun olmaz)
-        this.lastTimeStamp = performance.now();
+        // Re-enable mouse controls
+        if (this.mouseControls) {
+            this.mouseControls.enabled = true;
+        }
     }
     
     goToMainMenu() {
@@ -364,7 +349,7 @@ class Game {
         }
         
         // Reset game state
-        this.paused = false;
+        this.isPaused = false;
         
         // Clean up coin manager when going to main menu
         if (this.coinManager) {
@@ -1687,7 +1672,7 @@ class Game {
     
     update(deltaTime) {
         // Skip updates if game is paused
-        if (this.paused) return;
+        if (this.isPaused) return;
         
         const minDelta = Math.min(this.clock.getDelta(), 0.1);
         
@@ -1801,7 +1786,7 @@ class Game {
             this.renderer.render(this.scene, this.camera);
         }
         
-        if (this.paused) {
+        if (this.isPaused) {
             if (window.audioManager) {
                 window.audioManager.stopEngineSound();
                 window.audioManager.stopSirenSound();
@@ -2092,17 +2077,10 @@ class Game {
         requestAnimationFrame(this.animate.bind(this));
         
         // Skip updates if game is paused
-        if (this.paused) return;
+        if (this.isPaused) return;
         
         try {
             const delta = Math.min(this.clock.getDelta(), 0.1);
-            
-            // Performans optimizasyonu: Frame sınırlaması (15ms'den hızlı güncelleme yapmıyor)
-            const now = performance.now();
-            if (this.lastFrameTime && (now - this.lastFrameTime) < 15) {
-                return;
-            }
-            this.lastFrameTime = now;
             
             // Update physics
             if (this.physicsManager) {
@@ -2113,8 +2091,8 @@ class Game {
             if (this.vehicle) {
                 this.vehicle.update(delta);
                 
-                // Update engine sound with current vehicle data - optimize by updating less frequently
-                if (window.audioManager && (!this.lastSoundUpdate || now - this.lastSoundUpdate > 100)) {
+                // Update engine sound with current vehicle data
+                if (window.audioManager) {
                     // Get vehicle speed and throttle data
                     const speed = this.vehicle.currentVehicleSpeed || 0;
                     const throttle = this.vehicle.controls.forward ? 1.0 : 
@@ -2125,24 +2103,22 @@ class Game {
                     
                     // Update engine sound with RPM and load (throttle position)
                     window.audioManager.updateEngineSound(rpm, throttle);
-                    this.lastSoundUpdate = now;
                 }
             }
             
             // Update objects (WorldObjects)
             if (this.objects) {
-                this.objects.update(delta);
+                this.objects.update(delta); // <-- rescuee'ler burada güncellenir
             }
             
-            // Update particles - optimize by limiting updates based on player distance
-            if (this.particleSystem && this.vehicle) {
+            // Update particles
+            if (this.particleSystem) {
                 this.particleSystem.update(delta);
             }
             
-            // Update environment less frequently
-            if (this.environment && this.environment.update && (!this.lastEnvUpdate || now - this.lastEnvUpdate > 100)) {
+            // Update environment
+            if (this.environment && this.environment.update) {
                 this.environment.update(this.camera);
-                this.lastEnvUpdate = now;
             }
             
             // Update coins and check for collection
@@ -2230,7 +2206,7 @@ class Game {
                 }
             }
             
-            if (this.paused) {
+            if (this.isPaused) {
                 if (window.audioManager) {
                     window.audioManager.stopEngineSound();
                     window.audioManager.stopSirenSound();
