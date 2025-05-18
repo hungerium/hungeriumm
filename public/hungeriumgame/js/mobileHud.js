@@ -8,11 +8,11 @@
     let updateInterval = null;
 
     function init() {
-        // In landscape, if width <= 950px, always show mobile HUD. In portrait, use old logic.
+        // In landscape, if width <= 933px, always show mobile HUD. In portrait, use old logic.
         const isLandscape = window.innerWidth > window.innerHeight;
         const isMobile = window.isMobileMode ||
             (isLandscape
-                ? (window.innerWidth <= 950)
+                ? (window.innerWidth <= 933)
                 : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
             );
             
@@ -54,7 +54,7 @@
             const nowLandscape = window.innerWidth > window.innerHeight;
             const shouldBeMobile = window.isMobileMode ||
                 (nowLandscape
-                    ? (window.innerWidth <= 950)
+                    ? (window.innerWidth <= 933)
                     : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
                 );
                 
@@ -532,7 +532,7 @@
             setupButtons();
             document.body.classList.add('mobile-mode');
             
-            // Force the mobile CSS to be applied regardless of screen size
+            // Force mobile CSS to be applied regardless of screen size
             const mobileStyle = document.getElementById('mobile-style');
             if (mobileStyle) {
                 mobileStyle.media = 'all';
@@ -607,7 +607,7 @@
         // Reset the mobile CSS media query
         const mobileStyle = document.getElementById('mobile-style');
         if (mobileStyle) {
-            mobileStyle.media = '(max-width: 900px)';
+            mobileStyle.media = '(orientation: landscape) and (max-width: 933px), (orientation: portrait) and (max-width: 949px)';
         }
         
         // Clean up scroll prevention

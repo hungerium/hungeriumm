@@ -64,7 +64,7 @@ body {
     transition: opacity 0.5s, top 0.3s;
 }
 
-@media (max-width: 950px) {
+@media (orientation: landscape) and (max-width: 933px), (orientation: portrait) and (max-width: 950px) {
     html, body {
         font-size: 14px;
         overflow: hidden !important;
@@ -352,7 +352,7 @@ html, body {
   gap: 8px;
   margin-top: 6px;
 }
-@media (max-width: 900px) {
+@media (orientation: landscape) and (max-width: 933px), (orientation: portrait) and (max-width: 950px) {
   #loginOverlay .web3-buttons-container {
     flex-direction: column;
     gap: 6px;

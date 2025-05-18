@@ -135,9 +135,9 @@ document.addEventListener('click', function initAudio() {
 
 // Mobil cihaz algılama fonksiyonu
 function isMobileDevice() {
-    // Landscape: width <= 950 is always mobile
+    // Landscape: width <= 933 is always mobile
     if (window.innerWidth > window.innerHeight) {
-        return window.innerWidth <= 950;
+        return window.innerWidth <= 933;
     }
     // Portrait: width <= 950 or mobile user agent
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950;

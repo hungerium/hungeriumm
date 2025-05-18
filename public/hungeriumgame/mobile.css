@@ -154,13 +154,13 @@ body.mobile-mode #cameraModeInfoBox {
     margin-bottom: 10px !important;
 }
 
-@media (min-width: 900px) {
+@media (orientation: landscape) and (min-width: 934px), (orientation: portrait) and (min-width: 950px) {
     #mobile-hud, #mobile-controls {
         display: none !important;
     }
 }
 
-@media (orientation: landscape) and (max-width: 950px) {
+@media (orientation: landscape) and (max-width: 933px) {
     #mobile-hud .hud-row {
         padding: 0;
         margin-top: 2px;
