@@ -113,16 +113,7 @@
         }
 
         // Seçim ve kopyalama engelleyicileri sadece oyun içi HUD ve butonlar için uygula
-        document.addEventListener('selectstart', function(e) {
-            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-            }
-        });
-        document.addEventListener('copy', function(e) {
-            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-            }
-        });
+        addSelectionBlockers();
     }
 
     function createHud() {
@@ -1180,4 +1171,36 @@
     
     // Call init to set up mobile detection and initialization
     init();
+
+    // Seçim ve kopyalama engelleyicileri sadece oyun içi HUD ve butonlar için uygula
+    function addSelectionBlockers() {
+        window._selectStartHandler = function(e) {
+            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        };
+        window._copyHandler = function(e) {
+            if (!e.target.closest('#loginOverlay') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        };
+        document.addEventListener('selectstart', window._selectStartHandler);
+        document.addEventListener('copy', window._copyHandler);
+    }
+    function removeSelectionBlockers() {
+        if (window._selectStartHandler) document.removeEventListener('selectstart', window._selectStartHandler);
+        if (window._copyHandler) document.removeEventListener('copy', window._copyHandler);
+    }
+    // loginOverlay açıldığında engelleyicileri kaldır, kapandığında tekrar ekle
+    const observer = new MutationObserver(function(mutations) {
+        const overlay = document.getElementById('loginOverlay');
+        if (overlay) {
+            removeSelectionBlockers();
+        } else {
+            addSelectionBlockers();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    // Başlangıçta sadece oyun içi için engelleyicileri ekle
+    addSelectionBlockers();
 })();
