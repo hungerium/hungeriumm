@@ -58,11 +58,11 @@
                     enable();
                 }, 300);
             }
-            setTimeout(updateLeftButtonGroupPosition, 100);
+            setTimeout(updateMobileHudPositions, 100);
         });
         
         window.addEventListener('resize', function() {
-            setTimeout(updateLeftButtonGroupPosition, 100);
+            setTimeout(updateMobileHudPositions, 100);
         });
         
         document.addEventListener('keydown', function(e) {
@@ -119,7 +119,7 @@
                 </div>
             `;
             document.body.appendChild(controls);
-            setTimeout(updateLeftButtonGroupPosition, 0);
+            setTimeout(updateMobileHudPositions, 0);
         }
         fireBtn = document.getElementById('mobile-fire');
         jumpBtn = document.getElementById('mobile-jump');
@@ -558,7 +558,7 @@
                 }, 50);
             }
             
-            setTimeout(updateLeftButtonGroupPosition, 0);
+            setTimeout(updateMobileHudPositions, 0);
             
             console.log("Mobile HUD enabled successfully");
         } catch (error) {
@@ -868,12 +868,14 @@
         }
     }
 
-    // Add this function to update the position of the left button group based on orientation
-    function updateLeftButtonGroupPosition() {
+    // Update the position of the left button group and other HUD elements based on orientation
+    function updateMobileHudPositions() {
         const container = document.getElementById('mobile-respawn-container');
+        const joystick = document.getElementById('mobile-joystick');
+        const rightButtons = document.getElementById('mobile-buttons');
         if (!container) return;
         if (isLandscapeMode()) {
-            // Move to top left in landscape
+            // Move left button group to top left
             container.style.top = '18px';
             container.style.left = '18px';
             container.style.bottom = '';
@@ -881,8 +883,21 @@
             container.style.flexDirection = 'row';
             container.style.alignItems = 'flex-start';
             container.style.gap = '10px';
+            // Move joystick slightly right
+            if (joystick) {
+                joystick.style.position = 'fixed';
+                joystick.style.left = '60px'; // was closer to 0, now more centered
+                joystick.style.bottom = '40px';
+                joystick.style.top = '';
+                joystick.style.transform = 'none';
+            }
+            // Move right buttons slightly left
+            if (rightButtons) {
+                rightButtons.style.right = '40px'; // was 18px, now more inward
+                rightButtons.style.bottom = '40px';
+            }
         } else {
-            // Move to vertical center left in portrait
+            // Portrait: restore defaults
             container.style.top = '50%';
             container.style.left = '18px';
             container.style.bottom = '';
@@ -890,6 +905,17 @@
             container.style.flexDirection = 'column';
             container.style.alignItems = 'flex-start';
             container.style.gap = '10px';
+            if (joystick) {
+                joystick.style.position = '';
+                joystick.style.left = '';
+                joystick.style.bottom = '';
+                joystick.style.top = '';
+                joystick.style.transform = '';
+            }
+            if (rightButtons) {
+                rightButtons.style.right = '18px';
+                rightButtons.style.bottom = '40px';
+            }
         }
     }
 
