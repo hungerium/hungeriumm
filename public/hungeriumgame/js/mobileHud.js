@@ -154,16 +154,16 @@
             controls.innerHTML = `
                 <div id="mobile-joystick"></div>
                 <div id="mobile-buttons">
-                    <button class="mobile-btn" id="mobile-missile" title="Missile">&#128165;</button>
+                    <button class="mobile-btn" id="mobile-missile" title="Missile" style="pointer-events:auto;z-index:10001;">&#128165;</button>
                     <div id="mobile-fire-jump-row" style="display:flex;flex-direction:row;gap:8px;">
-                        <button class="mobile-btn" id="mobile-fire" title="Fire">&#128293;</button>
-                        <button class="mobile-btn" id="mobile-jump" title="Brake">&#11014;</button>
+                        <button class="mobile-btn" id="mobile-fire" title="Fire" style="pointer-events:auto;z-index:10001;">&#128293;</button>
+                        <button class="mobile-btn" id="mobile-jump" title="Brake" style="pointer-events:auto;z-index:10001;">&#11014;</button>
                     </div>
                 </div>
                 <div id="mobile-respawn-container" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;">
-                    <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;">&#128247;</button>
-                    <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;">&#8635;</button>
-                    <button class="mobile-btn" id="mobile-mainmenu" title="Pause/Menu" style="width:50px;height:50px;font-size:18px;">&#9776;</button>
+                    <button class="mobile-btn" id="mobile-camera" title="Camera" style="width:50px;height:50px;font-size:18px;pointer-events:auto;z-index:10001;">&#128247;</button>
+                    <button class="mobile-btn" id="mobile-respawn" title="Respawn" style="width:50px;height:50px;font-size:18px;pointer-events:auto;z-index:10001;">&#8635;</button>
+                    <button class="mobile-btn" id="mobile-mainmenu" title="Pause/Menu" style="width:50px;height:50px;font-size:18px;pointer-events:auto;z-index:10001;">&#9776;</button>
                 </div>
             `;
             document.body.appendChild(controls);
@@ -738,23 +738,66 @@
         return memory < 4 || cpuCores <= 2;
     }
     
-    // Optimized joystick setup for low-end devices
+    // Joystick zone'u tüm sol yarıyı kapsasın, ama üstteki butonların olduğu alanı hariç tut
     function setupOptimizedJoystick() {
         if (joystickManager) return;
-        // Sadece ekranın sol yarısında joystick tetiklensin
-        let joystickZone = document.getElementById('joystick-zone-left');
-        if (!joystickZone) {
-            joystickZone = document.createElement('div');
+        // Önce eski zone'ları temizle
+        const oldZoneLeft = document.getElementById('joystick-zone-left');
+        if (oldZoneLeft) oldZoneLeft.remove();
+        const oldZoneTop = document.getElementById('joystick-zone-top');
+        if (oldZoneTop) oldZoneTop.remove();
+        const oldZoneBottom = document.getElementById('joystick-zone-bottom');
+        if (oldZoneBottom) oldZoneBottom.remove();
+
+        const isLandscape = isLandscapeMode();
+        const BUTTONS_HEIGHT = 180;
+        const BUTTONS_SAFE_MARGIN = 100; // Portrait modda butonların ortasında bırakılacak boşluk (yarı yüksekliği)
+        let joystickZones = [];
+
+        if (isLandscape) {
+            // Landscape: tek zone, üstten başlar, butonların yüksekliği kadar aşağıdan başlar
+            let joystickZone = document.createElement('div');
             joystickZone.id = 'joystick-zone-left';
             joystickZone.style.position = 'fixed';
             joystickZone.style.left = '0';
-            joystickZone.style.top = '0';
+            joystickZone.style.top = BUTTONS_HEIGHT + 'px';
             joystickZone.style.width = '50vw';
-            joystickZone.style.height = '100vh';
-            joystickZone.style.zIndex = '9998';
+            joystickZone.style.height = `calc(100vh - ${BUTTONS_HEIGHT}px)`;
+            joystickZone.style.zIndex = '9997';
             joystickZone.style.touchAction = 'none';
             joystickZone.style.background = 'transparent';
+            joystickZone.style.pointerEvents = 'auto';
             document.body.appendChild(joystickZone);
+            joystickZones = [joystickZone];
+        } else {
+            // Portrait: iki zone, biri üstte biri altta, ortadaki butonların olduğu alanı boş bırak
+            let joystickZoneTop = document.createElement('div');
+            joystickZoneTop.id = 'joystick-zone-top';
+            joystickZoneTop.style.position = 'fixed';
+            joystickZoneTop.style.left = '0';
+            joystickZoneTop.style.top = '0';
+            joystickZoneTop.style.width = '50vw';
+            joystickZoneTop.style.height = `calc(50vh - ${BUTTONS_SAFE_MARGIN}px)`;
+            joystickZoneTop.style.zIndex = '9997';
+            joystickZoneTop.style.touchAction = 'none';
+            joystickZoneTop.style.background = 'transparent';
+            joystickZoneTop.style.pointerEvents = 'auto';
+            document.body.appendChild(joystickZoneTop);
+
+            let joystickZoneBottom = document.createElement('div');
+            joystickZoneBottom.id = 'joystick-zone-bottom';
+            joystickZoneBottom.style.position = 'fixed';
+            joystickZoneBottom.style.left = '0';
+            joystickZoneBottom.style.top = `calc(50vh + ${BUTTONS_SAFE_MARGIN}px)`;
+            joystickZoneBottom.style.width = '50vw';
+            joystickZoneBottom.style.height = `calc(50vh - ${BUTTONS_SAFE_MARGIN}px)`;
+            joystickZoneBottom.style.zIndex = '9997';
+            joystickZoneBottom.style.touchAction = 'none';
+            joystickZoneBottom.style.background = 'transparent';
+            joystickZoneBottom.style.pointerEvents = 'auto';
+            document.body.appendChild(joystickZoneBottom);
+
+            joystickZones = [joystickZoneTop, joystickZoneBottom];
         }
         if (!window.nipplejs) return;
         const isLowEnd = isLowEndDevice();
@@ -763,41 +806,67 @@
         if (oldJoystick) {
             oldJoystick.style.display = 'none';
         }
-        joystickManager = window.nipplejs.create({
-            zone: joystickZone,
-            mode: 'dynamic',
-            color: '#ffd700',
-            size: 120,
-            fadeTime: 100,
-            restJoystick: true,
-            restOpacity: 0.7,
-            lockX: false,
-            lockY: false,
-            catchDistance: isLowEnd ? 100 : 150,
-            dynamicPage: true
-        });
-        
-        // More responsive event handlers
-        joystickManager.on('move', function(evt, data) {
-            if (!data || !data.vector) return;
-            // Use force for more accurate analog values (0-1 range)
-            lastDir.x = data.vector.x * (data.force || 1);
-            lastDir.y = data.vector.y * (data.force || 1);
-            
-            // Immediately map to controls for faster response
-            if (window.game && window.game.vehicle) {
-                mapJoystickToControls();
-            }
-        });
-        
-        joystickManager.on('end', function() {
-            lastDir.x = 0;
-            lastDir.y = 0;
-            // Immediately reset controls when joystick is released
-            if (window.game && window.game.vehicle) {
-                const v = window.game.vehicle;
-                v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
-            }
+        // Tek bir joystick manager oluştur, zone olarak birden fazla alanı desteklemesi için ilk zone'u kullanıyoruz
+        // (nipplejs birden fazla zone'u desteklemez, ama iki zone'a aynı event handler atanabilir)
+        joystickZones.forEach(zone => {
+            const manager = window.nipplejs.create({
+                zone: zone,
+                mode: 'dynamic',
+                color: '#ffd700',
+                size: 120,
+                fadeTime: 100,
+                restJoystick: true,
+                restOpacity: 0.7,
+                lockX: false,
+                lockY: false,
+                catchDistance: isLowEnd ? 100 : 150,
+                dynamicPage: true
+            });
+            // Joystick'in start eventinde buton çakışmasını kontrol et
+            manager.on('start', function(evt, data) {
+                let touch = null;
+                if (evt && evt.targetTouches && evt.targetTouches[0]) {
+                    touch = evt.targetTouches[0];
+                } else if (evt && evt.changedTouches && evt.changedTouches[0]) {
+                    touch = evt.changedTouches[0];
+                } else if (evt && evt.clientX !== undefined) {
+                    touch = evt;
+                }
+                if (!touch) return;
+                const x = touch.clientX;
+                const y = touch.clientY;
+                // Butonların bounding box'ı ile çakışma kontrolü
+                const btns = [
+                    document.getElementById('mobile-camera'),
+                    document.getElementById('mobile-respawn'),
+                    document.getElementById('mobile-mainmenu')
+                ];
+                for (const btn of btns) {
+                    if (btn) {
+                        const rect = btn.getBoundingClientRect();
+                        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                            // Joystick'i başlatma, destroy etme! Sadece return (ignore)
+                            return false;
+                        }
+                    }
+                }
+            });
+            manager.on('move', function(evt, data) {
+                if (!data || !data.vector) return;
+                lastDir.x = data.vector.x * (data.force || 1);
+                lastDir.y = data.vector.y * (data.force || 1);
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                }
+            });
+            manager.on('end', function() {
+                lastDir.x = 0;
+                lastDir.y = 0;
+                if (window.game && window.game.vehicle) {
+                    const v = window.game.vehicle;
+                    v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
+                }
+            });
         });
     }
 
@@ -922,6 +991,31 @@
     // Update the position of the left button group and other HUD elements based on orientation
     function updateMobileHudPositions() {
         const container = document.getElementById('mobile-respawn-container');
+        const joystickZone = document.getElementById('joystick-zone-left');
+        const joystickZoneTop = document.getElementById('joystick-zone-top');
+        const joystickZoneBottom = document.getElementById('joystick-zone-bottom');
+        const BUTTONS_HEIGHT = 180;
+        const BUTTONS_SAFE_MARGIN = 100;
+        if (isLandscapeMode()) {
+            if (joystickZone) {
+                joystickZone.style.top = BUTTONS_HEIGHT + 'px';
+                joystickZone.style.height = `calc(100vh - ${BUTTONS_HEIGHT}px)`;
+            }
+            if (joystickZoneTop) joystickZoneTop.style.display = 'none';
+            if (joystickZoneBottom) joystickZoneBottom.style.display = 'none';
+        } else {
+            if (joystickZone) joystickZone.style.display = 'none';
+            if (joystickZoneTop) {
+                joystickZoneTop.style.top = '0';
+                joystickZoneTop.style.height = `calc(50vh - ${BUTTONS_SAFE_MARGIN}px)`;
+                joystickZoneTop.style.display = 'block';
+            }
+            if (joystickZoneBottom) {
+                joystickZoneBottom.style.top = `calc(50vh + ${BUTTONS_SAFE_MARGIN}px)`;
+                joystickZoneBottom.style.height = `calc(50vh - ${BUTTONS_SAFE_MARGIN}px)`;
+                joystickZoneBottom.style.display = 'block';
+            }
+        }
         const joystick = document.getElementById('mobile-joystick');
         const rightButtons = document.getElementById('mobile-buttons');
         if (!container) return;
