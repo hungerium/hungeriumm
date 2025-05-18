@@ -8,33 +8,22 @@
     let updateInterval = null;
 
     function init() {
-        const isMobile = window.isMobileMode || 
-                         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                         (window.innerWidth <= 900);
+        // In landscape, if width <= 950px, always show mobile HUD. In portrait, use old logic.
+        const isLandscape = window.innerWidth > window.innerHeight;
+        const isMobile = window.isMobileMode ||
+            (isLandscape
+                ? (window.innerWidth <= 950)
+                : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
+            );
+            
+        // For debugging - log screen dimensions and detection result
+        console.log(`Screen size: ${window.innerWidth}x${window.innerHeight}, isLandscape: ${isLandscape}, isMobile: ${isMobile}`);
         
-        // Add special behavior for mobiles and small screens
         if (isMobile) {
             console.log("Mobile device detected, enabling mobile HUD");
-            // Try to enable immediately
-            setTimeout(function() {
-                enable();
-            }, 100);
-            
-            // And again after a short delay to ensure it works
-            setTimeout(function() {
-                if (!document.getElementById(MOBILE_HUD_ID)) {
-                    console.log("Mobile HUD not found after first attempt, retrying");
-                    enable();
-                }
-            }, 500);
-            
-            // And a third time with a longer delay as a fallback
-            setTimeout(function() {
-                if (!document.getElementById(MOBILE_HUD_ID)) {
-                    console.log("Mobile HUD still not found, final attempt");
-                    enable();
-                }
-            }, 2000);
+            setTimeout(function() { enable(); }, 100);
+            setTimeout(function() { if (!document.getElementById(MOBILE_HUD_ID)) { console.log("Mobile HUD not found after first attempt, retrying"); enable(); } }, 500);
+            setTimeout(function() { if (!document.getElementById(MOBILE_HUD_ID)) { console.log("Mobile HUD still not found, final attempt"); enable(); } }, 2000);
         }
         
         window.addEventListener('DOMContentLoaded', function() {
@@ -52,16 +41,34 @@
         });
         
         window.addEventListener('orientationchange', function() {
-            if (isMobile) {
-                disable();
-                setTimeout(function() {
-                    enable();
-                }, 300);
-            }
+            console.log("Orientation changed - forcing mobile HUD refresh");
+            // Force a complete refresh of the mobile HUD on orientation change
+            setTimeout(function() {
+                forceRefresh();
+            }, 300);
             setTimeout(updateMobileHudPositions, 100);
         });
         
         window.addEventListener('resize', function() {
+            // Check if we should enable mobile HUD based on new dimensions
+            const nowLandscape = window.innerWidth > window.innerHeight;
+            const shouldBeMobile = window.isMobileMode ||
+                (nowLandscape
+                    ? (window.innerWidth <= 950)
+                    : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
+                );
+                
+            console.log(`Resize - Screen: ${window.innerWidth}x${window.innerHeight}, landscape: ${nowLandscape}, should be mobile: ${shouldBeMobile}`);
+            
+            // If conditions changed, update the HUD
+            if (shouldBeMobile && !document.getElementById(MOBILE_HUD_ID)) {
+                console.log("Should be mobile after resize, enabling mobile HUD");
+                enable();
+            } else if (!shouldBeMobile && document.getElementById(MOBILE_HUD_ID)) {
+                console.log("Should not be mobile after resize, disabling mobile HUD");
+                disable();
+            }
+            
             setTimeout(updateMobileHudPositions, 100);
         });
         
@@ -76,6 +83,26 @@
                 }
             }
         });
+
+        // Prevent selection/copy globally
+        if (typeof window !== 'undefined') {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                * {
+                    -webkit-user-select: none !important;
+                    -moz-user-select: none !important;
+                    -ms-user-select: none !important;
+                    user-select: none !important;
+                }
+                html, body {
+                    -webkit-touch-callout: none !important;
+                    -webkit-tap-highlight-color: transparent !important;
+                }
+            `;
+            document.head.appendChild(style);
+            document.addEventListener('selectstart', function(e) { e.preventDefault(); }, { passive: false });
+            document.addEventListener('copy', function(e) { e.preventDefault(); }, { passive: false });
+        }
     }
 
     function createHud() {
@@ -672,6 +699,7 @@
     
     // Detect if device is in landscape mode
     function isLandscapeMode() {
+        // Only landscape, not threshold logic
         return window.innerWidth > window.innerHeight;
     }
     
@@ -875,36 +903,32 @@
         const rightButtons = document.getElementById('mobile-buttons');
         if (!container) return;
         if (isLandscapeMode()) {
-            // Move left button group to top left
             container.style.top = '18px';
-            container.style.left = '18px';
+            container.style.left = 'calc(18px + env(safe-area-inset-left, 0px))';
             container.style.bottom = '';
             container.style.transform = 'none';
             container.style.flexDirection = 'row';
             container.style.alignItems = 'flex-start';
-            container.style.gap = '10px';
-            // Move joystick slightly right
+            container.style.gap = '14px';
             if (joystick) {
                 joystick.style.position = 'fixed';
-                joystick.style.left = '60px'; // was closer to 0, now more centered
-                joystick.style.bottom = '40px';
+                joystick.style.left = 'calc(60px + env(safe-area-inset-left, 0px))';
+                joystick.style.bottom = 'calc(40px + env(safe-area-inset-bottom, 0px))';
                 joystick.style.top = '';
                 joystick.style.transform = 'none';
             }
-            // Move right buttons slightly left
             if (rightButtons) {
-                rightButtons.style.right = '40px'; // was 18px, now more inward
-                rightButtons.style.bottom = '40px';
+                rightButtons.style.right = 'calc(40px + env(safe-area-inset-right, 0px))';
+                rightButtons.style.bottom = 'calc(40px + env(safe-area-inset-bottom, 0px))';
             }
         } else {
-            // Portrait: restore defaults
             container.style.top = '50%';
-            container.style.left = '18px';
+            container.style.left = 'calc(18px + env(safe-area-inset-left, 0px))';
             container.style.bottom = '';
             container.style.transform = 'translateY(-50%)';
             container.style.flexDirection = 'column';
             container.style.alignItems = 'flex-start';
-            container.style.gap = '10px';
+            container.style.gap = '14px';
             if (joystick) {
                 joystick.style.position = '';
                 joystick.style.left = '';
@@ -913,8 +937,8 @@
                 joystick.style.transform = '';
             }
             if (rightButtons) {
-                rightButtons.style.right = '18px';
-                rightButtons.style.bottom = '40px';
+                rightButtons.style.right = 'calc(18px + env(safe-area-inset-right, 0px))';
+                rightButtons.style.bottom = 'calc(40px + env(safe-area-inset-bottom, 0px))';
             }
         }
     }
@@ -927,16 +951,24 @@
             border-radius: 50%;
             box-shadow: 0 2px 8px #a67c52aa;
             opacity: 0.5 !important;
+            /* Add safe-area-inset for left and bottom */
+            position: fixed !important;
+            left: calc(60px + env(safe-area-inset-left, 0px)) !important;
+            bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
+            width: 120px !important;
+            height: 120px !important;
         }
         .mobile-btn {
             background: linear-gradient(135deg, #a67c52 60%, #ffd7a0 100%) !important;
             color: #3a2614 !important;
             opacity: 0.5 !important;
             border: 2px solid #ffd70055 !important;
-            width: 40px !important;
-            height: 40px !important;
-            font-size: 16px !important;
+            width: 52px !important;
+            height: 52px !important;
+            font-size: 20px !important;
             margin: 0 6px 0 0 !important;
+            min-width: 48px !important;
+            min-height: 48px !important;
         }
         .mobile-btn:active {
             background: #ffd7a0 !important;
@@ -944,12 +976,12 @@
         #mobile-buttons {
             display: flex !important;
             flex-direction: column !important;
-            gap: 8px !important;
+            gap: 12px !important;
             align-items: flex-end !important;
             justify-content: flex-end !important;
             position: fixed;
-            right: 18px;
-            bottom: 40px;
+            right: calc(40px + env(safe-area-inset-right, 0px));
+            bottom: calc(40px + env(safe-area-inset-bottom, 0px));
             z-index: 4100;
             pointer-events: auto;
         }

@@ -135,7 +135,12 @@ document.addEventListener('click', function initAudio() {
 
 // Mobil cihaz algılama fonksiyonu
 function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 600);
+    // Landscape: width <= 950 is always mobile
+    if (window.innerWidth > window.innerHeight) {
+        return window.innerWidth <= 950;
+    }
+    // Portrait: width <= 950 or mobile user agent
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950;
 }
 
 // Add a resize handler to detect mobile mode on window resize
@@ -174,6 +179,10 @@ window.addEventListener('DOMContentLoaded', function() {
         }
         // Tam ekranı tetikle
         const docElm = document.documentElement;
+        let fullscreenPending = false;
+        function isFullscreen() {
+            return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+        }
         if (docElm.requestFullscreen) {
             docElm.requestFullscreen();
         } else if (docElm.webkitRequestFullscreen) {
@@ -181,6 +190,41 @@ window.addEventListener('DOMContentLoaded', function() {
         } else if (docElm.msRequestFullscreen) {
             docElm.msRequestFullscreen();
         }
+        // Eğer 1 saniye sonra fullscreen yoksa rehber göster
+        setTimeout(function() {
+            if (!isFullscreen() && !document.getElementById('fullscreen-guide')) {
+                const guide = document.createElement('div');
+                guide.id = 'fullscreen-guide';
+                guide.style.position = 'fixed';
+                guide.style.top = '0';
+                guide.style.left = '0';
+                guide.style.width = '100vw';
+                guide.style.height = '100vh';
+                guide.style.background = 'rgba(30,30,40,0.92)';
+                guide.style.color = '#ffd700';
+                guide.style.display = 'flex';
+                guide.style.flexDirection = 'column';
+                guide.style.alignItems = 'center';
+                guide.style.justifyContent = 'center';
+                guide.style.zIndex = '99999';
+                guide.style.fontSize = '22px';
+                guide.style.fontFamily = 'Arial, sans-serif';
+                guide.innerHTML = '<div style="max-width:90vw;text-align:center;line-height:1.5;">☝️ <b>Tam ekran için dokunun</b><br><br><span style="font-size:15px;color:#fffbe8;">Oyun deneyimi için tam ekran önerilir.</span></div>';
+                guide.addEventListener('touchstart', function() {
+                    guide.remove();
+                    if (docElm.requestFullscreen) docElm.requestFullscreen();
+                    else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+                    else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+                }, { once: true });
+                guide.addEventListener('click', function() {
+                    guide.remove();
+                    if (docElm.requestFullscreen) docElm.requestFullscreen();
+                    else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+                    else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+                }, { once: true });
+                document.body.appendChild(guide);
+            }
+        }, 1000);
         // Uyku engelleme (NoSleep alternatifi)
         let wakeLock = null;
         if ('wakeLock' in navigator) {
