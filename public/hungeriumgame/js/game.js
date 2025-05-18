@@ -786,6 +786,41 @@ class Game {
         
         // Select first option by default
         vehicleSelection.firstChild.click();
+
+        // Responsive fix for mobile landscape: shrink form, allow scroll, adjust font
+        function updateLoginOverlayResponsive() {
+            const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth < 900;
+            if (isLandscape) {
+                loginOverlay.style.alignItems = 'flex-start';
+                loginOverlay.style.justifyContent = 'flex-start';
+                loginOverlay.style.overflowY = 'auto';
+                loginOverlay.style.height = '100vh';
+                loginOverlay.style.paddingTop = '10px';
+                loginForm.style.width = '96vw';
+                loginForm.style.maxWidth = '420px';
+                loginForm.style.minWidth = '220px';
+                loginForm.style.margin = '10px auto';
+                loginForm.style.fontSize = '15px';
+                loginForm.style.padding = '10px 4vw';
+            } else {
+                loginOverlay.style.alignItems = 'center';
+                loginOverlay.style.justifyContent = 'center';
+                loginOverlay.style.overflowY = '';
+                loginOverlay.style.height = '100%';
+                loginOverlay.style.paddingTop = '';
+                loginForm.style.width = '320px';
+                loginForm.style.maxWidth = '';
+                loginForm.style.minWidth = '';
+                loginForm.style.margin = '';
+                loginForm.style.fontSize = '';
+                loginForm.style.padding = '20px';
+            }
+        }
+        updateLoginOverlayResponsive();
+        window.addEventListener('resize', updateLoginOverlayResponsive);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(updateLoginOverlayResponsive, 100);
+        });
     }
     
     startGame() {

@@ -58,6 +58,11 @@
                     enable();
                 }, 300);
             }
+            setTimeout(updateLeftButtonGroupPosition, 100);
+        });
+        
+        window.addEventListener('resize', function() {
+            setTimeout(updateLeftButtonGroupPosition, 100);
         });
         
         document.addEventListener('keydown', function(e) {
@@ -114,6 +119,7 @@
                 </div>
             `;
             document.body.appendChild(controls);
+            setTimeout(updateLeftButtonGroupPosition, 0);
         }
         fireBtn = document.getElementById('mobile-fire');
         jumpBtn = document.getElementById('mobile-jump');
@@ -552,6 +558,8 @@
                 }, 50);
             }
             
+            setTimeout(updateLeftButtonGroupPosition, 0);
+            
             console.log("Mobile HUD enabled successfully");
         } catch (error) {
             console.log("Error enabling mobile HUD:", error);
@@ -857,6 +865,31 @@
             console.log("Enhanced scroll prevention activated");
         } catch (e) {
             console.log("Scroll prevention failed:", e);
+        }
+    }
+
+    // Add this function to update the position of the left button group based on orientation
+    function updateLeftButtonGroupPosition() {
+        const container = document.getElementById('mobile-respawn-container');
+        if (!container) return;
+        if (isLandscapeMode()) {
+            // Move to top left in landscape
+            container.style.top = '18px';
+            container.style.left = '18px';
+            container.style.bottom = '';
+            container.style.transform = 'none';
+            container.style.flexDirection = 'row';
+            container.style.alignItems = 'flex-start';
+            container.style.gap = '10px';
+        } else {
+            // Move to vertical center left in portrait
+            container.style.top = '50%';
+            container.style.left = '18px';
+            container.style.bottom = '';
+            container.style.transform = 'translateY(-50%)';
+            container.style.flexDirection = 'column';
+            container.style.alignItems = 'flex-start';
+            container.style.gap = '10px';
         }
     }
 
