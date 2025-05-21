@@ -438,10 +438,14 @@ class AttackRobot extends Robot {
     // Execute attack by charging toward player
     executeAttack() {
         if (!this.vehicle || !this.body || this.isDestroyed) return;
-        
         // Make sure both bodies exist and are valid
         if (!this.vehicle.body || !this.vehicle.body.position || !this.body.position) {
-            console.warn("Cannot execute attack: invalid body positions");
+            console.warn("Cannot execute attack: invalid body positions", {
+                vehicleBody: this.vehicle.body,
+                vehicleBodyPos: this.vehicle.body ? this.vehicle.body.position : undefined,
+                myBody: this.body,
+                myBodyPos: this.body ? this.body.position : undefined
+            });
             return;
         }
         

@@ -1310,61 +1310,43 @@ class Game {
     // Add new method to update hostage indicator
     updateHostageIndicator() {
         if (!this.vehicle || !this.objects || !this.objects.rescuees) return;
-        
+        if (!this.vehicle.body || !this.vehicle.mesh) {
+            console.warn("HostageIndicator: vehicle body or mesh is missing");
+            return;
+        }
         const indicator = document.getElementById('hostageIndicator');
         const arrow = document.getElementById('hostageDirectionArrow');
         const text = document.getElementById('hostageDistanceText');
-        
         if (!indicator || !arrow || !text) return;
-        
         // Find closest hostage
         let closestDistance = Infinity;
         let closestHostage = null;
         let hostageCount = 0;
-        
         for (const rescuee of this.objects.rescuees) {
-            if (rescuee.isCollected || rescuee.isRescued) continue;
-            
+            if (rescuee.isCollected || rescuee.isRescued || !rescuee.position) continue;
+            if (!('x' in rescuee.position) || !('z' in rescuee.position)) continue;
             hostageCount++;
-            
             const dx = rescuee.position.x - this.vehicle.body.position.x;
             const dz = rescuee.position.z - this.vehicle.body.position.z;
             const dist = Math.sqrt(dx*dx + dz*dz);
-            
             if (dist < closestDistance) {
                 closestDistance = dist;
                 closestHostage = rescuee;
             }
         }
-        
         // Update indicator
         if (closestHostage && hostageCount > 0) {
-            // Show indicator
             indicator.style.opacity = '1';
-            
-            // Calculate direction
             const dx = closestHostage.position.x - this.vehicle.body.position.x;
             const dz = closestHostage.position.z - this.vehicle.body.position.z;
-            
-            // Get vehicle forward direction
             const forward = new THREE.Vector3(0, 0, 1);
             forward.applyQuaternion(this.vehicle.mesh.quaternion);
-            
-            // Calculate angle between vehicle forward and hostage direction
             const hostageDir = new THREE.Vector3(dx, 0, dz).normalize();
             const angle = Math.atan2(hostageDir.z, hostageDir.x) - Math.atan2(forward.z, forward.x);
-            
-            // Convert to degrees and normalize to 0-360
             let degrees = (angle * 180 / Math.PI) + 90;
             degrees = (degrees + 360) % 360;
-            
-            // Set arrow rotation
             arrow.style.transform = `rotate(${degrees}deg)`;
-            
-            // Update distance text
             text.textContent = `Hostages: ${Math.round(closestDistance)}m`;
-            
-            // Change color based on distance
             if (closestDistance < 30) {
                 indicator.style.backgroundColor = 'rgba(0, 255, 0, 0.7)';
             } else if (closestDistance < 100) {
@@ -1373,7 +1355,6 @@ class Game {
                 indicator.style.backgroundColor = 'rgba(255, 100, 0, 0.7)';
             }
         } else {
-            // Hide indicator if no hostages
             indicator.style.opacity = '0';
         }
     }
@@ -1381,44 +1362,33 @@ class Game {
     // Add new method to update police station indicator
     updatePoliceIndicator() {
         if (!this.vehicle || !this.objects || !this.objects.policeStationPosition) return;
-        
+        if (!this.vehicle.body || !this.vehicle.mesh) {
+            console.warn("PoliceIndicator: vehicle body or mesh is missing");
+            return;
+        }
         const indicator = document.getElementById('policeIndicator');
         const arrow = document.getElementById('policeDirectionArrow');
         const text = document.getElementById('policeDistanceText');
-        
         if (!indicator || !arrow || !text) return;
-        
         const policePos = this.objects.policeStationPosition;
-        
-        // Calculate distance
+        if (!('x' in policePos) || !('z' in policePos)) {
+            console.warn("PoliceIndicator: policeStationPosition is missing x or z");
+            return;
+        }
         const dx = policePos.x - this.vehicle.body.position.x;
         const dz = policePos.z - this.vehicle.body.position.z;
         const dist = Math.sqrt(dx*dx + dz*dz);
-        
-        // Get vehicle forward direction
         const forward = new THREE.Vector3(0, 0, 1);
         forward.applyQuaternion(this.vehicle.mesh.quaternion);
-        
-        // Calculate angle between vehicle forward and police direction
         const policeDir = new THREE.Vector3(dx, 0, dz).normalize();
         const angle = Math.atan2(policeDir.z, policeDir.x) - Math.atan2(forward.z, forward.x);
-        
-        // Convert to degrees and normalize to 0-360
         let degrees = (angle * 180 / Math.PI) + 90;
         degrees = (degrees + 360) % 360;
-        
-        // Set arrow rotation
         arrow.style.transform = `rotate(${degrees}deg)`;
-        
-        // Update distance text
         text.textContent = `Police: ${Math.round(dist)}m`;
-        
-        // Change color based on if player has passengers
         if (this.vehicle.passengers && this.vehicle.passengers.length > 0) {
             indicator.style.backgroundColor = 'rgba(0, 100, 255, 0.9)';
             indicator.style.color = 'white';
-            
-            // Make it pulse if close to station with passengers
             if (dist < 50) {
                 indicator.style.animation = 'pulse 1s infinite';
             } else {
