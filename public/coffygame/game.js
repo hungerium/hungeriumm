@@ -2202,6 +2202,104 @@ function init() {
     window.addEventListener('resize', () => Utils.resizeCanvas(gameState, gameObjects, canvas, ctx));
 
     console.log("Game initialization complete.");
+
+    // --- MOBILE-ONLY GAMEPLAY OVERRIDES ---
+    if (isMobileDevice()) {
+        console.log("Applying mobile-specific gameplay overrides...");
+        // 1. Cup size (and powerup size):
+        Const.CUP_RADIUS = Math.round(Const.CUP_RADIUS * 0.6);
+        // 2. Player size (optional, for consistency):
+        // Const.PLAYER_RADIUS = Math.round(Const.PLAYER_RADIUS * 0.6);
+        // 3. Spawn rates (double the interval = 50% less frequent):
+        Const.INITIAL_COFFEE_SPAWN_RATE = Math.round(Const.INITIAL_COFFEE_SPAWN_RATE * 2);
+        Const.INITIAL_TEA_SPAWN_RATE = Math.round(Const.INITIAL_TEA_SPAWN_RATE * 2);
+        // 4. Level up easier (reduce required coffees per level by 30%):
+        Const.COFFEES_PER_LEVEL = Math.max(1, Math.round(Const.COFFEES_PER_LEVEL * 0.7));
+        // 5. Patch object creation functions for speed and scaling
+        // Patch createCoffeeCup
+        const origCreateCoffeeCup = createCoffeeCup;
+        createCoffeeCup = function(gameState, gameObjects, getCoffeeFromPoolFunc) {
+            if (gameObjects.coffeeCups.filter(c => c.active).length >= Const.MAX_COFFEE_CUPS) return;
+            const directions = [ { dx: 0, dy: 1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: -1 }, { dx: 0.707, dy: 0.707 }, { dx: -0.707, dy: 0.707 }, { dx: 0.707, dy: -0.707 }, { dx: -0.707, dy: -0.707 } ];
+            // Reduce baseSpeed and level scaling by 40% and 30% respectively
+            const baseSpeed = (1.2 + gameState.level * 0.08 * 0.7) * 0.6;
+            const dir = directions[Math.floor(Utils.random(0, directions.length))];
+            let x, y;
+            const spawnEdge = Math.floor(Utils.random(0, 4));
+            switch (spawnEdge) {
+                case 0: x = Utils.random(0, gameState.width); y = -Const.CUP_RADIUS; dir.dx = Utils.random(-0.5, 0.5); dir.dy = 1; break;
+                case 1: x = gameState.width + Const.CUP_RADIUS; y = Utils.random(0, gameState.height); dir.dx = -1; dir.dy = Utils.random(-0.5, 0.5); break;
+                case 2: x = Utils.random(0, gameState.width); y = gameState.height + Const.CUP_RADIUS; dir.dx = Utils.random(-0.5, 0.5); dir.dy = -1; break;
+                case 3: x = -Const.CUP_RADIUS; y = Utils.random(0, gameState.height); dir.dx = 1; dir.dy = Utils.random(-0.5, 0.5); break;
+            }
+            const cup = getCoffeeFromPoolFunc();
+            if (cup) {
+                cup.x = x; cup.y = y;
+                const magnitude = Math.sqrt(dir.dx * dir.dx + dir.dy * dir.dy) || 1;
+                cup.dx = (dir.dx / magnitude) * baseSpeed;
+                cup.dy = (dir.dy / magnitude) * baseSpeed;
+                cup.rotation = 0; cup.rotationSpeed = Utils.random(-0.01, 0.01);
+                if (!gameObjects.coffeeCups.includes(cup)) { gameObjects.coffeeCups.push(cup); }
+            }
+        };
+        // Patch createTeaCup
+        const origCreateTeaCup = createTeaCup;
+        createTeaCup = function(gameState, gameObjects, getTeaFromPoolFunc) {
+            if (gameObjects.teaCups.filter(c => c.active).length >= Const.MAX_TEA_CUPS) return;
+            const directions = [ { dx: 0, dy: 1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: -1 }, { dx: 0.707, dy: 0.707 }, { dx: -0.707, dy: 0.707 }, { dx: 0.707, dy: -0.707 }, { dx: -0.707, dy: -0.707 } ];
+            // Reduce baseSpeed and level scaling by 40% and 30% respectively
+            const baseSpeed = (1.4 + gameState.level * 0.12 * 0.7) * 0.6;
+            const dir = directions[Math.floor(Utils.random(0, directions.length))];
+            let x, y;
+            const spawnEdge = Math.floor(Utils.random(0, 4));
+            switch (spawnEdge) {
+                case 0: x = Utils.random(0, gameState.width); y = -Const.CUP_RADIUS; dir.dx = Utils.random(-0.6, 0.6); dir.dy = 1; break;
+                case 1: x = gameState.width + Const.CUP_RADIUS; y = Utils.random(0, gameState.height); dir.dx = -1; dir.dy = Utils.random(-0.6, 0.6); break;
+                case 2: x = Utils.random(0, gameState.width); y = gameState.height + Const.CUP_RADIUS; dir.dx = Utils.random(-0.6, 0.6); dir.dy = -1; break;
+                case 3: x = -Const.CUP_RADIUS; y = Utils.random(0, gameState.height); dir.dx = 1; dir.dy = Utils.random(-0.6, 0.6); break;
+            }
+            const cup = getTeaFromPoolFunc();
+            if (cup) {
+                cup.x = x; cup.y = y;
+                const magnitude = Math.sqrt(dir.dx * dir.dx + dir.dy * dir.dy) || 1;
+                const baseDx = (dir.dx / magnitude) * baseSpeed;
+                const baseDy = (dir.dy / magnitude) * baseSpeed;
+                cup.dx = baseDx;
+                cup.dy = baseDy;
+                cup.rotation = 0; cup.rotationSpeed = Utils.random(-0.02, 0.02);
+                cup.alpha = 0;
+                // Zigzag logic (unchanged except amplitude scaling)
+                const zigzagProps = Const.ZIGZAG_TEA_PROPERTIES;
+                const currentSpawnChance = Math.min(
+                    zigzagProps.spawnChance + (gameState.level - 1) * zigzagProps.levelScaling.spawnChanceIncrease,
+                    zigzagProps.levelScaling.maxSpawnChance
+                );
+                if (Math.random() < currentSpawnChance) {
+                    cup.type = Const.TEA_CUP_TYPES.ZIGZAG;
+                    cup.zigzagTimer = 0;
+                    cup.zigzagDirection = (Math.random() < 0.5 ? 1 : -1);
+                    cup.zigzagAmplitude = (zigzagProps.amplitude + (gameState.level - 1) * zigzagProps.levelScaling.amplitudeIncrease) * 0.6; // scale amplitude
+                    cup.zigzagFrequency = Utils.random(zigzagProps.patternParams.CLASSIC.frequencyRange[0], zigzagProps.patternParams.CLASSIC.frequencyRange[1]);
+                    cup.baseDx = baseDx;
+                } else {
+                    cup.type = Const.TEA_CUP_TYPES.NORMAL;
+                    cup.zigzagTimer = undefined;
+                    cup.zigzagDirection = undefined;
+                    cup.zigzagAmplitude = undefined;
+                    cup.zigzagFrequency = undefined;
+                    cup.baseDx = undefined;
+                }
+                if (!gameObjects.teaCups.includes(cup)) { gameObjects.teaCups.push(cup); }
+            }
+        };
+        // Patch createPowerUp (for powerup size)
+        const origCreatePowerUp = createPowerUp;
+        createPowerUp = function(gameState, gameObjects, type) {
+            const x = Utils.random(Const.CUP_RADIUS, gameState.width - Const.CUP_RADIUS);
+            const y = -Const.CUP_RADIUS;
+            gameObjects.powerUps.push({ x, y, radius: Const.CUP_RADIUS, dy: 1.0, type });
+        };
+    }
 }
 
 // --- Start the game initialization ---
