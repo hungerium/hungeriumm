@@ -2207,22 +2207,16 @@ function init() {
     if (isMobileDevice()) {
         console.log("Applying mobile-specific gameplay overrides...");
         // 1. Cup size (and powerup size):
-        Const.CUP_RADIUS = Math.round(Const.CUP_RADIUS * 0.6);
-        // 2. Player size (optional, for consistency):
-        // Const.PLAYER_RADIUS = Math.round(Const.PLAYER_RADIUS * 0.6);
-        // 3. Spawn rates (double the interval = 50% less frequent, then 20% less frequent again, then 40% less frequent, then 30% less frequent):
-        Const.INITIAL_COFFEE_SPAWN_RATE = Math.round(Const.INITIAL_COFFEE_SPAWN_RATE * 2 * 1.2 * 1.4 * 1.3); // total 4.368x
-        Const.INITIAL_TEA_SPAWN_RATE = Math.round(Const.INITIAL_TEA_SPAWN_RATE * 2 * 1.2 * 1.4 * 1.3); // total 4.368x
-        // 4. Level up easier (reduce required coffees per level by 30%, then 20%, then 40%):
-        Const.COFFEES_PER_LEVEL = Math.max(1, Math.round(Const.COFFEES_PER_LEVEL * 0.7 * 0.8 * 0.6)); // total 0.336x
-        // 5. Patch object creation functions for speed and scaling
-        // Patch createCoffeeCup
+        Const.CUP_RADIUS = Math.round(Const.CUP_RADIUS * 0.8);
+        // 2. Respawn hızını %30 azalt (intervali 1.3x ile çarp):
+        Const.INITIAL_COFFEE_SPAWN_RATE = Math.round(Const.INITIAL_COFFEE_SPAWN_RATE * 1.3);
+        Const.INITIAL_TEA_SPAWN_RATE = Math.round(Const.INITIAL_TEA_SPAWN_RATE * 1.3);
+        // 3. Nesne hızlarını %40 azalt (baseSpeed * 0.6):
         const origCreateCoffeeCup = createCoffeeCup;
         createCoffeeCup = function(gameState, gameObjects, getCoffeeFromPoolFunc) {
             if (gameObjects.coffeeCups.filter(c => c.active).length >= Const.MAX_COFFEE_CUPS) return;
             const directions = [ { dx: 0, dy: 1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: -1 }, { dx: 0.707, dy: 0.707 }, { dx: -0.707, dy: 0.707 }, { dx: 0.707, dy: -0.707 }, { dx: -0.707, dy: -0.707 } ];
-            // Reduce baseSpeed and level scaling by 40% and 30% respectively
-            const baseSpeed = (1.2 + gameState.level * 0.08 * 0.7) * 0.6;
+            const baseSpeed = (1.2 + gameState.level * 0.08) * 0.6;
             const dir = directions[Math.floor(Utils.random(0, directions.length))];
             let x, y;
             const spawnEdge = Math.floor(Utils.random(0, 4));
@@ -2242,13 +2236,11 @@ function init() {
                 if (!gameObjects.coffeeCups.includes(cup)) { gameObjects.coffeeCups.push(cup); }
             }
         };
-        // Patch createTeaCup
         const origCreateTeaCup = createTeaCup;
         createTeaCup = function(gameState, gameObjects, getTeaFromPoolFunc) {
             if (gameObjects.teaCups.filter(c => c.active).length >= Const.MAX_TEA_CUPS) return;
             const directions = [ { dx: 0, dy: 1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }, { dx: 0, dy: -1 }, { dx: 0.707, dy: 0.707 }, { dx: -0.707, dy: 0.707 }, { dx: 0.707, dy: -0.707 }, { dx: -0.707, dy: -0.707 } ];
-            // Reduce baseSpeed and level scaling by 40% and 30% respectively
-            const baseSpeed = (1.4 + gameState.level * 0.12 * 0.7) * 0.6;
+            const baseSpeed = (1.4 + gameState.level * 0.12) * 0.6;
             const dir = directions[Math.floor(Utils.random(0, directions.length))];
             let x, y;
             const spawnEdge = Math.floor(Utils.random(0, 4));
@@ -2278,7 +2270,7 @@ function init() {
                     cup.type = Const.TEA_CUP_TYPES.ZIGZAG;
                     cup.zigzagTimer = 0;
                     cup.zigzagDirection = (Math.random() < 0.5 ? 1 : -1);
-                    cup.zigzagAmplitude = (zigzagProps.amplitude + (gameState.level - 1) * zigzagProps.levelScaling.amplitudeIncrease) * 0.6; // scale amplitude
+                    cup.zigzagAmplitude = (zigzagProps.amplitude + (gameState.level - 1) * zigzagProps.levelScaling.amplitudeIncrease) * 0.8; // boyut da küçüldü
                     cup.zigzagFrequency = Utils.random(zigzagProps.patternParams.CLASSIC.frequencyRange[0], zigzagProps.patternParams.CLASSIC.frequencyRange[1]);
                     cup.baseDx = baseDx;
                 } else {
@@ -2292,13 +2284,93 @@ function init() {
                 if (!gameObjects.teaCups.includes(cup)) { gameObjects.teaCups.push(cup); }
             }
         };
-        // Patch createPowerUp (for powerup size)
-        const origCreatePowerUp = createPowerUp;
-        createPowerUp = function(gameState, gameObjects, type) {
-            const x = Utils.random(Const.CUP_RADIUS, gameState.width - Const.CUP_RADIUS);
-            const y = -Const.CUP_RADIUS;
-            gameObjects.powerUps.push({ x, y, radius: Const.CUP_RADIUS, dy: 1.0, type });
+    }
+
+    // --- MOBİL GELİŞTİRMELER ---
+    if (isMobileDevice()) {
+        // 1. Tam ekran butonu ekle
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.id = 'fullscreen-btn';
+        fullscreenBtn.className = 'game-button';
+        fullscreenBtn.innerHTML = '⛶ Tam Ekran';
+        fullscreenBtn.style.position = 'fixed';
+        fullscreenBtn.style.bottom = '10px';
+        fullscreenBtn.style.right = '10px';
+        fullscreenBtn.style.zIndex = '1002';
+        fullscreenBtn.style.fontSize = '18px';
+        fullscreenBtn.style.padding = '10px 16px';
+        fullscreenBtn.style.borderRadius = '8px';
+        fullscreenBtn.style.opacity = '0.85';
+        fullscreenBtn.style.display = 'block';
+        document.body.appendChild(fullscreenBtn);
+        fullscreenBtn.addEventListener('click', () => {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        });
+        // 2. Android geri tuşu desteği
+        if (window.history && window.history.pushState) {
+            window.history.pushState({ page: 'game' }, '', '');
+            window.addEventListener('popstate', function(e) {
+                // Oyun başladıysa duraklat, ana menüdeyse bir şey yapma
+                if (gameState.isStarted && !gameState.isPaused && !gameState.isOver) {
+                    // Oyun oynanıyorsa duraklat
+                    if (typeof GameLogic !== 'undefined' && GameLogic.togglePause) {
+                        GameLogic.togglePause(gameState, gameLoop, { pauseScreen }, { backgroundMusic });
+                    }
+                    // Geri tuşuna tekrar basılırsa ana menüye dön
+                    window.history.pushState({ page: 'game' }, '', '');
+                } else {
+                    // Ana menüdeyse veya oyun bitmişse, default davranış (sayfadan çıkış)
+                }
+            });
+        }
+        // 3. Titreşim fonksiyonu (ödül toplama veya çarpışma)
+        // Orijinal fonksiyonları sarmala
+        const origResetCoffeeCup = typeof resetCoffeeCup === 'function' ? resetCoffeeCup : null;
+        resetCoffeeCup = function(cup) {
+            if (window.navigator.vibrate) window.navigator.vibrate(40);
+            if (origResetCoffeeCup) origResetCoffeeCup(cup);
         };
+        const origGameOver = typeof GameLogic !== 'undefined' && GameLogic.gameOver ? GameLogic.gameOver : null;
+        if (origGameOver) {
+            GameLogic.gameOver = function(...args) {
+                if (window.navigator.vibrate) window.navigator.vibrate([80, 40, 80]);
+                return origGameOver.apply(this, args);
+            };
+        }
+        // --- Tam ekranı otomatik başlat ---
+        function requestFullscreenAuto() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        }
+        let fullscreenRequested = false;
+        function autoFullscreenHandler() {
+            if (!fullscreenRequested) {
+                requestFullscreenAuto();
+                fullscreenRequested = true;
+                window.removeEventListener('touchstart', autoFullscreenHandler);
+                window.removeEventListener('click', autoFullscreenHandler);
+            }
+        }
+        window.addEventListener('touchstart', autoFullscreenHandler, { once: true });
+        window.addEventListener('click', autoFullscreenHandler, { once: true });
+        // Ayrıca başlat butonuna da bağla
+        if (typeof startButton !== 'undefined' && startButton) {
+            startButton.addEventListener('click', function() {
+                if (!fullscreenRequested) {
+                    requestFullscreenAuto();
+                    fullscreenRequested = true;
+                }
+            });
+        }
+        // Önceki manuel fullscreen butonunu kaldır (varsa)
+        const oldBtn = document.getElementById('fullscreen-btn');
+        if (oldBtn) oldBtn.remove();
+        // ... diğer mobil geliştirmeler ...
     }
 }
 
