@@ -2210,11 +2210,11 @@ function init() {
         Const.CUP_RADIUS = Math.round(Const.CUP_RADIUS * 0.6);
         // 2. Player size (optional, for consistency):
         // Const.PLAYER_RADIUS = Math.round(Const.PLAYER_RADIUS * 0.6);
-        // 3. Spawn rates (double the interval = 50% less frequent):
-        Const.INITIAL_COFFEE_SPAWN_RATE = Math.round(Const.INITIAL_COFFEE_SPAWN_RATE * 2);
-        Const.INITIAL_TEA_SPAWN_RATE = Math.round(Const.INITIAL_TEA_SPAWN_RATE * 2);
-        // 4. Level up easier (reduce required coffees per level by 30%):
-        Const.COFFEES_PER_LEVEL = Math.max(1, Math.round(Const.COFFEES_PER_LEVEL * 0.7));
+        // 3. Spawn rates (double the interval = 50% less frequent, then 20% less frequent again, then 40% less frequent, then 30% less frequent):
+        Const.INITIAL_COFFEE_SPAWN_RATE = Math.round(Const.INITIAL_COFFEE_SPAWN_RATE * 2 * 1.2 * 1.4 * 1.3); // total 4.368x
+        Const.INITIAL_TEA_SPAWN_RATE = Math.round(Const.INITIAL_TEA_SPAWN_RATE * 2 * 1.2 * 1.4 * 1.3); // total 4.368x
+        // 4. Level up easier (reduce required coffees per level by 30% then 20%):
+        Const.COFFEES_PER_LEVEL = Math.max(1, Math.round(Const.COFFEES_PER_LEVEL * 0.7 * 0.8)); // total 0.56x
         // 5. Patch object creation functions for speed and scaling
         // Patch createCoffeeCup
         const origCreateCoffeeCup = createCoffeeCup;

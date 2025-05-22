@@ -266,32 +266,6 @@ export function updateCups(gameState, gameObjects, deltaTime, uiElements, soundE
             }
         }
 
-        // Çay fincanları için özel davranış: daha hızlı ve takip edici (Repel aktif değilse)
-        if (!gameState.timeStopActive && !gameState.teaRepelActive && Math.random() < 0.02) {
-            // %2 şans ile oyuncuya doğru yön değiştir
-            const dx_track = player.x - cup.x; // Renamed to avoid conflict
-            const dy_track = player.y - cup.y;
-            const distance_track = Math.sqrt(dx_track * dx_track + dy_track * dy_track);
-
-            // Oyuncuyu takip etme davranışı - tehlikeli çay
-            if (distance_track < gameState.width * 0.5) { // Ekran genişliğinin yarısı kadar mesafedeyse
-                const trackingForce = 0.1 * deltaFactor; // Takip gücü (Apply deltaFactor)
-                const angle = Math.atan2(dy_track, dx_track);
-
-                // Apply tracking force (add to existing dx/dy, potentially modified by zigzag)
-                cup.dx += Math.cos(angle) * trackingForce;
-                cup.dy += Math.sin(angle) * trackingForce;
-                // Hafif uyarı efekti
-                if (Math.random() < 0.5 && logicDependencies.createParticles) {
-                    logicDependencies.createParticles(
-                        cup.x, cup.y - cup.radius * 0.5,
-                        { count: 1, colors: ['rgba(173, 255, 47, 0.5)'] },
-                        0.3
-                    );
-                }
-            }
-        }
-                
         // Çay fincanları için ekran sınırlarında kontrolü - agresif geri dönüş (Apply deltaFactor)
         const margin = cup.radius;
         const boundaryForceTea = 0.2 * deltaFactor;
@@ -553,7 +527,11 @@ export function spawnObstacles(gameState, gameObjects, currentTime, createObstac
 
 // Spawns new coffee, tea, powerups, and obstacles based on time and level
 export function spawnCups(gameState, gameObjects, currentTime, createCoffeeCupFunc, createTeaCupFunc, createPowerUpFunc, createObstacleFunc) {
-    const difficultyFactor = Math.max(1, Math.log(gameState.level + 1));
+    // Mobile: reduce level effect on spawn frequency by 60%
+    const isMobile = typeof isMobileDevice === 'function' ? isMobileDevice() : (window.isMobileDevice && window.isMobileDevice());
+    const difficultyFactor = isMobile
+        ? Math.max(1, Math.log(gameState.level + 1) * 0.4) // %60 azalt
+        : Math.max(1, Math.log(gameState.level + 1));
 
     // Coffee Spawn
     const coffeeSpawnRate = Const.INITIAL_COFFEE_SPAWN_RATE / difficultyFactor;
