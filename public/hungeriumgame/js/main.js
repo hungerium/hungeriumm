@@ -37,14 +37,6 @@ window.THREE.FXAAShader = FXAAShader;
 window.THREE.CopyShader = CopyShader;
 window.THREE.LuminosityHighPassShader = LuminosityHighPassShader;
 
-// Initialize global performance tracking variables
-window.lowGraphicsMode = false;
-window.performanceIssuesDetected = false;
-window.joystickIssuesDetected = false;
-window.fpsHistory = [];
-window.lastFrameTime = 0;
-window.freezeDetected = false;
-
 // Script yükleme yardımcısı
 const loadScript = (src) => {
     return new Promise((resolve, reject) => {
@@ -141,7 +133,53 @@ document.addEventListener('click', function initAudio() {
     }
 }, { once: true });
 
-// Improved mobile device detection with memory and CPU checks
+// WebGL context kaybı için otomatik reload
+window.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+        canvas.addEventListener('webglcontextlost', function(e) {
+            alert('WebGL context kayboldu! Sayfa yenilenecek.');
+            e.preventDefault();
+            location.reload();
+        }, false);
+    }
+});
+
+// HUD enable debounce
+let lastMobileHudEnable = 0;
+function safeEnableMobileHud() {
+    const now = Date.now();
+    if (now - lastMobileHudEnable < 1000) return;
+    lastMobileHudEnable = now;
+    window.mobileHud && window.mobileHud.enable && window.mobileHud.enable();
+}
+
+// Early mobile/low graphics detection and activation
+(function earlyMobileLowGraphics() {
+    function isMobileDevice() {
+        return window.isMobileMode ||
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            window.innerWidth <= 950;
+    }
+    function activateMobileLowGraphics() {
+        if (typeof window.forceLowGraphics !== 'undefined' && window.forceLowGraphics) {
+            window.lowGraphicsMode = true;
+        }
+        if (isMobileDevice()) {
+            window.isMobileMode = true;
+            window.lowGraphicsMode = true;
+            if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
+                //window.mobileHud.enable();
+                safeEnableMobileHud();
+            }
+        }
+    }
+    activateMobileLowGraphics();
+    window.addEventListener('resize', activateMobileLowGraphics);
+    window.addEventListener('orientationchange', activateMobileLowGraphics);
+})();
+
+// Mobil cihaz algılama fonksiyonu
 function isMobileDevice() {
     // Landscape: width <= 933 is always mobile
     if (window.innerWidth > window.innerHeight) {
@@ -149,22 +187,6 @@ function isMobileDevice() {
     }
     // Portrait: width <= 950 or mobile user agent
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950;
-}
-
-// Detect low-end devices based on memory, CPU cores, and other factors
-function isLowEndDevice() {
-    // Check if device has limited memory or CPU
-    const memory = navigator.deviceMemory || 4; // Default to 4GB if not available
-    const cpuCores = navigator.hardwareConcurrency || 4; // Default to 4 cores if not available
-    
-    // Check if device is already showing performance issues
-    const hasPerformanceIssues = window.performanceIssuesDetected || window.freezeDetected;
-    
-    // Consider device low-end if:
-    // - It has less than 4GB RAM, or
-    // - It has 2 or fewer CPU cores, or
-    // - Performance issues have already been detected
-    return memory < 4 || cpuCores <= 2 || hasPerformanceIssues;
 }
 
 // Add a resize handler to detect mobile mode on window resize
@@ -190,14 +212,6 @@ window.addEventListener('resize', function() {
 // Mobilde otomatik HUD ve tam ekran
 window.addEventListener('DOMContentLoaded', function() {
     if (isMobileDevice()) {
-        // Check for low-end device and set graphics mode accordingly
-        if (isLowEndDevice()) {
-            console.log("Low-end mobile device detected, enabling low graphics mode");
-            window.lowGraphicsMode = true;
-            // Initialize performance monitoring early
-            initializePerformanceMonitoring();
-        }
-        
         // Mobil HUD'u etkinleştir
         if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
             window.mobileHud.enable();
@@ -292,158 +306,6 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Comprehensive performance monitoring system
-function initializePerformanceMonitoring() {
-    if (!isMobileDevice()) return;
-    
-    let frameCount = 0;
-    let lastTime = performance.now();
-    let consecutiveLowFPS = 0;
-    let joystickFailCount = 0;
-    const LOW_FPS_THRESHOLD = 25;
-    const FREEZE_THRESHOLD = 500; // ms
-    const MAX_LOW_FPS_COUNT = 2;
-    const FPS_HISTORY_SIZE = 20;
-    
-    // Track FPS over time
-    function updateFPS() {
-        frameCount++;
-        const now = performance.now();
-        const elapsed = now - lastTime;
-        
-        // Check for freezes (long frames)
-        if (window.lastFrameTime > 0) {
-            const frameDuration = now - window.lastFrameTime;
-            if (frameDuration > FREEZE_THRESHOLD) {
-                console.warn(`Frame freeze detected: ${frameDuration.toFixed(0)}ms`);
-                window.freezeDetected = true;
-                enableLowGraphicsMode();
-            }
-        }
-        window.lastFrameTime = now;
-        
-        // Calculate FPS every second
-        if (elapsed >= 1000) {
-            const fps = frameCount * 1000 / elapsed;
-            console.log(`Current FPS: ${fps.toFixed(1)}`);
-            
-            // Store in history for trending analysis
-            window.fpsHistory.push(fps);
-            if (window.fpsHistory.length > FPS_HISTORY_SIZE) {
-                window.fpsHistory.shift();
-            }
-            
-            // Calculate average FPS
-            const avgFps = window.fpsHistory.reduce((sum, val) => sum + val, 0) / window.fpsHistory.length;
-            
-            // Check if FPS is below threshold
-            if (fps < LOW_FPS_THRESHOLD || avgFps < LOW_FPS_THRESHOLD) {
-                consecutiveLowFPS++;
-                console.warn(`Low FPS detected (${consecutiveLowFPS}/${MAX_LOW_FPS_COUNT}): ${fps.toFixed(1)}`);
-                
-                if (consecutiveLowFPS >= MAX_LOW_FPS_COUNT) {
-                    window.performanceIssuesDetected = true;
-                    enableLowGraphicsMode();
-                }
-            } else {
-                // Reset counter if FPS recovers
-                consecutiveLowFPS = Math.max(0, consecutiveLowFPS - 0.5);
-            }
-            
-            // Reset for next second
-            frameCount = 0;
-            lastTime = now;
-        }
-        
-        // Schedule next update
-        requestAnimationFrame(updateFPS);
-    }
-    
-    // Start monitoring FPS
-    requestAnimationFrame(updateFPS);
-    
-    // Monitor for input issues (joystick problems)
-    function monitorJoystickIssues() {
-        // If joystick exists but appears to be non-functional
-        if (window.mobileHud && document.getElementById('mobile-joystick')) {
-            // If nipplejs instances not found or not working properly
-            if (!window.joystickManager && !document.querySelector('.nipple')) {
-                joystickFailCount++;
-                console.warn(`Joystick issue detected (${joystickFailCount}/3)`);
-                
-                if (joystickFailCount >= 3) {
-                    window.joystickIssuesDetected = true;
-                    fixJoystickIssues();
-                }
-            } else {
-                // Reset counter if joystick appears to be working
-                joystickFailCount = 0;
-            }
-        }
-        
-        // Continue monitoring
-        setTimeout(monitorJoystickIssues, 2000);
-    }
-    
-    // Start monitoring joystick issues after a delay
-    setTimeout(monitorJoystickIssues, 5000);
-}
-
-// Function to enable low graphics mode
-function enableLowGraphicsMode() {
-    if (window.lowGraphicsMode) return;
-    
-    console.log("Enabling low graphics mode due to performance issues");
-    window.lowGraphicsMode = true;
-    
-    // Apply graphics optimizations
-    if (window.environment && window.environment.water) {
-        window.environment.water.visible = false;
-    }
-    
-    // Disable post-processing
-    if (window.environment && window.environment.composer) {
-        window.environment.composer = null;
-    }
-    
-    // Reduce shadow quality
-    if (window.renderer) {
-        window.renderer.shadowMap.enabled = false;
-    }
-    
-    // Disable atmospheric effects
-    if (window.audioManager) {
-        disableHeavyAudioFeatures();
-    }
-    
-    // Show notification to user
-    if (window.showNotification) {
-        window.showNotification('Performans iyileştirildi!', 2000);
-    }
-}
-
-// Function to fix joystick issues
-function fixJoystickIssues() {
-    console.log("Fixing joystick issues");
-    
-    // Force refresh the mobile HUD
-    if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
-        window.mobileHud.forceRefresh();
-        
-        // Additional attempt after a delay
-        setTimeout(() => {
-            if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
-                window.mobileHud.forceRefresh();
-            }
-        }, 1000);
-    }
-    
-    // Show notification to user
-    if (window.showNotification) {
-        window.showNotification('Kontroller yenilendi!', 2000);
-    }
-}
-
 // Mobilde scroll/zoom engelleme
 if (typeof window !== 'undefined') {
     document.addEventListener('touchmove', function(e) {
@@ -502,39 +364,94 @@ window.addEventListener('DOMContentLoaded', function() {
     }, 2000);
 });
 
-// Enhanced version of disableHeavyAudioFeatures
-function disableHeavyAudioFeatures() {
-    console.log("Disabling heavy audio features due to performance issues");
+// Mobilde düşük performans algılama ve grafik seviyesi düşürme
+window.lowGraphicsMode = false;
+(function monitorMobilePerformance() {
+    if (!isMobileDevice()) return;
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let consecutiveLowFPS = 0;
+    const MAX_LOW_FPS_COUNT = 3;
     
-    // Check if audioManager exists
-    if (window.audioManager) {
-        // Stop all background sounds first
-        if (typeof window.audioManager.stopBackgroundMusic === 'function') {
-            window.audioManager.stopBackgroundMusic();
+    function checkFPS() {
+        frameCount++;
+        const now = performance.now();
+        if (now - lastTime > 2000) { // 2 saniyede bir kontrol
+            const fps = frameCount / ((now - lastTime) / 1000);
+            console.log(`Current FPS: ${fps.toFixed(1)}`);
+            
+            if (fps < 30) {
+                consecutiveLowFPS++;
+                if (consecutiveLowFPS >= MAX_LOW_FPS_COUNT) {
+                    window.lowGraphicsMode = true;
+                    if (window.showNotification) window.showNotification('Düşük grafik modu etkin!', 2000);
+                    
+                    // Disable audio features on performance issues
+                    disableHeavyAudioFeatures();
+                } else {
+                    console.log(`Low FPS detected (${consecutiveLowFPS}/${MAX_LOW_FPS_COUNT})`);
+                }
+            } else {
+                consecutiveLowFPS = 0;
+            }
+            
+            lastTime = now;
+            frameCount = 0;
         }
-        
-        if (typeof window.audioManager.stopAtmosphereSound === 'function') {
-            window.audioManager.stopAtmosphereSound();
-        }
-        
-        // Mark audio manager to use minimum audio
-        window.audioManager.isMobileDevice = true;
-        
-        // Set aggressive sound limiters
-        if (window.audioManager.audioLimiters) {
-            window.audioManager.audioLimiters.maxSimultaneousSounds = 1;
-            window.audioManager.audioLimiters.minTimeBetweenSounds = 500; 
-        }
-        
-        // Completely disable non-essential sounds
-        window.audioManager.disableRobotDeathSounds = true;
+        requestAnimationFrame(checkFPS);
     }
-}
-
-// Initialize performance monitoring for mobile devices
-if (isMobileDevice()) {
-    initializePerformanceMonitoring();
-}
+    
+    function disableHeavyAudioFeatures() {
+        console.log("Disabling heavy audio features due to performance issues");
+        
+        // Check if audioManager exists
+        if (window.audioManager) {
+            // Stop all background sounds first
+            if (typeof window.audioManager.stopBackgroundMusic === 'function') {
+                window.audioManager.stopBackgroundMusic();
+            }
+            
+            if (typeof window.audioManager.stopAtmosphereSound === 'function') {
+                window.audioManager.stopAtmosphereSound();
+            }
+            
+            // Mark audio manager to use minimum audio
+            window.audioManager.isMobileDevice = true;
+            
+            // Set aggressive sound limiters
+            if (window.audioManager.audioLimiters) {
+                window.audioManager.audioLimiters.maxSimultaneousSounds = 1;
+                window.audioManager.audioLimiters.minTimeBetweenSounds = 500; 
+            }
+        }
+    }
+    
+    // Start monitoring FPS
+    requestAnimationFrame(checkFPS);
+    
+    // Also listen for visible freezes
+    let lastAnimationTime = performance.now();
+    function detectFreeze() {
+        const now = performance.now();
+        const elapsed = now - lastAnimationTime;
+        
+        // If more than 500ms between frames, we had a freeze
+        if (elapsed > 500) {
+            console.log(`Detected frame freeze: ${elapsed.toFixed(0)}ms`);
+            window.lowGraphicsMode = true;
+            disableHeavyAudioFeatures();
+            
+            if (window.showNotification) {
+                window.showNotification('Performans iyileştirildi!', 2000);
+            }
+        }
+        
+        lastAnimationTime = now;
+        requestAnimationFrame(detectFreeze);
+    }
+    
+    requestAnimationFrame(detectFreeze);
+})();
 
 // Mobil cihazlar için ses ayarları yapılandırma fonksiyonu
 function configureMobileAudio() {

@@ -1710,9 +1710,6 @@ class Game {
         
         const minDelta = Math.min(this.clock.getDelta(), 0.1);
         
-        // Check for joystick issues and fix if needed
-        this.checkAndFixJoystickIssues();
-        
         // Update physics
         if (this.physicsManager) {
             this.physicsManager.update(minDelta);
@@ -2486,60 +2483,6 @@ class Game {
             console.error(`Error creating ${type} robot:`, error);
         }
         return newRobot;
-    }
-
-    // Add a new method to detect and fix joystick issues
-    checkAndFixJoystickIssues() {
-        // Only run on mobile
-        if (!document.body.classList.contains('mobile-mode')) return;
-        
-        // Check if the joystick exists but appears to be non-functional
-        const joystickElement = document.getElementById('mobile-joystick');
-        if (!joystickElement) return;
-        
-        // Get vehicle controls
-        const vehicle = this.vehicle;
-        if (!vehicle) return;
-        
-        // Check for stuck controls that might indicate joystick issues
-        const controlsStuck = vehicle.controls.forward || vehicle.controls.backward || 
-                             vehicle.controls.left || vehicle.controls.right;
-        
-        // Calculate how long joystick has been inactive
-        const joystickInactive = window.lastJoystickActivity ? 
-                                (Date.now() - window.lastJoystickActivity > 10000) : true;
-        
-        // Check if nipplejs elements are missing
-        const nippleElementsMissing = !document.querySelector('.nipple');
-        
-        // If we have any indicators of joystick issues
-        if ((controlsStuck && joystickInactive) || nippleElementsMissing) {
-            console.warn("Joystick issue detected in game loop");
-            
-            // Reset vehicle controls first to prevent being stuck
-            vehicle.controls.forward = false;
-            vehicle.controls.backward = false;
-            vehicle.controls.left = false;
-            vehicle.controls.right = false;
-            
-            // Check if we need to force a complete joystick rebuild
-            if (nippleElementsMissing || !window.mobileHud.isJoystickWorking()) {
-                console.log("Rebuilding joystick in game loop");
-                
-                // Only refresh if we haven't done so recently (prevent refresh loops)
-                if (!this._lastJoystickRefresh || (Date.now() - this._lastJoystickRefresh > 30000)) {
-                    if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
-                        window.mobileHud.forceRefresh();
-                        this._lastJoystickRefresh = Date.now();
-                        
-                        // Show notification to user
-                        if (window.showNotification) {
-                            window.showNotification('Kontroller yenilendi!', 2000);
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

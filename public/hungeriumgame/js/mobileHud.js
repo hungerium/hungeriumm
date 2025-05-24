@@ -6,6 +6,13 @@
     let joystickManager = null;
     let lastDir = { x: 0, y: 0 };
     let updateInterval = null;
+    let joystickAnimationFrameId = null;
+    // Event listener references for cleanup
+    let _mobileHudEventListeners = [];
+
+    // Joystick hassasiyetini ayarlamak için global threshold
+    window.JOYSTICK_SIDEWAYS_THRESHOLD = 0.26; // Daha az hassas, düz gitmek kolay
+    window.JOYSTICK_SIDEWAYS_DEADZONE = 0.29; // Deadzone: düz gitmek için ölü bölge
 
     function init() {
         // In landscape, if width <= 933px, always show mobile HUD. In portrait, use old logic.
@@ -26,41 +33,43 @@
             setTimeout(function() { if (!document.getElementById(MOBILE_HUD_ID)) { console.log("Mobile HUD still not found, final attempt"); enable(); } }, 2000);
         }
         
-        window.addEventListener('DOMContentLoaded', function() {
+        // Wrap event listeners for later removal
+        function addListener(target, type, fn, opts) {
+            target.addEventListener(type, fn, opts);
+            _mobileHudEventListeners.push({ target, type, fn, opts });
+        }
+        // Replace window/document event listeners with tracked versions
+        addListener(window, 'DOMContentLoaded', function mobileHudDomContentLoaded() {
             if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
-                console.log("Mobile device detected on DOMContentLoaded, enabling mobile HUD");
-                enable();
+                if (window.safeEnableMobileHud) {
+                    window.safeEnableMobileHud();
+                } else if (window.mobileHud && window.mobileHud.enable) {
+                    window.mobileHud.enable();
+                }
             }
         });
-        
-        window.addEventListener('load', function() {
+        addListener(window, 'load', function mobileHudLoad() {
             if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
-                console.log("Mobile device detected on window load, enabling mobile HUD");
-                enable();
+                if (window.safeEnableMobileHud) {
+                    window.safeEnableMobileHud();
+                } else if (window.mobileHud && window.mobileHud.enable) {
+                    window.mobileHud.enable();
+                }
             }
         });
-        
-        window.addEventListener('orientationchange', function() {
+        addListener(window, 'orientationchange', function mobileHudOrientationChange() {
             console.log("Orientation changed - forcing mobile HUD refresh");
-            // Force a complete refresh of the mobile HUD on orientation change
-            setTimeout(function() {
-                forceRefresh();
-            }, 300);
+            setTimeout(function() { forceRefresh(); }, 300);
             setTimeout(updateMobileHudPositions, 100);
         });
-        
-        window.addEventListener('resize', function() {
-            // Check if we should enable mobile HUD based on new dimensions
+        addListener(window, 'resize', function mobileHudResize() {
             const nowLandscape = window.innerWidth > window.innerHeight;
             const shouldBeMobile = window.isMobileMode ||
                 (nowLandscape
                     ? (window.innerWidth <= 933)
                     : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
                 );
-                
             console.log(`Resize - Screen: ${window.innerWidth}x${window.innerHeight}, landscape: ${nowLandscape}, should be mobile: ${shouldBeMobile}`);
-            
-            // If conditions changed, update the HUD
             if (shouldBeMobile && !document.getElementById(MOBILE_HUD_ID)) {
                 console.log("Should be mobile after resize, enabling mobile HUD");
                 enable();
@@ -68,11 +77,9 @@
                 console.log("Should not be mobile after resize, disabling mobile HUD");
                 disable();
             }
-            
             setTimeout(updateMobileHudPositions, 100);
         });
-        
-        document.addEventListener('keydown', function(e) {
+        addListener(document, 'keydown', function mobileHudKeydown(e) {
             if (e.key === 'M' && e.shiftKey) {
                 if (!document.getElementById(MOBILE_HUD_ID)) {
                     console.log("Shift+M pressed, enabling mobile HUD");
@@ -253,7 +260,10 @@
     }
 
     function setupJoystick() {
-        if (joystickManager) return;
+        if (joystickManager) {
+            try { joystickManager.destroy(); } catch (e) { console.log("Error destroying joystick:", e); }
+            joystickManager = null;
+        }
         const joystickZone = document.getElementById('mobile-joystick');
         if (!joystickZone || !window.nipplejs) return;
         
@@ -284,9 +294,6 @@
             if (window.game && window.game.vehicle) {
                 mapJoystickToControls();
             }
-            
-            // Reset joystick auto-recovery countdown
-            window.lastJoystickActivity = Date.now();
         });
         
         joystickManager.on('end', function() {
@@ -297,50 +304,7 @@
                 const v = window.game.vehicle;
                 v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
             }
-            
-            // Mark this as joystick activity to prevent unnecessary resets
-            window.lastJoystickActivity = Date.now();
         });
-        
-        // Setup joystick auto-recovery system
-        setupJoystickAutoRecovery();
-    }
-
-    // New function to automatically recover joystick if it stops working
-    function setupJoystickAutoRecovery() {
-        // Initialize the last activity timestamp
-        window.lastJoystickActivity = Date.now();
-        
-        // Check if joystick appears inactive every 3 seconds
-        const joystickCheckInterval = setInterval(() => {
-            // If no joystick activity for 15 seconds while game is running and not paused
-            const inactiveTime = Date.now() - window.lastJoystickActivity;
-            const gameRunning = window.game && !window.game.isPaused;
-            
-            if (inactiveTime > 15000 && gameRunning) {
-                console.log("Joystick appears inactive, attempting recovery...");
-                
-                // If joystick doesn't appear to be working properly
-                if (!document.querySelector('.nipple') || 
-                    (joystickManager && !joystickManager.get().length)) {
-                    
-                    // Force a complete rebuild of the joystick
-                    console.log("Rebuilding joystick due to inactivity");
-                    forceRefresh();
-                    
-                    // Show notification to user
-                    if (window.showNotification) {
-                        window.showNotification('Kontroller yenilendi!', 2000);
-                    }
-                    
-                    // Reset activity timestamp
-                    window.lastJoystickActivity = Date.now();
-                }
-            }
-        }, 3000);
-        
-        // Store interval ID for cleanup
-        window._joystickRecoveryInterval = joystickCheckInterval;
     }
 
     function mapJoystickToControls() {
@@ -351,13 +315,13 @@
         v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
         
         // Apply analog control with gradual values based on force
-        const forwardThreshold = 0.1;  // More sensitive threshold for better responsiveness
-        const sidewaysThreshold = 0.1;
+        const forwardThreshold = 0.1;  // Daha hassas ileri/geri
+        const sidewaysThreshold = window.JOYSTICK_SIDEWAYS_THRESHOLD || 0.22;
+        const sidewaysDeadzone = window.JOYSTICK_SIDEWAYS_DEADZONE || 0.25;
         
-        // Forward/backward control with analog force
+        // Forward/backward control
         if (lastDir.y > forwardThreshold) {
             v.controls.forward = true;
-            // If we have analog acceleration, apply the value proportionally
             if (typeof v.controls.forwardAmount === 'number') {
                 v.controls.forwardAmount = Math.min(1.0, Math.abs(lastDir.y));
             }
@@ -365,24 +329,19 @@
         
         if (lastDir.y < -forwardThreshold) {
             v.controls.backward = true;
-            // If we have analog braking, apply the value proportionally
             if (typeof v.controls.backwardAmount === 'number') {
                 v.controls.backwardAmount = Math.min(1.0, Math.abs(lastDir.y));
             }
         }
         
-        // Left/right control with analog steering
-        if (lastDir.x < -sidewaysThreshold) {
+        // Left/right control with deadzone
+        if (lastDir.x < -sidewaysDeadzone) {
             v.controls.left = true;
-            // If we have analog steering, apply the value proportionally
             if (typeof v.controls.steeringAmount === 'number') {
                 v.controls.steeringAmount = -Math.min(1.0, Math.abs(lastDir.x));
             }
-        }
-        
-        if (lastDir.x > sidewaysThreshold) {
+        } else if (lastDir.x > sidewaysDeadzone) {
             v.controls.right = true;
-            // If we have analog steering, apply the value proportionally
             if (typeof v.controls.steeringAmount === 'number') {
                 v.controls.steeringAmount = Math.min(1.0, Math.abs(lastDir.x));
             }
@@ -619,43 +578,15 @@
             // Prevent scrolling
             preventScrolling();
             
-            // Check if updateHud can run safely before setting up interval
-            let canUpdateHud = true;
-            try {
-                // Test if we can safely run updateHud without errors
-                if (window.game && window.game.vehicle) {
-                    mapJoystickToControls();
-                    updateHud();
-                }
-            } catch (e) {
-                console.log("Warning: updateHud test failed, will use safe mode:", e);
-                canUpdateHud = false;
+            // Use requestAnimationFrame for update loop
+            if (updateInterval) { clearInterval(updateInterval); updateInterval = null; }
+            if (joystickAnimationFrameId) { cancelAnimationFrame(joystickAnimationFrameId); joystickAnimationFrameId = null; }
+            function rafUpdate() {
+                try { mapJoystickToControls(); } catch (e) { console.log("Error in mapJoystickToControls:", e); }
+                try { updateHud(); } catch (e) { console.log("Error in updateHud:", e); }
+                joystickAnimationFrameId = requestAnimationFrame(rafUpdate);
             }
-            
-            // Use different update approach based on safety check
-            if (canUpdateHud) {
-                updateInterval = setInterval(function() {
-                    mapJoystickToControls();
-                    updateHud();
-                }, 50);
-            } else {
-                // Use a safer approach with individual try/catch blocks
-                updateInterval = setInterval(function() {
-                    try {
-                        if (window.game && window.game.vehicle) {
-                            mapJoystickToControls();
-                        }
-                    } catch (e) {
-                        console.log("Error in mapJoystickToControls:", e);
-                    }
-                    
-                    try {
-                        updateHud();
-                    } catch (e) {
-                        console.log("Error in updateHud:", e);
-                    }
-                }, 50);
-            }
+            joystickAnimationFrameId = requestAnimationFrame(rafUpdate);
             
             setTimeout(updateMobileHudPositions, 0);
             
@@ -673,7 +604,26 @@
     function disable() {
         if (hud) hud.remove();
         if (controls) controls.remove();
-        if (updateInterval) clearInterval(updateInterval);
+        // Remove joystick DOM zones if exist
+        const joystickZone = document.getElementById('mobile-joystick');
+        if (joystickZone) joystickZone.remove();
+        const joystickZoneLeft = document.getElementById('joystick-zone-left');
+        if (joystickZoneLeft) joystickZoneLeft.remove();
+        const joystickZoneTop = document.getElementById('joystick-zone-top');
+        if (joystickZoneTop) joystickZoneTop.remove();
+        const joystickZoneBottom = document.getElementById('joystick-zone-bottom');
+        if (joystickZoneBottom) joystickZoneBottom.remove();
+        // Remove all tracked event listeners
+        _mobileHudEventListeners.forEach(({ target, type, fn, opts }) => {
+            target.removeEventListener(type, fn, opts);
+        });
+        _mobileHudEventListeners = [];
+        if (updateInterval) { clearInterval(updateInterval); updateInterval = null; }
+        if (joystickAnimationFrameId) { cancelAnimationFrame(joystickAnimationFrameId); joystickAnimationFrameId = null; }
+        if (joystickManager) {
+            try { joystickManager.destroy(); } catch (e) { console.log("Error destroying joystick:", e); }
+            joystickManager = null;
+        }
         document.body.classList.remove('mobile-mode');
         
         // Reset the mobile CSS media query
@@ -720,74 +670,31 @@
 
     function forceRefresh() {
         console.log("Force refreshing mobile HUD");
-        // First disable (if active)
         if (document.getElementById(MOBILE_HUD_ID)) {
             disable();
         }
-        
         // Remove any stray elements that might not have been properly cleaned up
         const oldHud = document.getElementById(MOBILE_HUD_ID);
         if (oldHud) oldHud.remove();
-        
         const oldControls = document.getElementById(MOBILE_CONTROLS_ID);
         if (oldControls) oldControls.remove();
-        
-        // Clear any intervals
-        if (updateInterval) {
-            clearInterval(updateInterval);
-            updateInterval = null;
-        }
-        
-        // Clear joystick recovery interval
-        if (window._joystickRecoveryInterval) {
-            clearInterval(window._joystickRecoveryInterval);
-            window._joystickRecoveryInterval = null;
-        }
-        
+        // Remove joystick DOM zones if exist
+        const joystickZone = document.getElementById('mobile-joystick');
+        if (joystickZone) joystickZone.remove();
+        const joystickZoneLeft = document.getElementById('joystick-zone-left');
+        if (joystickZoneLeft) joystickZoneLeft.remove();
+        const joystickZoneTop = document.getElementById('joystick-zone-top');
+        if (joystickZoneTop) joystickZoneTop.remove();
+        const joystickZoneBottom = document.getElementById('joystick-zone-bottom');
+        if (joystickZoneBottom) joystickZoneBottom.remove();
+        // Remove all tracked event listeners
+        _mobileHudEventListeners.forEach(({ target, type, fn, opts }) => {
+            target.removeEventListener(type, fn, opts);
+        });
+        _mobileHudEventListeners = [];
         // Reset state
         document.body.classList.remove('mobile-mode');
         window.isMobileMode = false;
-        
-        // Reset joystick if exists
-        if (joystickManager) {
-            try {
-                joystickManager.destroy();
-            } catch (e) {
-                console.log("Error destroying joystick:", e);
-            }
-            joystickManager = null;
-        }
-        
-        // Also cleanup any additional joystick managers
-        if (window.joystickManagers && Array.isArray(window.joystickManagers)) {
-            window.joystickManagers.forEach(manager => {
-                try {
-                    if (manager && typeof manager.destroy === 'function') {
-                        manager.destroy();
-                    }
-                } catch (e) {
-                    console.log("Error destroying additional joystick manager:", e);
-                }
-            });
-            window.joystickManagers = [];
-        }
-        
-        // Cleanup joystick zones
-        const zones = [
-            document.getElementById('joystick-zone-left'),
-            document.getElementById('joystick-zone-top'),
-            document.getElementById('joystick-zone-bottom')
-        ];
-        
-        zones.forEach(zone => {
-            if (zone && zone.parentNode) {
-                zone.parentNode.removeChild(zone);
-            }
-        });
-        
-        // Reset variables
-        hud = controls = fireBtn = jumpBtn = null;
-        lastDir = { x: 0, y: 0 };
         
         // Now enable again
         setTimeout(function() {
@@ -810,16 +717,11 @@
     
     // Detect low-end devices for performance optimization
     function isLowEndDevice() {
-        // Check if window.isLowEndDevice is already defined in main.js
-        if (typeof window.isLowEndDevice === 'function') {
-            return window.isLowEndDevice();
-        }
-        
-        // Fallback implementation
+        // Check if device has limited memory or CPU
         const memory = navigator.deviceMemory || 4; // Default to 4GB if not available
         const cpuCores = navigator.hardwareConcurrency || 4; // Default to 4 cores if not available
         
-        return memory < 4 || cpuCores <= 2 || window.lowGraphicsMode;
+        return memory < 4 || cpuCores <= 2;
     }
     
     // Joystick zone'u tüm sol yarıyı kapsasın, ama üstteki butonların olduğu alanı hariç tut
@@ -844,9 +746,10 @@
             joystickZone.id = 'joystick-zone-left';
             joystickZone.style.position = 'fixed';
             joystickZone.style.left = '0';
-            joystickZone.style.top = BUTTONS_HEIGHT + 'px';
+            const zoneTop = BUTTONS_HEIGHT * 0.5;
+            joystickZone.style.top = zoneTop + 'px';
             joystickZone.style.width = '50vw';
-            joystickZone.style.height = `calc(100vh - ${BUTTONS_HEIGHT}px)`;
+            joystickZone.style.height = `calc(100vh - ${zoneTop}px)`;
             joystickZone.style.zIndex = '9997';
             joystickZone.style.touchAction = 'none';
             joystickZone.style.background = 'transparent';
@@ -890,10 +793,6 @@
         if (oldJoystick) {
             oldJoystick.style.display = 'none';
         }
-        
-        // Store created managers for cleanup
-        window.joystickManagers = [];
-        
         // Tek bir joystick manager oluştur, zone olarak birden fazla alanı desteklemesi için ilk zone'u kullanıyoruz
         // (nipplejs birden fazla zone'u desteklemez, ama iki zone'a aynı event handler atanabilir)
         joystickZones.forEach(zone => {
@@ -910,10 +809,6 @@
                 catchDistance: isLowEnd ? 100 : 150,
                 dynamicPage: true
             });
-            
-            // Store for later reference
-            window.joystickManagers.push(manager);
-            
             // Joystick'in start eventinde buton çakışmasını kontrol et
             manager.on('start', function(evt, data) {
                 let touch = null;
@@ -942,11 +837,7 @@
                         }
                     }
                 }
-                
-                // Update last activity timestamp
-                window.lastJoystickActivity = Date.now();
             });
-            
             manager.on('move', function(evt, data) {
                 if (!data || !data.vector) return;
                 lastDir.x = data.vector.x * (data.force || 1);
@@ -954,11 +845,7 @@
                 if (window.game && window.game.vehicle) {
                     mapJoystickToControls();
                 }
-                
-                // Update last activity timestamp
-                window.lastJoystickActivity = Date.now();
             });
-            
             manager.on('end', function() {
                 lastDir.x = 0;
                 lastDir.y = 0;
@@ -966,14 +853,8 @@
                     const v = window.game.vehicle;
                     v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
                 }
-                
-                // Update last activity timestamp
-                window.lastJoystickActivity = Date.now();
             });
         });
-        
-        // Setup joystick auto-recovery
-        setupJoystickAutoRecovery();
     }
 
     function requestFullscreen() {
@@ -1369,12 +1250,7 @@
         disable, 
         forceRefresh, 
         isTouchSupported, 
-        isLandscapeMode,
-        setupJoystickAutoRecovery, // Export the recovery function
-        isJoystickWorking: function() { 
-            return !!(document.querySelector('.nipple') && window.lastJoystickActivity && 
-                      (Date.now() - window.lastJoystickActivity < 15000));
-        }
+        isLandscapeMode 
     };
     
     // Use optimized joystick setup instead of standard one
