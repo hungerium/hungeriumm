@@ -284,6 +284,9 @@
             if (window.game && window.game.vehicle) {
                 mapJoystickToControls();
             }
+            
+            // Reset joystick auto-recovery countdown
+            window.lastJoystickActivity = Date.now();
         });
         
         joystickManager.on('end', function() {
@@ -294,7 +297,50 @@
                 const v = window.game.vehicle;
                 v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
             }
+            
+            // Mark this as joystick activity to prevent unnecessary resets
+            window.lastJoystickActivity = Date.now();
         });
+        
+        // Setup joystick auto-recovery system
+        setupJoystickAutoRecovery();
+    }
+
+    // New function to automatically recover joystick if it stops working
+    function setupJoystickAutoRecovery() {
+        // Initialize the last activity timestamp
+        window.lastJoystickActivity = Date.now();
+        
+        // Check if joystick appears inactive every 3 seconds
+        const joystickCheckInterval = setInterval(() => {
+            // If no joystick activity for 15 seconds while game is running and not paused
+            const inactiveTime = Date.now() - window.lastJoystickActivity;
+            const gameRunning = window.game && !window.game.isPaused;
+            
+            if (inactiveTime > 15000 && gameRunning) {
+                console.log("Joystick appears inactive, attempting recovery...");
+                
+                // If joystick doesn't appear to be working properly
+                if (!document.querySelector('.nipple') || 
+                    (joystickManager && !joystickManager.get().length)) {
+                    
+                    // Force a complete rebuild of the joystick
+                    console.log("Rebuilding joystick due to inactivity");
+                    forceRefresh();
+                    
+                    // Show notification to user
+                    if (window.showNotification) {
+                        window.showNotification('Kontroller yenilendi!', 2000);
+                    }
+                    
+                    // Reset activity timestamp
+                    window.lastJoystickActivity = Date.now();
+                }
+            }
+        }, 3000);
+        
+        // Store interval ID for cleanup
+        window._joystickRecoveryInterval = joystickCheckInterval;
     }
 
     function mapJoystickToControls() {
@@ -692,6 +738,12 @@
             updateInterval = null;
         }
         
+        // Clear joystick recovery interval
+        if (window._joystickRecoveryInterval) {
+            clearInterval(window._joystickRecoveryInterval);
+            window._joystickRecoveryInterval = null;
+        }
+        
         // Reset state
         document.body.classList.remove('mobile-mode');
         window.isMobileMode = false;
@@ -705,6 +757,33 @@
             }
             joystickManager = null;
         }
+        
+        // Also cleanup any additional joystick managers
+        if (window.joystickManagers && Array.isArray(window.joystickManagers)) {
+            window.joystickManagers.forEach(manager => {
+                try {
+                    if (manager && typeof manager.destroy === 'function') {
+                        manager.destroy();
+                    }
+                } catch (e) {
+                    console.log("Error destroying additional joystick manager:", e);
+                }
+            });
+            window.joystickManagers = [];
+        }
+        
+        // Cleanup joystick zones
+        const zones = [
+            document.getElementById('joystick-zone-left'),
+            document.getElementById('joystick-zone-top'),
+            document.getElementById('joystick-zone-bottom')
+        ];
+        
+        zones.forEach(zone => {
+            if (zone && zone.parentNode) {
+                zone.parentNode.removeChild(zone);
+            }
+        });
         
         // Reset variables
         hud = controls = fireBtn = jumpBtn = null;
@@ -731,11 +810,16 @@
     
     // Detect low-end devices for performance optimization
     function isLowEndDevice() {
-        // Check if device has limited memory or CPU
+        // Check if window.isLowEndDevice is already defined in main.js
+        if (typeof window.isLowEndDevice === 'function') {
+            return window.isLowEndDevice();
+        }
+        
+        // Fallback implementation
         const memory = navigator.deviceMemory || 4; // Default to 4GB if not available
         const cpuCores = navigator.hardwareConcurrency || 4; // Default to 4 cores if not available
         
-        return memory < 4 || cpuCores <= 2;
+        return memory < 4 || cpuCores <= 2 || window.lowGraphicsMode;
     }
     
     // Joystick zone'u tüm sol yarıyı kapsasın, ama üstteki butonların olduğu alanı hariç tut
@@ -806,6 +890,10 @@
         if (oldJoystick) {
             oldJoystick.style.display = 'none';
         }
+        
+        // Store created managers for cleanup
+        window.joystickManagers = [];
+        
         // Tek bir joystick manager oluştur, zone olarak birden fazla alanı desteklemesi için ilk zone'u kullanıyoruz
         // (nipplejs birden fazla zone'u desteklemez, ama iki zone'a aynı event handler atanabilir)
         joystickZones.forEach(zone => {
@@ -822,6 +910,10 @@
                 catchDistance: isLowEnd ? 100 : 150,
                 dynamicPage: true
             });
+            
+            // Store for later reference
+            window.joystickManagers.push(manager);
+            
             // Joystick'in start eventinde buton çakışmasını kontrol et
             manager.on('start', function(evt, data) {
                 let touch = null;
@@ -850,7 +942,11 @@
                         }
                     }
                 }
+                
+                // Update last activity timestamp
+                window.lastJoystickActivity = Date.now();
             });
+            
             manager.on('move', function(evt, data) {
                 if (!data || !data.vector) return;
                 lastDir.x = data.vector.x * (data.force || 1);
@@ -858,7 +954,11 @@
                 if (window.game && window.game.vehicle) {
                     mapJoystickToControls();
                 }
+                
+                // Update last activity timestamp
+                window.lastJoystickActivity = Date.now();
             });
+            
             manager.on('end', function() {
                 lastDir.x = 0;
                 lastDir.y = 0;
@@ -866,8 +966,14 @@
                     const v = window.game.vehicle;
                     v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
                 }
+                
+                // Update last activity timestamp
+                window.lastJoystickActivity = Date.now();
             });
         });
+        
+        // Setup joystick auto-recovery
+        setupJoystickAutoRecovery();
     }
 
     function requestFullscreen() {
@@ -1263,7 +1369,12 @@
         disable, 
         forceRefresh, 
         isTouchSupported, 
-        isLandscapeMode 
+        isLandscapeMode,
+        setupJoystickAutoRecovery, // Export the recovery function
+        isJoystickWorking: function() { 
+            return !!(document.querySelector('.nipple') && window.lastJoystickActivity && 
+                      (Date.now() - window.lastJoystickActivity < 15000));
+        }
     };
     
     // Use optimized joystick setup instead of standard one
