@@ -79,10 +79,11 @@ body.mobile-mode #cameraModeInfoBox {
     position: absolute;
     left: 18px;
     bottom: 18px;
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
     z-index: 4100;
     pointer-events: auto;
+    touch-action: none !important;
 }
 
 #mobile-buttons {
@@ -91,29 +92,30 @@ body.mobile-mode #cameraModeInfoBox {
     bottom: 18px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 28px;
     z-index: 4100;
     pointer-events: auto;
+    touch-action: none !important;
 }
 
 .mobile-btn {
-    width: 70px;
-    height: 70px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: linear-gradient(135deg, #ffd700 60%, #ffb300 100%);
     color: #3a2614;
-    font-size: 22px;
+    font-size: 32px;
     font-weight: bold;
     border: none;
     box-shadow: 0 2px 8px #ffd70055;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
-    opacity: 0.95;
+    margin-bottom: 12px;
+    opacity: 0.97;
     transition: background 0.2s, box-shadow 0.2s;
     pointer-events: auto;
-    touch-action: manipulation;
+    touch-action: none !important;
 }
 .mobile-btn:active {
     background: #ffb300;
@@ -167,22 +169,26 @@ body.mobile-mode #cameraModeInfoBox {
     }
     
     #mobile-hud .hud-item {
-        font-size: 9px !important;
+        font-size: 11px !important;
     }
     
     #mobile-joystick {
-        left: 60px !important;
-        bottom: 30px !important;
+        left: 30px !important;
+        bottom: 20px !important;
+        width: 120px !important;
+        height: 120px !important;
     }
     
     #mobile-buttons {
-        right: 30px !important;
-        bottom: 30px !important;
+        right: 20px !important;
+        bottom: 20px !important;
+        gap: 18px !important;
     }
     
     .mobile-btn {
-        width: 42px !important;
-        height: 42px !important;
+        width: 70px !important;
+        height: 70px !important;
+        font-size: 22px !important;
     }
     
     #mobile-respawn-container {

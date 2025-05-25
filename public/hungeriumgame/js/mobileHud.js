@@ -822,35 +822,10 @@
                 catchDistance: isLowEnd ? 100 : 150,
                 dynamicPage: true
             });
-            // Joystick'in start eventinde buton çakışmasını kontrol et
-            manager.on('start', function(evt, data) {
-                let touch = null;
-                if (evt && evt.targetTouches && evt.targetTouches[0]) {
-                    touch = evt.targetTouches[0];
-                } else if (evt && evt.changedTouches && evt.changedTouches[0]) {
-                    touch = evt.changedTouches[0];
-                } else if (evt && evt.clientX !== undefined) {
-                    touch = evt;
-                }
-                if (!touch) return;
-                const x = touch.clientX;
-                const y = touch.clientY;
-                // Butonların bounding box'ı ile çakışma kontrolü
-                const btns = [
-                    document.getElementById('mobile-camera'),
-                    document.getElementById('mobile-respawn'),
-                    document.getElementById('mobile-mainmenu')
-                ];
-                for (const btn of btns) {
-                    if (btn) {
-                        const rect = btn.getBoundingClientRect();
-                        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-                            // Joystick'i başlatma, destroy etme! Sadece return (ignore)
-                            return false;
-                        }
-                    }
-                }
-            });
+            // Joystick event'lerini passive: false ile dinle
+            zone.addEventListener('touchstart', function(e) {}, { passive: false });
+            zone.addEventListener('touchmove', function(e) {}, { passive: false });
+            zone.addEventListener('touchend', function(e) {}, { passive: false });
             manager.on('move', function(evt, data) {
                 if (!data || !data.vector) return;
                 lastDir.x = data.vector.x * (data.force || 1);
@@ -868,6 +843,15 @@
                 }
             });
         });
+        // FPS çok düşükse joystick güncellemesini ayrı bir döngüde yap
+        if (isLowEnd) {
+            if (window._joystickUpdateInterval) clearInterval(window._joystickUpdateInterval);
+            window._joystickUpdateInterval = setInterval(function() {
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                }
+            }, 33); // ~30Hz
+        }
     }
 
     function requestFullscreen() {

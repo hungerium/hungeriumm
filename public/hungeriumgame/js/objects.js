@@ -367,36 +367,11 @@ class WorldObjects {
         
         // Create appropriate materials based on building style
         let material;
-        
-        switch(buildingStyle) {
-            case 0: // Modern glass building - more reflective
-                material = new THREE.MeshStandardMaterial({
-                    map: buildingTexture,
-                    roughness: 0.2,
-                    metalness: 0.8,
-                    envMapIntensity: 1.0
-                });
-                break;
-            case 1: // Concrete building - rougher
-                material = new THREE.MeshStandardMaterial({
-                    map: buildingTexture,
-                    roughness: 0.9,
-                    metalness: 0.1
-                });
-                break;
-            case 2: // Brick building
-                material = new THREE.MeshStandardMaterial({
-                    map: buildingTexture,
-                    roughness: 0.8,
-                    metalness: 0.1
-                });
-                break;
-            default: // Other buildings
-                material = new THREE.MeshStandardMaterial({
-                    map: buildingTexture,
-                    roughness: 0.7,
-                    metalness: 0.2
-                });
+        // Sadece düşük sistemli cihazlar veya lowGraphicsMode için MeshBasicMaterial kullan
+        if ((window.lowGraphicsMode || (typeof isLowEndDevice === 'function' && isLowEndDevice && isLowEndDevice()))) {
+            material = new THREE.MeshBasicMaterial({ color: 0x888888 });
+        } else {
+            material = new THREE.MeshStandardMaterial({ map: buildingTexture, roughness: 0.7, metalness: 0.2 });
         }
         
         // Create the building mesh
@@ -2589,6 +2564,36 @@ class WorldObjects {
             rightLeg.position.set(2, -0.75, 0.025);
             board.add(rightLeg);
         });
+    }
+
+    removeBuilding(building) {
+        if (building) {
+            if (building.parent) building.parent.remove(building);
+            if (building.geometry) { building.geometry.dispose(); building.geometry = null; }
+            if (building.material) {
+                if (Array.isArray(building.material)) {
+                    building.material.forEach(m => m && m.dispose && m.dispose());
+                } else if (building.material.dispose) {
+                    building.material.dispose();
+                }
+                building.material = null;
+            }
+        }
+    }
+    removeRescuee(rescuee) {
+        if (rescuee && rescuee.mesh) {
+            if (rescuee.mesh.parent) rescuee.mesh.parent.remove(rescuee.mesh);
+            if (rescuee.mesh.geometry) { rescuee.mesh.geometry.dispose(); rescuee.mesh.geometry = null; }
+            if (rescuee.mesh.material) {
+                if (Array.isArray(rescuee.mesh.material)) {
+                    rescuee.mesh.material.forEach(m => m && m.dispose && m.dispose());
+                } else if (rescuee.mesh.material.dispose) {
+                    rescuee.mesh.material.dispose();
+                }
+                rescuee.mesh.material = null;
+            }
+            rescuee.mesh = null;
+        }
     }
 }
 

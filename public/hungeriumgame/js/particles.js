@@ -676,4 +676,13 @@ class ParticleSystem {
         });
         return points;
     }
+
+    removeParticle(particle) {
+        if (particle.mesh) {
+            if (particle.mesh.parent) particle.mesh.parent.remove(particle.mesh);
+            if (particle.mesh.geometry) { particle.mesh.geometry.dispose(); particle.mesh.geometry = null; }
+            if (particle.mesh.material) { particle.mesh.material.dispose(); particle.mesh.material = null; }
+            particle.mesh = null;
+        }
+    }
 }

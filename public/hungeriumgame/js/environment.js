@@ -32,6 +32,23 @@ class Environment {
     }
     
     initialize() {
+        // Mobilde efektleri tamamen devre dışı bırak
+        if (window.isMobileMode || window.lowGraphicsMode || (window.innerWidth <= 950)) {
+            this.scene.background = new THREE.Color(0x87ceeb); // Sade gökyüzü rengi
+            this.sky = null;
+            this.water = null;
+            this.composer = null;
+            this.setupSunLight();
+            // Düşük grafik modunda mutlaka bir AmbientLight olsun
+            let hasLight = false;
+            this.scene.traverse(obj => { if (obj.isLight) hasLight = true; });
+            if (!hasLight) {
+                const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+                this.scene.add(ambient);
+            }
+            return;
+        }
+        
         // Set a default background color first
         this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
         
@@ -357,6 +374,17 @@ class Environment {
             this.scene.background = new THREE.Color(0x0a1026);
         } else {
             this.scene.background = new THREE.Color(0x87ceeb);
+        }
+        
+        // Clamp sky/fog değerleri
+        if (this.sky) {
+            this.sky.material.uniforms["sunPosition"].value.x = Math.max(-1, Math.min(1, this.sky.material.uniforms["sunPosition"].value.x));
+            this.sky.material.uniforms["sunPosition"].value.y = Math.max(-1, Math.min(1, this.sky.material.uniforms["sunPosition"].value.y));
+            this.sky.material.uniforms["sunPosition"].value.z = Math.max(-1, Math.min(1, this.sky.material.uniforms["sunPosition"].value.z));
+        }
+        if (this.scene.fog) {
+            this.scene.fog.near = Math.max(1, Math.min(1000, this.scene.fog.near));
+            this.scene.fog.far = Math.max(this.scene.fog.near + 1, Math.min(5000, this.scene.fog.far));
         }
     }
     

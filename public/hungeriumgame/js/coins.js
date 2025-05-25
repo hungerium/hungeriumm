@@ -84,35 +84,40 @@ class Coin {
             color: 0xF0F0F0, // Hafif gri
         });
         
-        // Kahve içi için custom shader (glow effect)
-        const coffeeGlowMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                glowColor: { value: new THREE.Color(0xFFD700) }, // Altın sarısı
-                baseColor: { value: new THREE.Color(0x3A2614) }, // Koyu kahve
-                time: { value: 0 }
-            },
-            vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragmentShader: `
-                uniform vec3 glowColor;
-                uniform vec3 baseColor;
-                uniform float time;
-                varying vec2 vUv;
-                void main() {
-                    float dist = distance(vUv, vec2(0.5, 0.5));
-                    float glow = smoothstep(0.35, 0.5, dist);
-                    float pulse = 0.7 + 0.3 * sin(time * 2.0);
-                    vec3 color = mix(baseColor, glowColor, glow * pulse);
-                    gl_FragColor = vec4(color, 1.0);
-                }
-            `,
-            transparent: false
-        });
+        // Kahve içi için mobilde shader yerine sade materyal kullan
+        let coffeeMaterial;
+        if (isMobileDevice() || (window && window.lowGraphicsMode)) {
+            coffeeMaterial = new THREE.MeshBasicMaterial({ color: 0x3A2614 });
+        } else {
+            coffeeMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    glowColor: { value: new THREE.Color(0xFFD700) }, // Altın sarısı
+                    baseColor: { value: new THREE.Color(0x3A2614) }, // Koyu kahve
+                    time: { value: 0 }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 glowColor;
+                    uniform vec3 baseColor;
+                    uniform float time;
+                    varying vec2 vUv;
+                    void main() {
+                        float dist = distance(vUv, vec2(0.5, 0.5));
+                        float glow = smoothstep(0.35, 0.5, dist);
+                        float pulse = 0.7 + 0.3 * sin(time * 2.0);
+                        vec3 color = mix(baseColor, glowColor, glow * pulse);
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `,
+                transparent: false
+            });
+        }
         
         // 1. Fincan gövdesi - Tepesi hafif daha geniş olan silindir
         const cupGeometry = new THREE.CylinderGeometry(
@@ -148,9 +153,13 @@ class Coin {
             1
         );
         
-        const coffee = new THREE.Mesh(coffeeGeometry, coffeeGlowMaterial);
+        const coffee = new THREE.Mesh(coffeeGeometry, coffeeMaterial);
         coffee.position.y = this.cupSize * 0.4; // Fincanın üst kısmına yerleştir
-        this.coffeeGlowMaterial = coffeeGlowMaterial; // Güncelleme için referans tut
+        if (coffeeMaterial.isShaderMaterial) {
+            this.coffeeGlowMaterial = coffeeMaterial; // Güncelleme için referans tut
+        } else {
+            this.coffeeGlowMaterial = null;
+        }
         
         // 4. Fincan sapı - Daha gerçekçi beyaz sap
         const handle = this.createRealisticHandle();
@@ -330,39 +339,34 @@ class Coin {
         this.isCollected = true;
         if (this.mesh) {
             this.mesh.visible = false;
-            // Bu referansları hemen temizle
-            setTimeout(() => {
-                if (this.mesh && this.mesh.parent) {
-                    this.mesh.parent.remove(this.mesh);
-                    // GPU temizliği:
-                    if (this.mesh.geometry) this.mesh.geometry.dispose();
-                    if (this.mesh.material) {
-                        if (Array.isArray(this.mesh.material)) {
-                            this.mesh.material.forEach(m => m.dispose());
-                        } else {
-                            this.mesh.material.dispose();
-                        }
-                    }
-                    this.mesh = null; // Referansları temizle
+            if (this.mesh.parent) this.mesh.parent.remove(this.mesh);
+            if (this.mesh.geometry) { this.mesh.geometry.dispose(); this.mesh.geometry = null; }
+            if (this.mesh.material) {
+                if (Array.isArray(this.mesh.material)) {
+                    this.mesh.material.forEach(m => m && m.dispose && m.dispose());
+                } else if (this.mesh.material.dispose) {
+                    this.mesh.material.dispose();
                 }
-            }, 100);
+                this.mesh.material = null;
+            }
+            this.mesh = null;
         }
         return this.value;
     }
     
     remove() {
-        if (this.mesh && this.mesh.parent) {
-            this.mesh.parent.remove(this.mesh);
-            // GPU temizliği:
-            if (this.mesh.geometry) this.mesh.geometry.dispose();
+        if (this.mesh) {
+            if (this.mesh.parent) this.mesh.parent.remove(this.mesh);
+            if (this.mesh.geometry) { this.mesh.geometry.dispose(); this.mesh.geometry = null; }
             if (this.mesh.material) {
                 if (Array.isArray(this.mesh.material)) {
-                    this.mesh.material.forEach(m => m.dispose());
-                } else {
+                    this.mesh.material.forEach(m => m && m.dispose && m.dispose());
+                } else if (this.mesh.material.dispose) {
                     this.mesh.material.dispose();
                 }
+                this.mesh.material = null;
             }
-            this.mesh = null; // Referansları temizle
+            this.mesh = null;
         }
     }
 }
