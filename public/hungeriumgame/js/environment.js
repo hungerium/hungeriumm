@@ -32,16 +32,6 @@ class Environment {
     }
     
     initialize() {
-        // Mobilde efektleri tamamen devre dışı bırak
-        if (window.isMobileMode || window.lowGraphicsMode || (window.innerWidth <= 950)) {
-            this.scene.background = new THREE.Color(0x87ceeb); // Sade gökyüzü rengi
-            this.sky = null;
-            this.water = null;
-            this.composer = null;
-            this.setupSunLight();
-            return;
-        }
-        
         // Set a default background color first
         this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
         

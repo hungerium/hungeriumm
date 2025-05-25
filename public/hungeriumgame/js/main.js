@@ -143,11 +143,6 @@ function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950;
 }
 
-// Mobilde her zaman lowGraphicsMode aktif olsun
-if (isMobileDevice()) {
-    window.lowGraphicsMode = true;
-}
-
 // Add a resize handler to detect mobile mode on window resize
 window.addEventListener('resize', function() {
     // Avoid handling resize while initialization is still happening
@@ -171,7 +166,6 @@ window.addEventListener('resize', function() {
 // Mobilde otomatik HUD ve tam ekran
 window.addEventListener('DOMContentLoaded', function() {
     if (isMobileDevice()) {
-        window.lowGraphicsMode = true; // Yine garantiye al
         // Mobil HUD'u etkinleştir
         if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
             window.mobileHud.enable();

@@ -1309,14 +1309,7 @@ class Game {
     
     // Add new method to update hostage indicator
     updateHostageIndicator() {
-        if (!this.vehicle || !this.objects || !this.objects.rescuees || !this.vehicle.body || !this.vehicle.mesh) {
-            if (!this._hostageWarned) {
-                console.warn("HostageIndicator: vehicle body or mesh is missing");
-                this._hostageWarned = true;
-            }
-            return;
-        }
-        this._hostageWarned = false;
+        if (!this.vehicle || !this.objects || !this.objects.rescuees) return;
         if (!this.vehicle.body || !this.vehicle.mesh) {
             console.warn("HostageIndicator: vehicle body or mesh is missing");
             return;
@@ -1368,14 +1361,7 @@ class Game {
     
     // Add new method to update police station indicator
     updatePoliceIndicator() {
-        if (!this.vehicle || !this.objects || !this.objects.policeStationPosition || !this.vehicle.body || !this.vehicle.mesh) {
-            if (!this._policeWarned) {
-                console.warn("PoliceIndicator: vehicle body or mesh is missing");
-                this._policeWarned = true;
-            }
-            return;
-        }
-        this._policeWarned = false;
+        if (!this.vehicle || !this.objects || !this.objects.policeStationPosition) return;
         if (!this.vehicle.body || !this.vehicle.mesh) {
             console.warn("PoliceIndicator: vehicle body or mesh is missing");
             return;

@@ -102,12 +102,6 @@ class AudioManager {
         this.sounds.siren.volume = 0.0;
         this.sounds.siren.load();
         
-        // Mobilde sadece motor ve siren yüklensin, diğer sesler yüklenmesin
-        if (this.isMobileDevice) {
-            console.log("Mobile: Only engine and siren sounds loaded.");
-            return;
-        }
-        
         // Skip non-essential sounds on low-end mobile devices
         if (this.isMobileDevice && window.lowGraphicsMode) {
             console.log("Using minimal audio set for low-end mobile device");
@@ -404,7 +398,6 @@ class AudioManager {
     
     // ATMOSPHERE SOUND METHODS
     playAtmosphereSound(type = 'clear') {
-        if (this.isMobileDevice) return false; // Mobilde hiç çalma
         if (!this.sounds.atmosphere) return false;
         
         // Skip on mobile low graphics mode to improve performance
@@ -459,7 +452,6 @@ class AudioManager {
     
     // Gunshot sound
     playGunshotSound() {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
         if (!this.sounds.gunshot) return;
         
         // Skip on mobile if we can't play more sounds
@@ -502,19 +494,29 @@ class AudioManager {
     
     // Missile launch sound
     playMissileSound() {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
+        // Skip on mobile if we can't play more sounds
+        if (this.isMobileDevice && !this.canPlayNewSound()) {
+            return;
+        }
+        
         if (!this.sounds.missile) {
             console.error("Missile sound not loaded properly!");
             this.soundFinished();
             return;
         }
         
-        // Skip on mobile if we can't play more sounds
-        if (this.isMobileDevice && !this.canPlayNewSound()) {
-            return;
-        }
-        
         try {
+            // Simple approach for mobile
+            if (this.isMobileDevice) {
+                this.sounds.missile.currentTime = 0;
+                this.sounds.missile.play()
+                    .catch(error => console.error("Missile sound playback failed:", error));
+                
+                // Count as finished after 1 second
+                setTimeout(() => this.soundFinished(), 1500);
+                return;
+            }
+            
             // Desktop - clone for multiple sounds
             const missile = this.sounds.missile.cloneNode();
             missile.volume = 0.9;
@@ -538,8 +540,9 @@ class AudioManager {
     
     // Completely new implementation for coin sound playback
     playCoinSound() {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
         // Skip on mobile to reduce audio load
+        if (this.isMobileDevice) return;
+        
         // Use a different sound or silence for coin collection
         // If you have a coin sound, use it here. Otherwise, do nothing.
         // Example: if (this.sounds.coin) { ... } else { return; }
@@ -548,7 +551,6 @@ class AudioManager {
     
     // Background music
     playBackgroundMusic() {
-        if (this.isMobileDevice) return false; // Mobilde hiç çalma
         // Skip on mobile low graphics mode
         if (this.isMobileDevice && window.lowGraphicsMode) {
             return false;
@@ -613,7 +615,6 @@ class AudioManager {
     
     // Add method to play crash sound
     playCrashSound(volume = 0.8) {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
         // Skip on mobile if we can't play more sounds
         if (this.isMobileDevice && !this.canPlayNewSound()) {
             return;
@@ -654,7 +655,6 @@ class AudioManager {
     
     // Çarpışma sesi çalmak için fonksiyon ekle
     playCollisionSound(volume = 0.7) {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
         // Skip on mobile if we can't play more sounds
         if (this.isMobileDevice && !this.canPlayNewSound()) {
             return;
@@ -704,7 +704,6 @@ class AudioManager {
     
     // Add method to check if robot death sound should play
     playCrashSoundForRobot(volume = 0.05) {
-        if (this.isMobileDevice) return; // Mobilde hiç çalma
         // On mobile devices or if robot sounds are disabled, completely disable robot death sounds
         if (this.isMobileDevice || this.disableRobotDeathSounds) {
             return;
