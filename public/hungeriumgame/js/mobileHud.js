@@ -6,13 +6,6 @@
     let joystickManager = null;
     let lastDir = { x: 0, y: 0 };
     let updateInterval = null;
-    let joystickAnimationFrameId = null;
-    // Event listener references for cleanup
-    let _mobileHudEventListeners = [];
-
-    // Joystick hassasiyetini ayarlamak için global threshold
-    window.JOYSTICK_SIDEWAYS_THRESHOLD = 0.26; // Daha az hassas, düz gitmek kolay
-    window.JOYSTICK_SIDEWAYS_DEADZONE = 0.29; // Deadzone: düz gitmek için ölü bölge
 
     function init() {
         // In landscape, if width <= 933px, always show mobile HUD. In portrait, use old logic.
@@ -33,43 +26,41 @@
             setTimeout(function() { if (!document.getElementById(MOBILE_HUD_ID)) { console.log("Mobile HUD still not found, final attempt"); enable(); } }, 2000);
         }
         
-        // Wrap event listeners for later removal
-        function addListener(target, type, fn, opts) {
-            target.addEventListener(type, fn, opts);
-            _mobileHudEventListeners.push({ target, type, fn, opts });
-        }
-        // Replace window/document event listeners with tracked versions
-        addListener(window, 'DOMContentLoaded', function mobileHudDomContentLoaded() {
+        window.addEventListener('DOMContentLoaded', function() {
             if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
-                if (window.safeEnableMobileHud) {
-                    window.safeEnableMobileHud();
-                } else if (window.mobileHud && window.mobileHud.enable) {
-                    window.mobileHud.enable();
-                }
+                console.log("Mobile device detected on DOMContentLoaded, enabling mobile HUD");
+                enable();
             }
         });
-        addListener(window, 'load', function mobileHudLoad() {
+        
+        window.addEventListener('load', function() {
             if (isMobile && !document.getElementById(MOBILE_HUD_ID)) {
-                if (window.safeEnableMobileHud) {
-                    window.safeEnableMobileHud();
-                } else if (window.mobileHud && window.mobileHud.enable) {
-                    window.mobileHud.enable();
-                }
+                console.log("Mobile device detected on window load, enabling mobile HUD");
+                enable();
             }
         });
-        addListener(window, 'orientationchange', function mobileHudOrientationChange() {
+        
+        window.addEventListener('orientationchange', function() {
             console.log("Orientation changed - forcing mobile HUD refresh");
-            setTimeout(function() { forceRefresh(); }, 300);
+            // Force a complete refresh of the mobile HUD on orientation change
+            setTimeout(function() {
+                forceRefresh();
+            }, 300);
             setTimeout(updateMobileHudPositions, 100);
         });
-        addListener(window, 'resize', function mobileHudResize() {
+        
+        window.addEventListener('resize', function() {
+            // Check if we should enable mobile HUD based on new dimensions
             const nowLandscape = window.innerWidth > window.innerHeight;
             const shouldBeMobile = window.isMobileMode ||
                 (nowLandscape
                     ? (window.innerWidth <= 933)
                     : (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950)
                 );
+                
             console.log(`Resize - Screen: ${window.innerWidth}x${window.innerHeight}, landscape: ${nowLandscape}, should be mobile: ${shouldBeMobile}`);
+            
+            // If conditions changed, update the HUD
             if (shouldBeMobile && !document.getElementById(MOBILE_HUD_ID)) {
                 console.log("Should be mobile after resize, enabling mobile HUD");
                 enable();
@@ -77,9 +68,11 @@
                 console.log("Should not be mobile after resize, disabling mobile HUD");
                 disable();
             }
+            
             setTimeout(updateMobileHudPositions, 100);
         });
-        addListener(document, 'keydown', function mobileHudKeydown(e) {
+        
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'M' && e.shiftKey) {
                 if (!document.getElementById(MOBILE_HUD_ID)) {
                     console.log("Shift+M pressed, enabling mobile HUD");
@@ -260,10 +253,7 @@
     }
 
     function setupJoystick() {
-        if (joystickManager) {
-            try { joystickManager.destroy(); } catch (e) { console.log("Error destroying joystick:", e); }
-            joystickManager = null;
-        }
+        if (joystickManager) return;
         const joystickZone = document.getElementById('mobile-joystick');
         if (!joystickZone || !window.nipplejs) return;
         
@@ -315,13 +305,13 @@
         v.controls.forward = v.controls.backward = v.controls.left = v.controls.right = false;
         
         // Apply analog control with gradual values based on force
-        const forwardThreshold = 0.1;  // Daha hassas ileri/geri
-        const sidewaysThreshold = window.JOYSTICK_SIDEWAYS_THRESHOLD || 0.22;
-        const sidewaysDeadzone = window.JOYSTICK_SIDEWAYS_DEADZONE || 0.25;
+        const forwardThreshold = 0.1;  // More sensitive threshold for better responsiveness
+        const sidewaysThreshold = 0.1;
         
-        // Forward/backward control
+        // Forward/backward control with analog force
         if (lastDir.y > forwardThreshold) {
             v.controls.forward = true;
+            // If we have analog acceleration, apply the value proportionally
             if (typeof v.controls.forwardAmount === 'number') {
                 v.controls.forwardAmount = Math.min(1.0, Math.abs(lastDir.y));
             }
@@ -329,19 +319,24 @@
         
         if (lastDir.y < -forwardThreshold) {
             v.controls.backward = true;
+            // If we have analog braking, apply the value proportionally
             if (typeof v.controls.backwardAmount === 'number') {
                 v.controls.backwardAmount = Math.min(1.0, Math.abs(lastDir.y));
             }
         }
         
-        // Left/right control with deadzone
-        if (lastDir.x < -sidewaysDeadzone) {
+        // Left/right control with analog steering
+        if (lastDir.x < -sidewaysThreshold) {
             v.controls.left = true;
+            // If we have analog steering, apply the value proportionally
             if (typeof v.controls.steeringAmount === 'number') {
                 v.controls.steeringAmount = -Math.min(1.0, Math.abs(lastDir.x));
             }
-        } else if (lastDir.x > sidewaysDeadzone) {
+        }
+        
+        if (lastDir.x > sidewaysThreshold) {
             v.controls.right = true;
+            // If we have analog steering, apply the value proportionally
             if (typeof v.controls.steeringAmount === 'number') {
                 v.controls.steeringAmount = Math.min(1.0, Math.abs(lastDir.x));
             }
@@ -578,15 +573,43 @@
             // Prevent scrolling
             preventScrolling();
             
-            // Use requestAnimationFrame for update loop
-            if (updateInterval) { clearInterval(updateInterval); updateInterval = null; }
-            if (joystickAnimationFrameId) { cancelAnimationFrame(joystickAnimationFrameId); joystickAnimationFrameId = null; }
-            function rafUpdate() {
-                try { mapJoystickToControls(); } catch (e) { console.log("Error in mapJoystickToControls:", e); }
-                try { updateHud(); } catch (e) { console.log("Error in updateHud:", e); }
-                joystickAnimationFrameId = requestAnimationFrame(rafUpdate);
+            // Check if updateHud can run safely before setting up interval
+            let canUpdateHud = true;
+            try {
+                // Test if we can safely run updateHud without errors
+                if (window.game && window.game.vehicle) {
+                    mapJoystickToControls();
+                    updateHud();
+                }
+            } catch (e) {
+                console.log("Warning: updateHud test failed, will use safe mode:", e);
+                canUpdateHud = false;
             }
-            joystickAnimationFrameId = requestAnimationFrame(rafUpdate);
+            
+            // Use different update approach based on safety check
+            if (canUpdateHud) {
+                updateInterval = setInterval(function() {
+                    mapJoystickToControls();
+                    updateHud();
+                }, 50);
+            } else {
+                // Use a safer approach with individual try/catch blocks
+                updateInterval = setInterval(function() {
+                    try {
+                        if (window.game && window.game.vehicle) {
+                            mapJoystickToControls();
+                        }
+                    } catch (e) {
+                        console.log("Error in mapJoystickToControls:", e);
+                    }
+                    
+                    try {
+                        updateHud();
+                    } catch (e) {
+                        console.log("Error in updateHud:", e);
+                    }
+                }, 50);
+            }
             
             setTimeout(updateMobileHudPositions, 0);
             
@@ -604,26 +627,7 @@
     function disable() {
         if (hud) hud.remove();
         if (controls) controls.remove();
-        // Remove joystick DOM zones if exist
-        const joystickZone = document.getElementById('mobile-joystick');
-        if (joystickZone) joystickZone.remove();
-        const joystickZoneLeft = document.getElementById('joystick-zone-left');
-        if (joystickZoneLeft) joystickZoneLeft.remove();
-        const joystickZoneTop = document.getElementById('joystick-zone-top');
-        if (joystickZoneTop) joystickZoneTop.remove();
-        const joystickZoneBottom = document.getElementById('joystick-zone-bottom');
-        if (joystickZoneBottom) joystickZoneBottom.remove();
-        // Remove all tracked event listeners
-        _mobileHudEventListeners.forEach(({ target, type, fn, opts }) => {
-            target.removeEventListener(type, fn, opts);
-        });
-        _mobileHudEventListeners = [];
-        if (updateInterval) { clearInterval(updateInterval); updateInterval = null; }
-        if (joystickAnimationFrameId) { cancelAnimationFrame(joystickAnimationFrameId); joystickAnimationFrameId = null; }
-        if (joystickManager) {
-            try { joystickManager.destroy(); } catch (e) { console.log("Error destroying joystick:", e); }
-            joystickManager = null;
-        }
+        if (updateInterval) clearInterval(updateInterval);
         document.body.classList.remove('mobile-mode');
         
         // Reset the mobile CSS media query
@@ -670,31 +674,41 @@
 
     function forceRefresh() {
         console.log("Force refreshing mobile HUD");
+        // First disable (if active)
         if (document.getElementById(MOBILE_HUD_ID)) {
             disable();
         }
+        
         // Remove any stray elements that might not have been properly cleaned up
         const oldHud = document.getElementById(MOBILE_HUD_ID);
         if (oldHud) oldHud.remove();
+        
         const oldControls = document.getElementById(MOBILE_CONTROLS_ID);
         if (oldControls) oldControls.remove();
-        // Remove joystick DOM zones if exist
-        const joystickZone = document.getElementById('mobile-joystick');
-        if (joystickZone) joystickZone.remove();
-        const joystickZoneLeft = document.getElementById('joystick-zone-left');
-        if (joystickZoneLeft) joystickZoneLeft.remove();
-        const joystickZoneTop = document.getElementById('joystick-zone-top');
-        if (joystickZoneTop) joystickZoneTop.remove();
-        const joystickZoneBottom = document.getElementById('joystick-zone-bottom');
-        if (joystickZoneBottom) joystickZoneBottom.remove();
-        // Remove all tracked event listeners
-        _mobileHudEventListeners.forEach(({ target, type, fn, opts }) => {
-            target.removeEventListener(type, fn, opts);
-        });
-        _mobileHudEventListeners = [];
+        
+        // Clear any intervals
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+        
         // Reset state
         document.body.classList.remove('mobile-mode');
         window.isMobileMode = false;
+        
+        // Reset joystick if exists
+        if (joystickManager) {
+            try {
+                joystickManager.destroy();
+            } catch (e) {
+                console.log("Error destroying joystick:", e);
+            }
+            joystickManager = null;
+        }
+        
+        // Reset variables
+        hud = controls = fireBtn = jumpBtn = null;
+        lastDir = { x: 0, y: 0 };
         
         // Now enable again
         setTimeout(function() {
@@ -746,10 +760,9 @@
             joystickZone.id = 'joystick-zone-left';
             joystickZone.style.position = 'fixed';
             joystickZone.style.left = '0';
-            const zoneTop = BUTTONS_HEIGHT * 0.5;
-            joystickZone.style.top = zoneTop + 'px';
+            joystickZone.style.top = BUTTONS_HEIGHT + 'px';
             joystickZone.style.width = '50vw';
-            joystickZone.style.height = `calc(100vh - ${zoneTop}px)`;
+            joystickZone.style.height = `calc(100vh - ${BUTTONS_HEIGHT}px)`;
             joystickZone.style.zIndex = '9997';
             joystickZone.style.touchAction = 'none';
             joystickZone.style.background = 'transparent';

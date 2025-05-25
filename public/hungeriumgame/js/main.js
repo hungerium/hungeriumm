@@ -133,52 +133,6 @@ document.addEventListener('click', function initAudio() {
     }
 }, { once: true });
 
-// WebGL context kaybı için otomatik reload
-window.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-        canvas.addEventListener('webglcontextlost', function(e) {
-            alert('WebGL context kayboldu! Sayfa yenilenecek.');
-            e.preventDefault();
-            location.reload();
-        }, false);
-    }
-});
-
-// HUD enable debounce
-let lastMobileHudEnable = 0;
-function safeEnableMobileHud() {
-    const now = Date.now();
-    if (now - lastMobileHudEnable < 1000) return;
-    lastMobileHudEnable = now;
-    window.mobileHud && window.mobileHud.enable && window.mobileHud.enable();
-}
-
-// Early mobile/low graphics detection and activation
-(function earlyMobileLowGraphics() {
-    function isMobileDevice() {
-        return window.isMobileMode ||
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-            window.innerWidth <= 950;
-    }
-    function activateMobileLowGraphics() {
-        if (typeof window.forceLowGraphics !== 'undefined' && window.forceLowGraphics) {
-            window.lowGraphicsMode = true;
-        }
-        if (isMobileDevice()) {
-            window.isMobileMode = true;
-            window.lowGraphicsMode = true;
-            if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
-                //window.mobileHud.enable();
-                safeEnableMobileHud();
-            }
-        }
-    }
-    activateMobileLowGraphics();
-    window.addEventListener('resize', activateMobileLowGraphics);
-    window.addEventListener('orientationchange', activateMobileLowGraphics);
-})();
-
 // Mobil cihaz algılama fonksiyonu
 function isMobileDevice() {
     // Landscape: width <= 933 is always mobile
@@ -187,6 +141,11 @@ function isMobileDevice() {
     }
     // Portrait: width <= 950 or mobile user agent
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 950;
+}
+
+// Mobilde her zaman lowGraphicsMode aktif olsun
+if (isMobileDevice()) {
+    window.lowGraphicsMode = true;
 }
 
 // Add a resize handler to detect mobile mode on window resize
@@ -212,6 +171,7 @@ window.addEventListener('resize', function() {
 // Mobilde otomatik HUD ve tam ekran
 window.addEventListener('DOMContentLoaded', function() {
     if (isMobileDevice()) {
+        window.lowGraphicsMode = true; // Yine garantiye al
         // Mobil HUD'u etkinleştir
         if (window.mobileHud && typeof window.mobileHud.enable === 'function') {
             window.mobileHud.enable();

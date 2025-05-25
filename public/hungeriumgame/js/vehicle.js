@@ -2212,6 +2212,7 @@ class Vehicle {
     }
 
     updateParticles() {
+        if (!this.body || !this.body.velocity || !this.wheels || !this.particleSystem) return;
         // Create dust particles only during initial acceleration or braking
         if ((this.controls.forward && this.speed < 10) || 
             (this.controls.brake && this.speed > 15) || 
