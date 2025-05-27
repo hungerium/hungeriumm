@@ -142,13 +142,13 @@ export default function Partners() {
               return [...logos, ...logos].map((partner, i) => (
                 <div
                   key={i}
-                  className="flex-shrink-0 flex items-center justify-center bg-[#23180F]/80 rounded-lg border border-[#D4A017]/20 shadow-md h-20 w-20 md:h-24 md:w-24 aspect-square transition-all duration-300 hover:scale-105"
+                  className="flex-shrink-0 flex items-center justify-center bg-[#23180F]/80 rounded-lg border border-[#D4A017]/20 shadow-md h-12 w-12 md:h-14 md:w-14 aspect-square transition-all duration-300 hover:opacity-100 opacity-80"
                 >
                   <div className="flex items-center justify-center w-full h-full">
                     <img
                       src={partner.logo}
                       alt={partner.name}
-                      style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', filter: 'grayscale(0.3) brightness(0.95)' }}
+                      style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', filter: 'grayscale(1) brightness(0.85)' }}
                     />
                   </div>
                 </div>
