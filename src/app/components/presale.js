@@ -1753,7 +1753,7 @@ export default function Presale() {
 	}
 
 	// Katılımcı sayısını gösterirken +30 ekle
-	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 30;
+	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 33;
 
 	return (
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
