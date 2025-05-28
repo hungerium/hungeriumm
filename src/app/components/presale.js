@@ -1752,8 +1752,8 @@ export default function Presale() {
 		return Math.round(num / 1000) + 'k USD';
 	}
 
-	// Katılımcı sayısını gösterirken +20 ekle
-	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 20;
+	// Katılımcı sayısını gösterirken +30 ekle
+	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 30;
 
 	return (
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
