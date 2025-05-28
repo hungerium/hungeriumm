@@ -122,6 +122,49 @@ export default function Partners() {
             <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
           </a>
         </motion.div>
+
+        {/* --- KAYAN WEB3 ECOSYSTEM LOGOLARI --- */}
+        <div className="relative w-full mt-12 overflow-x-hidden">
+          <div className="text-center mb-2">
+            <span className="text-sm md:text-base font-semibold text-[#E8D5B5]/80 tracking-wide uppercase">Web3 Ecosystem</span>
+          </div>
+          <div className="marquee flex items-center gap-16 py-3 bg-[#1A0F0A]/70 rounded-xl shadow-inner px-4">
+            {(() => {
+              const logos = [
+                { name: 'Unity', logo: '/images/partners/unity.png' },
+                { name: 'BNB Chain', logo: '/images/partners/bnbchain.png' },
+                { name: 'Polygon', logo: '/images/partners/polygon.png' },
+                { name: 'OpenSea', logo: '/images/partners/opensea.png' },
+                { name: 'Animoca', logo: '/images/partners/animoca.png' },
+                { name: 'Base', logo: '/images/partners/base.png' },
+              ];
+              // Sonsuz döngü için iki kez render
+              return [...logos, ...logos].map((partner, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 flex items-center justify-center bg-[#23180F]/80 rounded-lg border border-[#D4A017]/20 shadow-md h-12 w-12 md:h-14 md:w-14 aspect-square transition-all duration-300 hover:opacity-100 opacity-80"
+                >
+                  <div className="flex items-center justify-center w-full h-full">
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain', filter: 'grayscale(1) brightness(0.85)' }}
+                    />
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+          <style jsx>{`
+            .marquee {
+              animation: marquee-scroll 16s linear infinite;
+            }
+            @keyframes marquee-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+          `}</style>
+        </div>
       </motion.div>
     </section>
   );
