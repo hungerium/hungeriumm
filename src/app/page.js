@@ -13,6 +13,7 @@ import ScrollToTop from './components/ScrollToTop';
 import NetworkBanner from './components/NetworkBanner';
 import Loading from './components/Loading';
 import dynamic from 'next/dynamic';
+import Presale from './components/presale';
 
 // Performans için geç yükleme
 const Roadmap = dynamic(() => import('./components/Roadmap'), { ssr: false });
@@ -70,6 +71,7 @@ export default function Home() {
       <Navbar />
       <main id="main-content" className="optimize-gpu">
         <Hero />
+        <Presale />
         <Staking />
         <About />
         <Tokenomics />
