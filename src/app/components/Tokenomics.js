@@ -34,9 +34,10 @@ const Tokenomics = () => {
   // Tokenomics data
   const tokenDistribution = [
     { name: 'Treasury', percentage: 50, color: '#D4A017', description: 'Game & Staking Rewards' },
-    { name: 'Liquidity Pool', percentage: 20, color: '#E8D5B5', description: 'Initial DEX Liquidity' },
-    { name: 'Marketing', percentage: 15, color: '#A77B06', description: 'Marketing & Partnerships' },
-    { name: 'Team & Dev', percentage: 15, color: '#5F4B32', description: 'Locked & Vested' }
+    { name: 'Community', percentage: 30, color: '#E8D5B5', description: 'Airdrops & Incentives' },
+    { name: 'Team & Dev', percentage: 7, color: '#5F4B32', description: 'Locked & Vested' },
+    { name: 'Partnership', percentage: 6, color: '#A77B06', description: 'Strategic Partners' },
+    { name: 'Liquidity Pool', percentage: 7, color: '#8B5A2B', description: 'Initial DEX Liquidity' }
   ];
 
   return (
@@ -185,7 +186,12 @@ const Tokenomics = () => {
                     <div className="text-xs">
                       <div className="text-white font-medium">{item.name}</div>
                       <div className="text-[#E8D5B5]/80 text-[10px] flex justify-between">
-                        <span>{item.percentage === 50 ? '7.5B' : item.percentage === 20 ? '3B' : '2.25B'}</span>
+                        <span>
+                          {item.percentage === 50 ? '7.5B' : 
+                           item.percentage === 30 ? '4.5B' : 
+                           item.percentage === 7 ? '1.05B' : 
+                           item.percentage === 6 ? '0.9B' : '1.05B'}
+                        </span>
                         <span className="ml-1">({item.percentage}%)</span>
                       </div>
                     </div>
@@ -244,7 +250,8 @@ const Tokenomics = () => {
                   <ul className="space-y-2 text-sm">
                     {[
                       { title: "50% Treasury", desc: "Dedicated to game rewards and development" },
-                      { title: "20% Liquidity", desc: "Ensuring stable trading on exchanges" },
+                      { title: "30% Community", desc: "Airdrops and ecosystem incentives" },
+                      { title: "7% Liquidity", desc: "Ensuring stable trading on exchanges" },
                       { title: "5% Inflation", desc: "Fixed annual rate to support ecosystem growth" },
                       { title: "Burning Mechanism", desc: "Regular token burns to maintain scarcity" }
                     ].map((feature, idx) => (
