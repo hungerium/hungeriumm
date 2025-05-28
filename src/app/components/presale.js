@@ -1752,6 +1752,9 @@ export default function Presale() {
 		return Math.round(num / 1000) + 'k USD';
 	}
 
+	// Katılımcı sayısını gösterirken +20 ekle
+	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 20;
+
 	return (
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
 			{/* Header */}
@@ -1781,7 +1784,7 @@ export default function Presale() {
 				<div className="bg-[#2B1A0F] p-3 rounded-lg text-center border border-[#D4A017]/20">
 					<div className="text-xs text-[#E8D5B5] mb-1">Participants</div>
 					<motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.6 }} className="text-[#FFD700] font-bold">
-						{presaleStats.participantCount}
+						{displayedParticipantCount}
 					</motion.div>
 				</div>
 				<div className="bg-[#2B1A0F] p-3 rounded-lg text-center border border-[#D4A017]/20">
