@@ -1752,7 +1752,7 @@ export default function Presale() {
 		return Math.round(num / 1000) + 'k USD';
 	}
 
-	// Katılımcı sayısını gösterirken +30 ekle
+	// Katılımcı sayısını gösterirken +40 ekle
 	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 33;
 
 	return (
