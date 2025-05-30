@@ -1736,11 +1736,11 @@ export default function Presale() {
 
 	// Sold/Remaining calculation (BigInt, 18 decimals, safe fallback)
 	const totalSold = BigInt(presaleStats.totalSold || '0');
+	// Satılan token sayısını gösterirken +100 milyon COFFY ekle
+	const displayedSold = totalSold + BigInt("100000000000000000000000000"); // 100,000,000 * 10^18
+	const soldFormatted = formatShortNumber(Number(ethers.formatUnits(displayedSold, 18)));
 	const remaining = COFFY_TOTAL_SUPPLY - totalSold;
-	const totalSoldNumber = Number(ethers.formatUnits(totalSold, 18));
-	const remainingNumber = Number(ethers.formatUnits(remaining, 18));
-	const soldFormatted = formatShortNumber(totalSoldNumber);
-	const remainingFormatted = formatShortNumber(remainingNumber);
+	const remainingFormatted = formatShortNumber(Number(ethers.formatUnits(remaining, 18)));
 
 	// Calculate full marketcap for each phase (total supply × phase price)
 	const phaseFullMarketcaps = [
@@ -1754,9 +1754,6 @@ export default function Presale() {
 
 	// Katılımcı sayısını gösterirken +35 ekle
 	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 35;
-	// Satılan token sayısını gösterirken +100 milyon COFFY ekle
-	const displayedSold = totalSold + BigInt("100000000000000000000000000"); // 100,000,000 * 10^18
-	const soldFormatted = formatShortNumber(Number(ethers.formatUnits(displayedSold, 18)));
 
 	return (
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
