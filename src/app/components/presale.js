@@ -1752,8 +1752,11 @@ export default function Presale() {
 		return Math.round(num / 1000) + 'k USD';
 	}
 
-	// Katılımcı sayısını gösterirken +40 ekle
-	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 33;
+	// Katılımcı sayısını gösterirken +35 ekle
+	const displayedParticipantCount = (Number(presaleStats.participantCount) || 0) + 35;
+	// Satılan token sayısını gösterirken +100 milyon COFFY ekle
+	const displayedSold = totalSold + BigInt("100000000000000000000000000"); // 100,000,000 * 10^18
+	const soldFormatted = formatShortNumber(Number(ethers.formatUnits(displayedSold, 18)));
 
 	return (
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
