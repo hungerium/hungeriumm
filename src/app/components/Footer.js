@@ -47,7 +47,7 @@ export default function Footer() {
             <div className="flex space-x-4">
               {[
                 { icon: "telegram-plane", url: "https://t.me/+DVdNX9nar99hN2Rk" },
-                { icon: "twitter", url: "https://x.com/coffycoin" }
+                { icon: "twitter", url: "https://x.com/coffycoinxyz" }
               ].map((social, i) => (
                 <motion.a
                   key={social.icon}

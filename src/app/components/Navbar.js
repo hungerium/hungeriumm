@@ -32,6 +32,26 @@ export default function Navbar() {
     }
   }, []);
 
+  // Enhanced mobile menu animations
+  const menuVariants = {
+    closed: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.3,
+        ease: 'easeInOut',
+      },
+    },
+    open: {
+      opacity: 1,
+      height: 'auto',
+      transition: {
+        duration: 0.3,
+        ease: 'easeInOut',
+      },
+    },
+  };
+
   // Hover effect for nav items
   const navItemVariants = {
     hover: {
@@ -142,26 +162,12 @@ export default function Navbar() {
                 onClick={(e) => handleScroll(e, item.toLowerCase())}
                 variants={navItemVariants}
                 whileHover="hover"
-                className="text-[#E8D5B5] transition-colors duration-200 text-sm lg:text-base"
+                className="text-[#E8D5B5] transition-colors duration-200 text-xs lg:text-sm"
+                style={{ fontSize: '85%' }}
               >
                 {item}
               </motion.a>
             ))}
-            
-            {/* Presale Button for Desktop - Enhanced with red pulsing effect */}
-            <motion.a
-              href="#presale-section"
-              onClick={(e) => handleScroll(e, 'presale-section')}
-              className="relative group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <button className="py-2 px-4 bg-gradient-to-r from-[#FF3A00] to-[#FF0000] text-white rounded-lg font-semibold transition-all duration-300 hover:brightness-110 hover:scale-105 hover:shadow-lg hover:shadow-[#FF0000]/50 animate-pulse">
-                JOIN PRESALE
-                {/* Enhanced glowing animation */}
-                <span className="absolute top-0 right-0 -mt-1 -mr-1 w-3 h-3 bg-[#FFD700] rounded-full animate-ping"></span>
-              </button>
-            </motion.a>
           </div>
 
           {/* Game and Wallet Buttons */}
@@ -169,7 +175,7 @@ export default function Navbar() {
             {/* Coffy Lapse Button */}
             <motion.a
               href="/hungeriumgame"
-              className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center"
+              className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-1.5 px-2.5 lg:py-2 lg:px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-[90%]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -185,7 +191,7 @@ export default function Navbar() {
             {/* Coffy Adventure Button */}
             <motion.a
               href="/coffygame/game.html"
-              className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-2 px-3 lg:py-2.5 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center"
+              className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1.5 px-2.5 lg:py-2 lg:px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-[90%]"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -196,6 +202,22 @@ export default function Navbar() {
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+            </motion.a>
+
+            {/* Coffy in Maze3D (Labirent) Button */}
+            <motion.a
+              href="/coffyinmaze/index.html"
+              className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-1.5 px-2.5 lg:py-2 lg:px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-[90%]"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <i className="fas fa-puzzle-piece mr-1.5 text-xs lg:text-sm"></i>
+              <div className="flex flex-col items-start">
+                <span className="relative z-10 text-[10px] lg:text-xs">Play to Earn</span>
+                <span className="relative z-10 text-xs lg:text-sm whitespace-nowrap">Coffy in Maze3D</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#232323] to-[#111111] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#232323] to-[#111111] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
             </motion.a>
 
             {/* Wallet Connection Button */}
@@ -260,59 +282,64 @@ export default function Navbar() {
                   Wallet: {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
                 </div>
               )}
-              
-              {/* Presale Button for Mobile Menu - Enhanced */}
-              <motion.a 
-                href="#presale-section"
-                onClick={(e) => handleScroll(e, 'presale-section')}
-                className="text-white bg-gradient-to-r from-[#FF3A00] to-[#FF0000] hover:brightness-110 transition duration-200 py-2 px-3 rounded-lg font-bold flex items-center justify-center animate-pulse shadow-md shadow-[#FF0000]/30" 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="mr-2">🔥</span> JOIN PRESALE
-                <span className="ml-1 animate-ping">!</span>
-              </motion.a>
-
-              {/* Oyun Butonları - Mobil Menü için */}
-              <motion.a
-                href="/hungeriumgame"
-                className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center justify-center mt-1"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <i className="fas fa-gamepad mr-2 text-sm"></i>
-                <div className="flex flex-col items-start">
-                  <span className="relative z-10 text-xs">Play to Earn</span>
-                  <span className="relative z-10 text-sm">Coffyverse City3D</span>
-                </div>
-              </motion.a>
-              <motion.a
-                href="/coffygame/game.html"
-                className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center justify-center mt-1"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <i className="fas fa-gamepad mr-2 text-sm"></i>
-                <div className="flex flex-col items-start">
-                  <span className="relative z-10 text-xs">Play to Earn</span>
-                  <span className="relative z-10 text-sm">Coffy Adventure</span>
-                </div>
-              </motion.a>
-              
-              {/* Mevcut menü öğeleri */}
-              {["About", "Tokenomics", "Roadmap", "Partners", "Community"].map((item) => (
-                <motion.a 
+              {[
+                "About", "Tokenomics", "Roadmap", "Partners", "Community"
+              ].map((item) => (
+                <motion.a
                   key={item}
                   href={`#${item.toLowerCase()}`}
                   onClick={(e) => handleScroll(e, item.toLowerCase())}
-                  className="text-[#E8D5B5] hover:text-[#D4D4A017] transition duration-200 py-1" 
+                  className="text-[#E8D5B5] hover:text-[#D4D4A017] transition duration-200 py-1 text-xs lg:text-sm"
                   whileHover={{ scale: 1.05 }}
                 >
                   {item}
                 </motion.a>
               ))}
-              
-              {/* ... mevcut diğer butonlar ... */}
+              <div className="flex flex-col gap-3 pt-2">
+                <motion.a
+                  href="/coffygame/game.html"
+                  className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-[90%]"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <i className="fas fa-gamepad mr-2 text-sm"></i>
+                  <div className="flex flex-col items-start">
+                    <span className="relative z-10 text-xs">Play to Earn</span>
+                    <span className="relative z-10 text-sm">Coffy Adventure</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                </motion.a>
+                <motion.a
+                  href="/hungeriumgame"
+                  className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-[90%]"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <i className="fas fa-gamepad mr-2 text-sm"></i>
+                  <div className="flex flex-col items-start">
+                    <span className="relative z-10 text-xs">Play to Earn</span>
+                    <span className="relative z-10 text-sm">Coffyverse City3D</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-900 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                </motion.a>
+                {/* Coffy in Maze3D (Labirent) Button - Mobile */}
+                <motion.a
+                  href="/coffyinmaze/index.html"
+                  className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-[90%]"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <i className="fas fa-puzzle-piece mr-2 text-sm"></i>
+                  <div className="flex flex-col items-start">
+                    <span className="relative z-10 text-xs">Play to Earn</span>
+                    <span className="relative z-10 text-sm">Coffy in Maze3D</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#232323] to-[#111111] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#232323] to-[#111111] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                </motion.a>
+              </div>
             </div>
           </motion.div>
         )}

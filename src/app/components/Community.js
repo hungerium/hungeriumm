@@ -13,7 +13,7 @@ export default function Community() {
     },
     {
       platform: "Twitter",
-      url: "https://x.com/coffycoin",
+      url: "https://x.com/coffycoinxyz",
       icon: "twitter",
       bgColor: "bg-[#1DA1F2]",
       hoverEffect: "hover:bg-[#1A91DA]"
