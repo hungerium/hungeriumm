@@ -2116,6 +2116,7 @@ class GameManager {
         this.saveProgress();
         
         console.log("Game ended, tokens preserved:", this.coffyTokens);
+        if (typeof exitFullscreen === 'function') exitFullscreen();
     }
     
     /**

@@ -1243,24 +1243,16 @@ function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768);
 }
 
-function requestFullscreen() {
+function enterFullscreen() {
     const elem = document.documentElement;
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) { /* Firefox */
-        elem.mozRequestFullScreen();
-    } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-        elem.webkitRequestFullscreen();
-    } else if (elem.msRequestFullscreen) { /* IE/Edge */
-        elem.msRequestFullscreen();
-    }
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
 }
 
 function exitFullscreen() {
     if (document.exitFullscreen) {
         document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
     } else if (document.webkitExitFullscreen) {
         document.webkitExitFullscreen();
     } else if (document.msExitFullscreen) {
@@ -1271,7 +1263,7 @@ function exitFullscreen() {
 // Oyun başladığında tam ekran ol
 function goFullscreenIfMobile() {
     if (isMobileDevice() && !document.fullscreenElement) {
-        requestFullscreen();
+        enterFullscreen();
     }
 }
 // Menüye dönünce tam ekrandan çık
