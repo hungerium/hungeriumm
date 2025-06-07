@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import Staking from './components/Staking';
+import NFTMarketplace from './components/NFTMarketplace';
 import Tokenomics from './components/Tokenomics';
 import ContractInfo from './components/ContractInfo';
 import Community from './components/Community';
@@ -71,6 +72,7 @@ export default function Home() {
       <main id="main-content" className="optimize-gpu">
         <Hero />
         <Staking />
+        <NFTMarketplace />
         <About />
         <Tokenomics />
         <ContractInfo />

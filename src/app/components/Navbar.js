@@ -24,11 +24,10 @@ export default function Navbar() {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-      setIsMobileMenuOpen(false);
+      const yOffset = -72; // Navbar yüksekliği kadar offset
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+      setTimeout(() => setIsMobileMenuOpen(false), 400);
     }
   }, []);
 
@@ -155,17 +154,17 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-center gap-3 lg:gap-5 flex-1 px-4">
-            {["About", "Tokenomics", "Roadmap", "Partners", "Community"].map((item) => (
+            {[{label: "Staking", id: "staking"}, {label: "NFT Marketplace", id: "nft-marketplace"}, {label: "About", id: "about"}, {label: "Tokenomics", id: "tokenomics"}, {label: "Roadmap", id: "roadmap"}].map((item) => (
               <motion.a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                onClick={(e) => handleScroll(e, item.toLowerCase())}
+                key={item.id}
+                href={`#${item.id}`}
+                onClick={(e) => handleScroll(e, item.id)}
                 variants={navItemVariants}
                 whileHover="hover"
                 className="text-[#E8D5B5] transition-colors duration-200 text-xs lg:text-sm"
                 style={{ fontSize: '85%' }}
               >
-                {item}
+                {item.label}
               </motion.a>
             ))}
           </div>
@@ -283,16 +282,20 @@ export default function Navbar() {
                 </div>
               )}
               {[
-                "About", "Tokenomics", "Roadmap", "Partners", "Community"
+                {label: "Staking", id: "staking"},
+                {label: "NFT Marketplace", id: "nft-marketplace"},
+                {label: "About", id: "about"},
+                {label: "Tokenomics", id: "tokenomics"},
+                {label: "Roadmap", id: "roadmap"}
               ].map((item) => (
                 <motion.a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  onClick={(e) => handleScroll(e, item.toLowerCase())}
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => handleScroll(e, item.id)}
                   className="text-[#E8D5B5] hover:text-[#D4D4A017] transition duration-200 py-1 text-xs lg:text-sm"
                   whileHover={{ scale: 1.05 }}
                 >
-                  {item}
+                  {item.label}
                 </motion.a>
               ))}
               <div className="flex flex-col gap-3 pt-2">
