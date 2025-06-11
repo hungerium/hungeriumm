@@ -52,6 +52,14 @@ const nextConfig = {
         source: '/hungeriumgame/:path*',
         destination: '/hungeriumgame/:path*'
       },
+      {
+        source: '/games/flagracer',
+        destination: '/flagraceronline/index.html'
+      },
+      {
+        source: '/flagraceronline/:path*',
+        destination: '/flagraceronline/:path*'
+      },
       // Yeni yönlendirme
       {
         source: '/lapse',  // Bu, kullanıcıların gireceği URL
