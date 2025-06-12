@@ -21,8 +21,7 @@ export default function FlagRacerPage() {
 
     // For production - use real Socket.IO
     const { io } = require('socket.io-client');
-    const socket = io({
-      path: '/api/socket',
+    const socket = io('https://flagrace-1.onrender.com', {
       transports: ['websocket', 'polling']
     });
 
