@@ -127,7 +127,7 @@ class MultiplayerManager {
             console.log(`🔌 Connection attempt ${this.connectionAttempts}/${this.maxConnectionAttempts}...`);
             
             // ✅ ENHANCED: Better socket.io configuration
-            this.socket = io(window.location.origin, {
+            this.socket = io('https://flagrace-1.onrender.com', {
                 transports: ['websocket', 'polling'],
                 timeout: 8000, // Increased timeout for slower connections
                 reconnection: false, // We'll handle reconnection manually
@@ -668,16 +668,15 @@ class MultiplayerManager {
 
     sendBulletFired(bulletData) {
         if (!this.isConnected) return;
-        
+        console.log('[DEBUG] sendBulletFired called', bulletData);
         // Add client timestamp for lag compensation
         const bulletWithTimestamp = {
             ...bulletData,
             clientTime: Date.now(),
             clientLatency: this.clientServerTimeDiff || 0
         };
-        
         this.socket.emit('bulletFired', bulletWithTimestamp);
-        
+        console.log('[DEBUG] bulletFired event emitted', bulletWithTimestamp);
         // Show immediate feedback to player
         this.showNotification('💥', 'info', 200); // Very short notification
     }
@@ -1146,6 +1145,7 @@ class MultiplayerManager {
     }
 
     handleServerBullet(data) {
+        console.log('[DEBUG] handleServerBullet called', data);
         if (this.serverBullets.has(data.bullet.id)) return;
         
         // ✅ REMOVED: Excessive bullet creation logging for performance
