@@ -29,15 +29,15 @@ export default function FlagRacerPage() {
       setGameStatus('Connected');
       console.log('Connected to game server');
       
-      socket.emit('join-game', {
+      socket.emit('playerJoin', {
         name: 'Player_' + Math.floor(Math.random() * 1000),
-        team: Math.random() > 0.5 ? 'police' : 'thief'
+        vehicleType: Math.random() > 0.5 ? 'police' : 'thief'
       });
     });
 
-    socket.on('game-joined', (data) => {
+    socket.on('joinedGame', (data) => {
       console.log('Game joined:', data);
-      setPlayerCount(data.players.length);
+      setPlayerCount(data.player ? 1 : 0);
       setGameStatus('In Game');
       initializeGame(data);
     });
