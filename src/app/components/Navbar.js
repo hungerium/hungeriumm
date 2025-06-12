@@ -55,7 +55,7 @@ export default function Navbar() {
   const navItemVariants = {
     hover: {
       scale: 1.05,
-      color: '#D4A017',
+      textShadow: '0 0 3px rgba(212, 160, 23, 0.5)',
       transition: {
         duration: 0.2,
         ease: 'easeInOut',
@@ -132,122 +132,118 @@ export default function Navbar() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#D4A017] to-transparent" />
       </motion.div>
 
-      <div className="container mx-auto px-4 lg:px-6">
-        <div className="flex justify-between items-center py-2">
-          {/* Logo Section */}
-          <motion.div 
-            className="flex items-center z-20 relative cursor-pointer"
-            variants={logoVariants}
-            whileHover="hover"
-            onClick={(e) => handleScroll(e, 'hero')}
-          >
-            <Image 
-              src="/images/coffy-logo.png" 
-              alt="Coffy Logo" 
-              width={48} 
-              height={48} 
-              className="rounded-full animate-float"
-              style={{ width: '48px', height: '48px' }}
-            />
-            <span className="ml-3 text-base lg:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">COFFY</span>
-          </motion.div>
+      <div className="container mx-auto px-1 lg:px-2 max-w-[1280px]">
+        <div className="flex items-center justify-between py-2">
+          {/* Logo and Navigation Section */}
+          <div className="flex items-center flex-shrink-0 mr-1">
+            {/* Logo Section */}
+            <motion.div 
+              className="flex items-center z-20 relative cursor-pointer"
+              variants={logoVariants}
+              whileHover="hover"
+              onClick={(e) => handleScroll(e, 'hero')}
+            >
+              <Image 
+                src="/images/coffy-logo.png" 
+                alt="Coffy Logo" 
+                width={40} 
+                height={40} 
+                className="rounded-full animate-float"
+                style={{ width: '40px', height: '40px' }}
+              />
+              <span className="ml-1.5 text-sm lg:text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06] tracking-wide">COFFY</span>
+            </motion.div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-center gap-2 lg:gap-3 flex-1 px-2">
-            {[{label: "Staking", id: "staking"}, {label: "NFT Marketplace", id: "nft-marketplace"}, {label: "About", id: "about"}, {label: "Tokenomics", id: "tokenomics"}, {label: "Roadmap", id: "roadmap"}].map((item) => (
-              <motion.a
-                key={item.id}
-                href={`#${item.id}`}
-                onClick={(e) => handleScroll(e, item.id)}
-                variants={navItemVariants}
-                whileHover="hover"
-                className="text-[#E8D5B5] transition-colors duration-200 text-xs lg:text-xs"
-                style={{ fontSize: '80%' }}
-              >
-                {item.label}
-              </motion.a>
-            ))}
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center ml-1.5 gap-1.5 lg:gap-2 mr-1">
+              {[{label: "STAKING", id: "staking"}, {label: "NFT MARKETPLACE", id: "nft-marketplace"}, {label: "ABOUT", id: "about"}, {label: "TOKENOMICS", id: "tokenomics"}, {label: "ROADMAP", id: "roadmap"}].map((item) => (
+                <motion.a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => handleScroll(e, item.id)}
+                  variants={navItemVariants}
+                  whileHover="hover"
+                  className="text-[#E8D5B5] transition-colors duration-200 text-[68%] lg:text-[73%] font-semibold hover:text-[#D4A017]"
+                >
+                  {item.label}
+                </motion.a>
+              ))}
+            </div>
           </div>
 
           {/* Game and Wallet Buttons */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-2.5">
-            {/* Coffy Lapse Button */}
-            <motion.a
-              href="/hungeriumgame"
-              className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-1 px-2 lg:py-1.5 lg:px-2.5 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-xs"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <i className="fas fa-gamepad mr-1 text-xs lg:text-xs"></i>
-              <div className="flex flex-col items-start">
-                <span className="relative z-10 text-[9px] lg:text-xs">Play to Earn</span>
-                <span className="relative z-10 text-xs lg:text-xs whitespace-nowrap">Coffyverse City3D</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-900 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
-            </motion.a>
-
-            {/* Coffy Adventure Button */}
-            <motion.a
-              href="/coffygame/game.html"
-              className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1 px-2 lg:py-1.5 lg:px-2.5 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-xs"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <i className="fas fa-gamepad mr-1 text-xs lg:text-xs"></i>
-              <div className="flex flex-col items-start">
-                <span className="relative z-10 text-[9px] lg:text-xs">Play to Earn</span>
-                <span className="relative z-10 text-xs lg:text-xs whitespace-nowrap">Coffy Adventure</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
-            </motion.a>
-
-            {/* Coffy in Maze3D (Labirent) Button */}
-            <motion.a
-              href="/coffyinmaze/index.html"
-              className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-1 px-2 lg:py-1.5 lg:px-2.5 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-xs"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <i className="fas fa-puzzle-piece mr-1 text-xs lg:text-xs"></i>
-              <div className="flex flex-col items-start">
-                <span className="relative z-10 text-[9px] lg:text-xs">Play to Earn</span>
-                <span className="relative z-10 text-xs lg:text-xs whitespace-nowrap">Coffy in Maze3D</span>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-[#232323] to-[#111111] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#232323] to-[#111111] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
-            </motion.a>
-
+          <div className="hidden md:flex items-center justify-end gap-2 lg:gap-2.5 ml-0">
             {/* FlagRacer Online (Multiplayer) Button */}
             <motion.a
               href="/flagracer"
-              className="relative group bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-1 px-2 lg:py-1.5 lg:px-2.5 rounded-full transition duration-300 shadow-lg hover:shadow-red-700/50 overflow-hidden flex items-center text-xs"
+              className="relative group bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-1.5 px-3.5 lg:py-2 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-red-700/50 overflow-hidden flex items-center text-xs"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <i className="fas fa-car mr-1 text-xs lg:text-xs"></i>
+              <i className="fas fa-car mr-2 text-xs lg:text-sm"></i>
               <div className="flex flex-col items-start">
-                <span className="relative z-10 text-[9px] lg:text-xs">🔥 Multiplayer</span>
-                <span className="relative z-10 text-xs lg:text-xs whitespace-nowrap">FlagRacer Online</span>
-              </div>
-              <div className="absolute top-0 right-0 bg-green-400 text-black text-[7px] px-1 py-0.5 rounded-bl-lg font-bold z-20">
-                LIVE
+                <span className="relative z-10 text-[11px] lg:text-xs">Multiplayer</span>
+                <span className="relative z-10 text-[11px] lg:text-sm font-semibold whitespace-nowrap">FlagRacer Online</span>
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-800 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
             </motion.a>
-
+            {/* Coffy Lapse Button */}
+            <motion.a
+              href="/hungeriumgame"
+              className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-1.5 px-3.5 lg:py-2 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-xs"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <i className="fas fa-gamepad mr-2 text-xs lg:text-sm"></i>
+              <div className="flex flex-col items-start">
+                <span className="relative z-10 text-[11px] lg:text-xs">Play to Earn</span>
+                <span className="relative z-10 text-[11px] lg:text-sm font-semibold whitespace-nowrap">Coffyverse City3D</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-900 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+            </motion.a>
+            {/* Coffy in Maze3D (Labirent) Button */}
+            <motion.a
+              href="/coffyinmaze/index.html"
+              className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-1.5 px-3.5 lg:py-2 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-xs"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <i className="fas fa-puzzle-piece mr-2 text-xs lg:text-sm"></i>
+              <div className="flex flex-col items-start">
+                <span className="relative z-10 text-[11px] lg:text-xs">Play to Earn</span>
+                <span className="relative z-10 text-[11px] lg:text-sm font-semibold whitespace-nowrap">Coffy in Maze3D</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#232323] to-[#111111] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#232323] to-[#111111] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+            </motion.a>
+            {/* Coffy Adventure Button */}
+            <motion.a
+              href="/coffygame/game.html"
+              className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1.5 px-3.5 lg:py-2 lg:px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-xs"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <i className="fas fa-gamepad mr-2 text-xs lg:text-sm"></i>
+              <div className="flex flex-col items-start">
+                <span className="relative z-10 text-[11px] lg:text-xs">Play to Earn</span>
+                <span className="relative z-10 text-[11px] lg:text-sm font-semibold whitespace-nowrap">Coffy Adventure</span>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+            </motion.a>
+            
             {/* Wallet Connection Button */}
             <motion.button
               onClick={connectWallet}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="hidden md:flex bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1 px-2 lg:py-1.5 lg:px-2.5 rounded-full items-center shadow-lg hover:shadow-[#D4A017]/50 transition-all duration-300 group ml-1 text-xs"
+              className="bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1.5 px-3.5 lg:py-2 lg:px-4 rounded-full items-center shadow-lg hover:shadow-[#D4A017]/50 transition-all duration-300 group text-xs flex -ml-1"
             >
-              <i className="fas fa-wallet text-xs lg:text-xs mr-1 group-hover:scale-110 transition-transform"></i>
-              <span className="relative z-10 text-xs lg:text-xs whitespace-nowrap">
-                {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : 'Connect Wallet'}
+              <i className="fas fa-wallet text-xs lg:text-sm mr-2 group-hover:scale-110 transition-transform"></i>
+              <span className="relative z-10 text-xs lg:text-sm font-semibold whitespace-nowrap">
+                {userAddress ? `${userAddress.slice(0, 4)}...${userAddress.slice(-3)}` : 'Connect Wallet'}
               </span>
               {userAddress && (
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse ml-2" />
@@ -300,84 +296,62 @@ export default function Navbar() {
                   Wallet: {userAddress.slice(0, 6)}...{userAddress.slice(-4)}
                 </div>
               )}
-              {[
-                {label: "Staking", id: "staking"},
-                {label: "NFT Marketplace", id: "nft-marketplace"},
-                {label: "About", id: "about"},
-                {label: "Tokenomics", id: "tokenomics"},
-                {label: "Roadmap", id: "roadmap"}
-              ].map((item) => (
-                <motion.a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={(e) => handleScroll(e, item.id)}
-                  className="text-[#E8D5B5] hover:text-[#D4D4A017] transition duration-200 py-1 text-xs lg:text-sm"
-                  whileHover={{ scale: 1.05 }}
-                >
-                  {item.label}
-                </motion.a>
-              ))}
               <div className="flex flex-col gap-3 pt-2">
                 <motion.a
-                  href="/coffygame/game.html"
-                  className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-[90%]"
+                  href="/flagracer"
+                  className="relative group bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-red-700/50 overflow-hidden flex items-center text-[95%]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <i className="fas fa-gamepad mr-2 text-sm"></i>
+                  <i className="fas fa-car mr-2.5 text-sm"></i>
                   <div className="flex flex-col items-start">
-                    <span className="relative z-10 text-xs">Play to Earn</span>
-                    <span className="relative z-10 text-sm">Coffy Adventure</span>
+                    <span className="relative z-10 text-xs">Multiplayer</span>
+                    <span className="relative z-10 text-sm font-semibold">FlagRacer Online</span>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-800 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
                 <motion.a
                   href="/hungeriumgame"
-                  className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-[90%]"
+                  className="relative group bg-gradient-to-r from-blue-600 to-blue-900 text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-blue-700/50 overflow-hidden flex items-center text-[95%]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <i className="fas fa-gamepad mr-2 text-sm"></i>
+                  <i className="fas fa-gamepad mr-2.5 text-sm"></i>
                   <div className="flex flex-col items-start">
                     <span className="relative z-10 text-xs">Play to Earn</span>
-                    <span className="relative z-10 text-sm">Coffyverse City3D</span>
+                    <span className="relative z-10 text-sm font-semibold">Coffyverse City3D</span>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-900 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
-                {/* Coffy in Maze3D (Labirent) Button - Mobile */}
                 <motion.a
                   href="/coffyinmaze/index.html"
-                  className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-[90%]"
+                  className="relative group bg-gradient-to-r from-[#232323] to-[#111111] text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-black/70 overflow-hidden flex items-center text-[95%]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <i className="fas fa-puzzle-piece mr-2 text-sm"></i>
+                  <i className="fas fa-puzzle-piece mr-2.5 text-sm"></i>
                   <div className="flex flex-col items-start">
                     <span className="relative z-10 text-xs">Play to Earn</span>
-                    <span className="relative z-10 text-sm">Coffy in Maze3D</span>
+                    <span className="relative z-10 text-sm font-semibold">Coffy in Maze3D</span>
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#232323] to-[#111111] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#232323] to-[#111111] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
-                {/* FlagRacer Online (Multiplayer) Button - Mobile */}
                 <motion.a
-                  href="/flagracer"
-                  className="relative group bg-gradient-to-r from-red-600 to-red-800 text-white font-bold py-1.5 px-3.5 rounded-full transition duration-300 shadow-lg hover:shadow-red-700/50 overflow-hidden flex items-center text-[90%]"
+                  href="/coffygame/game.html"
+                  className="relative group bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-2 px-4 rounded-full transition duration-300 shadow-lg hover:shadow-[#D4A017]/50 overflow-hidden flex items-center text-[95%]"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <i className="fas fa-car mr-2 text-sm"></i>
+                  <i className="fas fa-gamepad mr-2.5 text-sm"></i>
                   <div className="flex flex-col items-start">
-                    <span className="relative z-10 text-xs">🔥 Multiplayer</span>
-                    <span className="relative z-10 text-sm">FlagRacer Online</span>
+                    <span className="relative z-10 text-xs">Play to Earn</span>
+                    <span className="relative z-10 text-sm font-semibold">Coffy Adventure</span>
                   </div>
-                  <div className="absolute top-0 right-0 bg-green-400 text-black text-[8px] px-1 py-0.5 rounded-bl-lg font-bold z-20">
-                    LIVE
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-800 blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FFD700] to-[#FFA500] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] blur-md opacity-0 group-hover:opacity-75 transition-opacity duration-300"></div>
                 </motion.a>
               </div>
             </div>
