@@ -121,7 +121,9 @@ export default function Hero() {
             </p>
             <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 sm:gap-6 w-full sm:w-auto mb-8 sm:mb-12">
               <motion.a
-                href="#"
+                href="https://pancakeswap.finance/swap?outputCurrency=0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f"
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-gradient-to-br from-[#D4A017] to-[#A77B06] text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-[#D4A017]/50 transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center group"

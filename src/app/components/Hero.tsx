@@ -94,7 +94,9 @@ export default function Hero() {
               className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-6 w-full sm:w-auto mb-12 animate-fadeIn"
             >
               <motion.a
-                href="#"
+                href="https://pancakeswap.finance/swap?outputCurrency=0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f"
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="btn-primary flex items-center justify-center group w-full sm:w-auto animate-scaleIn font-body"
