@@ -151,19 +151,25 @@ export default function Navbar() {
                 className="rounded-full animate-float"
                 style={{ width: '40px', height: '40px' }}
               />
-              <span className="ml-1.5 text-sm lg:text-base font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06] tracking-wide">COFFY</span>
+              <span className="ml-1.5 text-[1.035rem] lg:text-[1.173rem] font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06] tracking-wide">COFFY</span>
             </motion.div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center ml-1.5 gap-1.5 lg:gap-2 mr-1">
-              {[{label: "STAKING", id: "staking"}, {label: "NFT MARKETPLACE", id: "nft-marketplace"}, {label: "ABOUT", id: "about"}, {label: "TOKENOMICS", id: "tokenomics"}, {label: "ROADMAP", id: "roadmap"}].map((item) => (
+              {[
+                {label: "Staking", id: "staking"}, 
+                {label: "Nft Marketplace", id: "nft-marketplace"}, 
+                {label: "About", id: "about"}, 
+                {label: "Tokenomics", id: "tokenomics"}, 
+                {label: "Roadmap", id: "roadmap"}
+              ].map((item) => (
                 <motion.a
                   key={item.id}
                   href={`#${item.id}`}
                   onClick={(e) => handleScroll(e, item.id)}
                   variants={navItemVariants}
                   whileHover="hover"
-                  className="text-[#E8D5B5] transition-colors duration-200 text-[68%] lg:text-[73%] font-semibold hover:text-[#D4A017]"
+                  className="text-[#E8D5B5] transition-colors duration-200 text-[61%] lg:text-[66%] font-normal tracking-wider hover:text-[#D4A017]"
                 >
                   {item.label}
                 </motion.a>
