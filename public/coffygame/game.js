@@ -2064,8 +2064,33 @@ function showScreen(screen) {
 // --- Initialization ---
 // updateRewardUI remains local as it's passed as a callback
 function updateRewardUI(rewards) {
+    // Update the reward display elements
     if (totalRewardElement) totalRewardElement.textContent = rewards.toFixed(2);
     if (totalRewardsHudElement) totalRewardsHudElement.textContent = rewards.toFixed(2);
+    
+    // Also check if the claim button should be enabled or disabled based on rate limiting
+    try {
+        const rateLimit = Utils.checkClaimRateLimit();
+        const claimButton = document.getElementById('claim-total-reward');
+        
+        if (claimButton) {
+            if (!rateLimit.canClaim) {
+                claimButton.disabled = true;
+                claimButton.title = rateLimit.message;
+                
+                // Update claim text with timer
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                claimButton.textContent = `CLAIM IN ${hoursRemaining}h ${minutesRemaining}m`;
+            } else {
+                claimButton.disabled = rewards <= 0;
+                claimButton.title = "Claim your COFFY rewards";
+                claimButton.textContent = "CLAIM REWARDS";
+            }
+        }
+    } catch (error) {
+        console.error("Error updating claim button:", error);
+    }
 }
 
 function init() {
@@ -2371,6 +2396,43 @@ function init() {
         const oldBtn = document.getElementById('fullscreen-btn');
         if (oldBtn) oldBtn.remove();
         // ... diğer mobil geliştirmeler ...
+    }
+
+    // Set up the rewards claim button
+    const claimRewardsButton = document.getElementById('claim-total-reward');
+    if (claimRewardsButton) {
+        claimRewardsButton.addEventListener('click', async function() {
+            if (gameState.walletConnected) {
+                await Web3Integration.claimTotalReward(
+                    gameState, 
+                    {
+                        claimTotalRewardButton: claimRewardsButton,
+                        totalRewardElement,
+                        totalRewardsHudElement,
+                        tokenCountElement
+                    }
+                );
+                updateRewardUI(gameState.pendingRewards);
+            } else {
+                showNotification("Please connect your wallet first", "warning");
+            }
+        });
+    }
+    
+    // Update the claim button status on startup
+    try {
+        const rateLimit = Utils.checkClaimRateLimit();
+        if (claimRewardsButton) {
+            if (!rateLimit.canClaim) {
+                claimRewardsButton.disabled = true;
+                claimRewardsButton.title = rateLimit.message;
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                claimRewardsButton.textContent = `CLAIM IN ${hoursRemaining}h ${minutesRemaining}m`;
+            }
+        }
+    } catch (error) {
+        console.error("Error setting up claim button:", error);
     }
 }
 

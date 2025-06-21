@@ -1,6 +1,6 @@
 import * as Const from './constants.js';
 import * as Utils from './utils.js';
-const { showNotification } = Utils; // Import the specific function
+const { showNotification, checkClaimRateLimit, recordClaim } = Utils; // Import the specific functions
 
 // Function to wait for ethers.js to be available
 async function waitForEthers(maxWaitTime = 8000) {
@@ -402,6 +402,13 @@ export async function claimTotalReward(gameState, uiElements) {
         return;
     }
 
+    // Check IP-based rate limiting
+    const rateLimit = checkClaimRateLimit();
+    if (!rateLimit.canClaim) {
+        showNotification(rateLimit.message, 'warning');
+        return;
+    }
+
     const rewardsToClaim = gameState.pendingRewards;
     // Replace confirm with a notification and proceed
     showNotification(`Attempting to claim ${rewardsToClaim.toFixed(2)} COFFY...`, 'info');
@@ -425,6 +432,9 @@ export async function claimTotalReward(gameState, uiElements) {
         const tx = await gameState.tokenContract.claimGameRewards(weiAmount, { gasLimit: gasLimitWithBuffer });
         showNotification("Claim transaction sent! Waiting for confirmation...", 'info', 5000); // Longer duration
         await tx.wait();
+
+        // Record successful claim for rate limiting
+        recordClaim();
 
         gameState.pendingRewards = 0;
         Utils.savePendingRewards(gameState);

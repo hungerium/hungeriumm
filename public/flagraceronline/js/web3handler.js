@@ -18,6 +18,9 @@ class Web3Handler {
         this.gameTokens = 0;
         this.totalEarnedTokens = this.loadEarnedTokens();
         
+        // Maximum number of claims allowed per day (IP based)
+        this.maxClaimsPerDay = 2;
+        
         // Initialize if Web3 is available
         this.initialize();
     }
@@ -278,6 +281,13 @@ class Web3Handler {
                     return false;
                 }
             }
+            
+            // Check claim rate limit
+            const rateLimit = this.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                this.showNotification(rateLimit.message, "warning");
+                return false;
+            }
 
             // Get tokens to claim - either from parameter or localStorage
             let earnedTokens;
@@ -314,6 +324,10 @@ class Web3Handler {
                     localStorage.setItem('coffyTokens', remainingTokens.toString());
                 }
                 this.totalEarnedTokens = Math.max(0, this.totalEarnedTokens - actualClaimAmount);
+                
+                // Record the claim for rate limiting
+                this.recordClaim();
+                
                 this.showNotification(`Demo: Successfully claimed ${actualClaimAmount} COFFY tokens!`, "success");
                 
                 // Update wallet balance and notify all components
@@ -328,6 +342,7 @@ class Web3Handler {
                 return true;
             }
             
+            let result;
             try {
                 // Token decimals'ı çek
                 console.log("Fetching token decimals...");
@@ -340,7 +355,7 @@ class Web3Handler {
 
                 // Call the contract method (BigInt'i string'e çevir)
                 console.log("Calling claimGameRewards contract method...");
-                const result = await this.tokenContract.methods.claimGameRewards(amount.toString()).send({
+                result = await this.tokenContract.methods.claimGameRewards(amount.toString()).send({
                     from: this.currentAccount
                 });
                 console.log("Contract call result:", result);
@@ -351,18 +366,21 @@ class Web3Handler {
             
             if (result) {
                 // Success - update localStorage by subtracting only the actually claimed amount
-                if (tokensToClaimFromGame === null) {
-                    const remainingTokens = earnedTokens - actualClaimAmount;
-                    localStorage.setItem('coffyTokens', remainingTokens.toString());
-                    console.log(`Updated localStorage: ${earnedTokens} - ${actualClaimAmount} = ${remainingTokens} remaining`);
-                }
+                const coffyTokens = localStorage.getItem('coffyTokens') || "0";
+                const currentTokens = parseInt(coffyTokens);
+                const remainingTokens = Math.max(0, currentTokens - actualClaimAmount);
+                localStorage.setItem('coffyTokens', remainingTokens.toString());
+                console.log(`Updated localStorage: ${currentTokens} - ${actualClaimAmount} = ${remainingTokens} remaining`);
+                
                 this.totalEarnedTokens = Math.max(0, this.totalEarnedTokens - actualClaimAmount);
+                
+                // Record the claim for rate limiting
+                this.recordClaim();
                 
                 // Show appropriate success message
                 let successMessage = `Successfully claimed ${actualClaimAmount} COFFY tokens!`;
                 if (actualClaimAmount < earnedTokens) {
-                    const remaining = earnedTokens - actualClaimAmount;
-                    successMessage += ` (${remaining} tokens remaining for tomorrow)`;
+                    successMessage += ` (${remainingTokens} tokens remaining for tomorrow)`;
                 }
                 this.showNotification(successMessage, "success");
                 
@@ -399,6 +417,116 @@ class Web3Handler {
             }
             
             this.showNotification(errorMsg, "error");
+            return false;
+        }
+    }
+    
+    // IP rate limiting methods
+    checkClaimRateLimit() {
+        try {
+            // Get current timestamp
+            const currentTime = Date.now();
+            
+            // Get stored claim data from localStorage
+            const claimData = JSON.parse(localStorage.getItem('flagracerClaimData') || '{"claims":[]}');
+            
+            // Filter claims from today (last 24 hours)
+            const oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            
+            if (todayClaims.length >= this.maxClaimsPerDay) {
+                // Too many claims already
+                const oldestClaim = Math.max(...todayClaims);
+                const nextClaimTime = oldestClaim + (24 * 60 * 60 * 1000);
+                const remainingTime = nextClaimTime - currentTime;
+                
+                const hoursRemaining = Math.floor(remainingTime / 3600000);
+                const minutesRemaining = Math.floor((remainingTime % 3600000) / 60000);
+                
+                return {
+                    canClaim: false,
+                    message: `Daily limit reached (${this.maxClaimsPerDay}/day). You can claim again in ${hoursRemaining}h ${minutesRemaining}m.`,
+                    timeRemaining: remainingTime
+                };
+            }
+            
+            // Can claim
+            return {
+                canClaim: true,
+                message: "You can claim your rewards now."
+            };
+        } catch (error) {
+            console.error("Error checking claim rate limit:", error);
+            
+            // In case of error, return true to avoid blocking legitimate claims
+            return {
+                canClaim: true,
+                message: "Error checking claim status. Allowing claim."
+            };
+        }
+    }
+    
+    recordClaim() {
+        try {
+            // Get current data
+            const claimData = JSON.parse(localStorage.getItem('flagracerClaimData') || '{"claims":[]}');
+            
+            // Add current timestamp
+            claimData.claims.push(Date.now());
+            
+            // Limit array size to avoid memory issues (keep last 20 claims)
+            if (claimData.claims.length > 20) {
+                claimData.claims = claimData.claims.slice(-20);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('flagracerClaimData', JSON.stringify(claimData));
+            
+            return true;
+        } catch (error) {
+            console.error("Error recording claim:", error);
+            return false;
+        }
+    }
+    
+    getClaimCountToday() {
+        try {
+            const claimData = JSON.parse(localStorage.getItem('flagracerClaimData') || '{"claims":[]}');
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            return todayClaims.length;
+        } catch (error) {
+            console.error("Error getting claim count:", error);
+            return 0;
+        }
+    }
+    
+    getNextClaimTime() {
+        try {
+            const claimData = JSON.parse(localStorage.getItem('flagracerClaimData') || '{"claims":[]}');
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            
+            if (todayClaims.length >= this.maxClaimsPerDay && todayClaims.length > 0) {
+                // Sort claims by timestamp
+                todayClaims.sort((a, b) => a - b);
+                // Get oldest claim and add 24 hours
+                return todayClaims[0] + (24 * 60 * 60 * 1000);
+            }
+            
+            return Date.now(); // Can claim now
+        } catch (error) {
+            console.error("Error getting next claim time:", error);
+            return Date.now(); // Default to now on error
+        }
+    }
+    
+    clearClaimData() {
+        try {
+            localStorage.removeItem('flagracerClaimData');
+            return true;
+        } catch (error) {
+            console.error("Error clearing claim data:", error);
             return false;
         }
     }

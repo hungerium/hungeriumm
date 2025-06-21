@@ -18,6 +18,9 @@ class Web3Handler {
         this.gameTokens = 0;
         this.totalEarnedTokens = this.loadEarnedTokens();
         
+        // Maximum number of claims allowed per day (IP based)
+        this.maxClaimsPerDay = 2;
+        
         // Initialize if Web3 is available
         this.initialize();
     }
@@ -276,6 +279,13 @@ class Web3Handler {
                 }
             }
 
+            // Check claim rate limit
+            const rateLimit = this.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                this.showNotification(rateLimit.message, "warning");
+                return false;
+            }
+
             // Get tokens from localStorage
             const totalEarned = localStorage.getItem('coffyTokens') || "0";
             const earnedTokens = parseInt(totalEarned);
@@ -308,6 +318,10 @@ class Web3Handler {
                 // Success - clear localStorage
                 localStorage.setItem('coffyTokens', "0");
                 this.totalEarnedTokens = 0;
+                
+                // Record the claim for rate limiting
+                this.recordClaim();
+                
                 this.showNotification(`Successfully claimed ${earnedTokens} COFFY tokens!`, "success");
                 
                 // Update wallet balance
@@ -328,6 +342,116 @@ class Web3Handler {
             }
             
             this.showNotification(errorMsg, "error");
+            return false;
+        }
+    }
+    
+    // IP rate limiting methods
+    checkClaimRateLimit() {
+        try {
+            // Get current timestamp
+            const currentTime = Date.now();
+            
+            // Get stored claim data from localStorage
+            const claimData = JSON.parse(localStorage.getItem('hungeriumClaimData') || '{"claims":[]}');
+            
+            // Filter claims from today (last 24 hours)
+            const oneDayAgo = currentTime - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            
+            if (todayClaims.length >= this.maxClaimsPerDay) {
+                // Too many claims already
+                const oldestClaim = Math.max(...todayClaims);
+                const nextClaimTime = oldestClaim + (24 * 60 * 60 * 1000);
+                const remainingTime = nextClaimTime - currentTime;
+                
+                const hoursRemaining = Math.floor(remainingTime / 3600000);
+                const minutesRemaining = Math.floor((remainingTime % 3600000) / 60000);
+                
+                return {
+                    canClaim: false,
+                    message: `Daily limit reached (${this.maxClaimsPerDay}/day). You can claim again in ${hoursRemaining}h ${minutesRemaining}m.`,
+                    timeRemaining: remainingTime
+                };
+            }
+            
+            // Can claim
+            return {
+                canClaim: true,
+                message: "You can claim your rewards now."
+            };
+        } catch (error) {
+            console.error("Error checking claim rate limit:", error);
+            
+            // In case of error, return true to avoid blocking legitimate claims
+            return {
+                canClaim: true,
+                message: "Error checking claim status. Allowing claim."
+            };
+        }
+    }
+    
+    recordClaim() {
+        try {
+            // Get current data
+            const claimData = JSON.parse(localStorage.getItem('hungeriumClaimData') || '{"claims":[]}');
+            
+            // Add current timestamp
+            claimData.claims.push(Date.now());
+            
+            // Limit array size to avoid memory issues (keep last 20 claims)
+            if (claimData.claims.length > 20) {
+                claimData.claims = claimData.claims.slice(-20);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('hungeriumClaimData', JSON.stringify(claimData));
+            
+            return true;
+        } catch (error) {
+            console.error("Error recording claim:", error);
+            return false;
+        }
+    }
+    
+    getClaimCountToday() {
+        try {
+            const claimData = JSON.parse(localStorage.getItem('hungeriumClaimData') || '{"claims":[]}');
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            return todayClaims.length;
+        } catch (error) {
+            console.error("Error getting claim count:", error);
+            return 0;
+        }
+    }
+    
+    getNextClaimTime() {
+        try {
+            const claimData = JSON.parse(localStorage.getItem('hungeriumClaimData') || '{"claims":[]}');
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+            const todayClaims = claimData.claims.filter(claim => claim > oneDayAgo);
+            
+            if (todayClaims.length >= this.maxClaimsPerDay && todayClaims.length > 0) {
+                // Sort claims by timestamp
+                todayClaims.sort((a, b) => a - b);
+                // Get oldest claim and add 24 hours
+                return todayClaims[0] + (24 * 60 * 60 * 1000);
+            }
+            
+            return Date.now(); // Can claim now
+        } catch (error) {
+            console.error("Error getting next claim time:", error);
+            return Date.now(); // Default to now on error
+        }
+    }
+    
+    clearClaimData() {
+        try {
+            localStorage.removeItem('hungeriumClaimData');
+            return true;
+        } catch (error) {
+            console.error("Error clearing claim data:", error);
             return false;
         }
     }

@@ -606,10 +606,27 @@ export function togglePause(gameState, gameLoop, uiElements, soundElements) {
 
     if (!gameState.isStarted || gameState.isOver) return;
     gameState.isPaused = !gameState.isPaused;
-
+    
     if (gameState.isPaused) {
         if (pauseScreen) pauseScreen.style.display = 'flex';
         if (backgroundMusic && gameState.musicEnabled) backgroundMusic.pause();
+        
+        // Update the claim button status based on rate limiting
+        const claimButton = document.getElementById('claim-total-reward');
+        if (claimButton) {
+            const rateLimit = Utils.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                claimButton.disabled = true;
+                claimButton.title = rateLimit.message;
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                claimButton.textContent = `CLAIM IN ${hoursRemaining}h ${minutesRemaining}m`;
+            } else {
+                claimButton.disabled = gameState.pendingRewards <= 0;
+                claimButton.title = "Claim your COFFY rewards";
+                claimButton.textContent = "CLAIM REWARDS";
+            }
+        }
     } else {
         if (pauseScreen) pauseScreen.style.display = 'none';
         gameState.lastFrameTime = performance.now();

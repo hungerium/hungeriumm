@@ -864,3 +864,119 @@ class ParticleSystem {
 
 // İhraç et
 export { ParticleSystem, TimingManager };
+
+// IP based token claim rate limiting system
+export function checkClaimRateLimit() {
+    try {
+        // Get current timestamp
+        const currentTime = Date.now();
+        // Get stored claim data from localStorage
+        const claimData = JSON.parse(localStorage.getItem('coffyCoinClaimData') || '{}');
+        
+        // Initialize claims count if not present
+        if (!claimData.claims) {
+            claimData.claims = 0;
+        }
+        
+        // Check if we need to reset claims (new day)
+        if (claimData.timestamp) {
+            const lastClaimDate = new Date(claimData.timestamp).setHours(0, 0, 0, 0);
+            const currentDate = new Date(currentTime).setHours(0, 0, 0, 0);
+            
+            // If it's a new day, reset the claims counter
+            if (currentDate > lastClaimDate) {
+                claimData.claims = 0;
+            }
+        }
+        
+        // Check if max claims reached for today
+        const maxClaimsPerDay = 2; // Updated from 1 to 2
+        if (claimData.claims >= maxClaimsPerDay) {
+            // Calculate time until midnight for next claim
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            const remainingTime = tomorrow.getTime() - currentTime;
+            
+            const hoursRemaining = Math.floor(remainingTime / 3600000);
+            const minutesRemaining = Math.floor((remainingTime % 3600000) / 60000);
+            
+            return {
+                canClaim: false,
+                message: `Daily limit reached (${claimData.claims}/${maxClaimsPerDay}). You can claim again in ${hoursRemaining}h ${minutesRemaining}m.`,
+                timeRemaining: remainingTime,
+                claimsUsed: claimData.claims,
+                maxClaims: maxClaimsPerDay
+            };
+        }
+        
+        // If we get here, user can claim
+        return {
+            canClaim: true,
+            message: `You can claim your rewards now. (${claimData.claims || 0}/${maxClaimsPerDay} claims used today)`,
+            claimsUsed: claimData.claims || 0,
+            maxClaims: maxClaimsPerDay
+        };
+    } catch (error) {
+        console.error("Error checking claim rate limit:", error);
+        // In case of error, return true to avoid blocking legitimate claims
+        return { 
+            canClaim: true, 
+            message: "Error checking claim status. Allowing claim.",
+            claimsUsed: 0,
+            maxClaims: 2
+        };
+    }
+}
+
+export function recordClaim() {
+    try {
+        // Get existing claim data
+        const claimData = JSON.parse(localStorage.getItem('coffyCoinClaimData') || '{}');
+        
+        // Update claim data
+        claimData.timestamp = Date.now();
+        claimData.claims = (claimData.claims || 0) + 1;
+        
+        // Store in localStorage
+        localStorage.setItem('coffyCoinClaimData', JSON.stringify(claimData));
+        
+        return true;
+    } catch (error) {
+        console.error("Error recording claim:", error);
+        return false;
+    }
+}
+
+export function getClaimTimeRemaining() {
+    try {
+        // Get stored claim data
+        const claimData = JSON.parse(localStorage.getItem('coffyCoinClaimData') || '{}');
+        
+        // If claims haven't reached max, return 0
+        const maxClaimsPerDay = 2;
+        if (!claimData.claims || claimData.claims < maxClaimsPerDay) {
+            return 0;
+        }
+        
+        // Calculate time until midnight
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        
+        return Math.max(0, tomorrow.getTime() - Date.now());
+    } catch (error) {
+        console.error("Error getting claim time remaining:", error);
+        return 0;
+    }
+}
+
+export function clearClaimData() {
+    try {
+        localStorage.removeItem('coffyCoinClaimData');
+        return true;
+    } catch (error) {
+        console.error("Error clearing claim data:", error);
+        return false;
+    }
+}

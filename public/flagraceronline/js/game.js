@@ -188,7 +188,27 @@ class Game {
         // Claim Rewards Button
         const claimRewardsBtn = document.createElement('button');
         claimRewardsBtn.id = 'claimRewardsBtn';
-        claimRewardsBtn.innerHTML = '🎁 Claim Rewards<br/><small>(Max: 9999/day)</small>';
+        
+        // Check if Web3Handler is already initialized and show claim limit status
+        if (window.web3Handler) {
+            const claimCount = window.web3Handler.getClaimCountToday();
+            const maxClaims = window.web3Handler.maxClaimsPerDay || 2;
+            
+            // Check if rate limited
+            const rateLimit = window.web3Handler.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                
+                claimRewardsBtn.disabled = true;
+                claimRewardsBtn.innerHTML = `🕒 Claim in ${hoursRemaining}h ${minutesRemaining}m<br/><small>(${claimCount}/${maxClaims} used today)</small>`;
+            } else {
+                claimRewardsBtn.innerHTML = `🎁 Claim Rewards<br/><small>(${claimCount}/${maxClaims} used today)</small>`;
+            }
+        } else {
+            claimRewardsBtn.innerHTML = '🎁 Claim Rewards<br/><small>(Max: 2/day)</small>';
+        }
+        
         claimRewardsBtn.style.cssText = `
             flex: 1;
             min-width: 120px;
@@ -201,11 +221,8 @@ class Game {
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 217, 61, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 215, 61, 0.4);
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            opacity: 0.6;
-            pointer-events: none;
-            line-height: 1.2;
         `;
         
         web3ButtonsContainer.appendChild(connectWalletBtn);
@@ -523,6 +540,29 @@ class Game {
         }
         
         try {
+            // Check IP rate limit
+            const rateLimit = window.web3Handler.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                
+                alert(`Daily claim limit reached (${window.web3Handler.maxClaimsPerDay}/day). You can claim again in ${hoursRemaining}h ${minutesRemaining}m.`);
+                
+                // Update claim button to show the time remaining
+                const claimRewardsBtn = document.getElementById('claimRewardsBtn');
+                if (claimRewardsBtn) {
+                    claimRewardsBtn.disabled = true;
+                    claimRewardsBtn.innerHTML = `🕒 Claim in ${hoursRemaining}h ${minutesRemaining}m<br/><small>(${window.web3Handler.getClaimCountToday()}/${window.web3Handler.maxClaimsPerDay} used today)</small>`;
+                    
+                    // Re-enable after the time period
+                    setTimeout(() => {
+                        claimRewardsBtn.disabled = false;
+                        claimRewardsBtn.innerHTML = '🎁 Claim Rewards<br/><small>(Max: 2/day)</small>';
+                    }, rateLimit.timeRemaining);
+                }
+                return;
+            }
+            
             // Get actual coffy tokens from localStorage instead of calculated game rewards
             const coffyTokensInStorage = localStorage.getItem('coffyTokens') || "0";
             const tokensToClaimFromGame = parseInt(coffyTokensInStorage);
@@ -546,6 +586,12 @@ class Game {
                 this.updateCoffyDisplay();
                 
                 alert(`Successfully claimed ${tokensToClaimFromGame} tokens!`);
+                
+                // Update claim button to show daily limit
+                const claimRewardsBtn = document.getElementById('claimRewardsBtn');
+                if (claimRewardsBtn) {
+                    claimRewardsBtn.innerHTML = `🎁 Claim Rewards<br/><small>(${window.web3Handler.getClaimCountToday()}/${window.web3Handler.maxClaimsPerDay} used today)</small>`;
+                }
             }
         } catch (error) {
             console.error('Reward claiming failed:', error);
@@ -1684,6 +1730,15 @@ class Game {
             if (event.key === 'Escape' || event.keyCode === 27) {
                 event.preventDefault();
                 this.returnToMainMenu();
+            }
+        });
+
+        // ✅ P Key - Also Return to Main Menu
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'p' || event.key === 'P') {
+                event.preventDefault();
+                this.returnToMainMenu();
+                console.log('P key pressed - returning to main menu');
             }
         });
 
@@ -4408,6 +4463,11 @@ class Game {
     returnToMainMenu() {
         console.log('🏠 Returning to main menu...');
         
+        // First close the pause menu if it's open
+        if (this.isPaused && this.pauseMenu) {
+            this.togglePauseMenu(false);
+        }
+        
         // ✅ DIRECT RETURN: No confirmation dialog needed
         // Cleanup game state
         this.gameInProgress = false;
@@ -4417,9 +4477,15 @@ class Game {
             this.multiplayer.disconnect();
         }
         
-        // Stop all audio
+        // Stop all audio - fixed to use the correct method
         if (this.audioManager) {
-            this.audioManager.stopAll();
+            // Use stopBackgroundMusic instead of stopAll
+            try {
+                this.audioManager.stopBackgroundMusic();
+                this.audioManager.cleanup();
+            } catch (e) {
+                console.warn('Error stopping audio:', e);
+            }
         }
         
         // Clear renderer
@@ -4432,8 +4498,226 @@ class Game {
             this.scene.clear();
         }
         
-        // Reload page to return to login screen
-        window.location.reload();
+        // Use a small delay to ensure the pause menu animation completes
+        setTimeout(() => {
+            try {
+                // Simply reload the page - this is the most reliable way to return to main menu
+                window.location.reload();
+            } catch (e) {
+                console.error('Failed to reload page:', e);
+                // Fallback - try to navigate directly to index.html
+                window.location.href = 'index.html';
+            }
+        }, 100);
+    }
+    
+    // ✅ NEW: Create pause menu
+    createPauseMenu() {
+        // Create pause menu container
+        const pauseMenu = document.createElement('div');
+        pauseMenu.id = 'pauseMenu';
+        pauseMenu.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        `;
+        
+        // Create menu container
+        const menuContainer = document.createElement('div');
+        menuContainer.style.cssText = `
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.9), rgba(42, 82, 152, 0.8));
+            border-radius: 20px;
+            padding: 30px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        `;
+        
+        // Create title
+        const title = document.createElement('h2');
+        title.textContent = 'GAME PAUSED';
+        title.style.cssText = `
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        `;
+        menuContainer.appendChild(title);
+        
+        // Create claim info section
+        const claimInfo = document.createElement('div');
+        claimInfo.style.cssText = `
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: white;
+        `;
+        
+        // Get claim limit info from Web3Handler
+        let claimLimitText = 'Loading claim info...';
+        if (window.web3Handler) {
+            const claimCount = window.web3Handler.getClaimCountToday();
+            const maxClaims = window.web3Handler.maxClaimsPerDay || 2;
+            claimLimitText = `Daily Claims: ${claimCount}/${maxClaims}`;
+            
+            // Check if rate limited
+            const rateLimit = window.web3Handler.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                const hoursRemaining = Math.floor(rateLimit.timeRemaining / 3600000);
+                const minutesRemaining = Math.floor((rateLimit.timeRemaining % 3600000) / 60000);
+                claimLimitText += `<br>Next claim in: ${hoursRemaining}h ${minutesRemaining}m`;
+            }
+        }
+        
+        claimInfo.innerHTML = `
+            <div style="font-size: 18px; margin-bottom: 10px;">☕ Claimable Coffy</div>
+            <div style="font-size: 24px; color: #FFD700; margin-bottom: 10px;">${localStorage.getItem('coffyTokens') || '0'}</div>
+            <div style="font-size: 14px; opacity: 0.8;">${claimLimitText}</div>
+        `;
+        menuContainer.appendChild(claimInfo);
+        
+        // Create buttons
+        const buttons = [
+            { text: 'RESUME GAME', action: 'resume', color: '#4CAF50' },
+            { text: 'CLAIM REWARDS', action: 'claim', color: '#FFD700' },
+            { text: 'RETURN TO MENU', action: 'menu', color: '#F44336' }
+        ];
+        
+        buttons.forEach(button => {
+            const btn = document.createElement('button');
+            btn.textContent = button.text;
+            btn.style.cssText = `
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 10px;
+                background: ${button.color};
+                color: white;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            `;
+            
+            // Add hover effects
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'translateY(-2px)';
+                btn.style.boxShadow = '0 6px 10px rgba(0, 0, 0, 0.4)';
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translateY(0)';
+                btn.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.3)';
+            });
+            
+            // Add click action
+            btn.addEventListener('click', () => {
+                switch (button.action) {
+                    case 'resume':
+                        this.togglePauseMenu(false);
+                        break;
+                    case 'claim':
+                        this.handleClaimRewards();
+                        break;
+                    case 'menu':
+                        this.returnToMainMenu();
+                        break;
+                }
+            });
+            
+            menuContainer.appendChild(btn);
+        });
+        
+        pauseMenu.appendChild(menuContainer);
+        document.body.appendChild(pauseMenu);
+        
+        // Add Escape key handler for closing pause menu
+        document.addEventListener('keydown', (e) => {
+            // Close with Escape key
+            if (e.key === 'Escape' && this.isPaused) {
+                this.togglePauseMenu(false);
+            }
+        });
+        
+        return pauseMenu;
+    }
+    
+    // Toggle pause menu visibility
+    togglePauseMenu(forceState = null) {
+        // Create pause menu if it doesn't exist
+        if (!this.pauseMenu) {
+            this.pauseMenu = this.createPauseMenu();
+            this.isPaused = false;
+        }
+        
+        // Toggle pause state unless forced
+        if (forceState !== null) {
+            this.isPaused = forceState;
+        } else {
+            this.isPaused = !this.isPaused;
+        }
+        
+        // Update menu visibility
+        if (this.isPaused) {
+            this.pauseMenu.style.opacity = '1';
+            this.pauseMenu.style.pointerEvents = 'auto';
+            
+            // Scale up menu container with animation
+            const menuContainer = this.pauseMenu.querySelector('div');
+            if (menuContainer) {
+                menuContainer.style.transform = 'scale(1)';
+            }
+            
+            // Pause game systems
+            if (this.physicsManager) {
+                this.physicsManager.setPaused(true);
+            }
+            
+            // Pause audio
+            if (this.audioManager) {
+                this.audioManager.pauseAll();
+            }
+            
+        } else {
+            this.pauseMenu.style.opacity = '0';
+            this.pauseMenu.style.pointerEvents = 'none';
+            
+            // Scale down menu container with animation
+            const menuContainer = this.pauseMenu.querySelector('div');
+            if (menuContainer) {
+                menuContainer.style.transform = 'scale(0.9)';
+            }
+            
+            // Resume game systems
+            if (this.physicsManager) {
+                this.physicsManager.setPaused(false);
+            }
+            
+            // Resume audio
+            if (this.audioManager) {
+                this.audioManager.resumeAll();
+            }
+        }
+        
+        console.log(`🎮 Game ${this.isPaused ? 'paused' : 'resumed'}`);
     }
 }
 
