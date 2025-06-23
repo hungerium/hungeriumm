@@ -26,9 +26,9 @@ class GameManager {
         
         // COFFY token tracking
         this.coffyTokens = this.loadCoffyTokens(); // Load saved tokens
-        this.levelCompletionReward = 100; // Tokens per level completion
-        this.coffeeCollectibleReward = 50; // Tokens per coffee collected
-        this.enemyKillReward = 100; // Tokens per enemy killed
+        this.levelCompletionReward = 15; // Reduced by 85% (was 100, now 15)
+        this.coffeeCollectibleReward = 7.5; // Reduced by 85% (was 50, now 7.5)
+        this.enemyKillReward = 15; // Reduced by 85% (was 100, now 15)
         this.tokensNeedSaving = false; // Flag to track if tokens have changed
         
         // IP-based rate limiting for token claims

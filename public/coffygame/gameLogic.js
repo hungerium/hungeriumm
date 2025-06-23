@@ -153,8 +153,8 @@ export function updateCups(gameState, gameObjects, deltaTime, uiElements, soundE
                 ? Const.POWERUP_PROPERTIES[Const.POWERUP_TYPES.SCORE_MULTIPLIER].multiplier
                 : 1; // Base score multiplier is 1
 
-            // Calculate base score increase (independent of character rewardMultiplier)
-            const scoreIncrease = 5 * gameState.level * comboMultiplier * scorePowerUpMultiplier;
+            // Calculate base score increase (independent of character rewardMultiplier) - Reduced by 85%
+            const scoreIncrease = 5 * gameState.level * comboMultiplier * scorePowerUpMultiplier * 0.15; // Reduced by 85% (0.15 = 15% of original score)
             gameState.score += scoreIncrease;
 
             // --- Reward Calculation ---
@@ -162,7 +162,7 @@ export function updateCups(gameState, gameObjects, deltaTime, uiElements, soundE
             const rewardBaseMultiplier = gameState.rewardMultiplier; // This is affected by Basic Barista etc.
             // Combine with combo and score power-up multiplier for reward calculation
             const totalRewardMultiplier = rewardBaseMultiplier * comboMultiplier * scorePowerUpMultiplier;
-            let reward = 5 * gameState.level * totalRewardMultiplier; // Calculate reward based on combined multipliers
+            let reward = 5 * gameState.level * totalRewardMultiplier * 0.15; // Reduced by 85% (0.15 = 15% of original reward)
 
             gameState.coffeeCount++;
             gameState.comboCount++; // Increment combo count

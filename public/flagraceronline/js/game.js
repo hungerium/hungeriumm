@@ -767,14 +767,14 @@ class Game {
             newTokens += Math.floor(timePlayed);
         }
         
-        // Flag capture bonus
+        // Flag capture bonus (85% azaltıldı, eskiden 5, şimdi 0.75)
         if (this.gameplayStats.flagsCaptured > 0) {
-            newTokens += this.gameplayStats.flagsCaptured * 5;
+            newTokens += this.gameplayStats.flagsCaptured * 0.75;
         }
         
-        // Base capture bonus
+        // Base capture bonus (85% azaltıldı, eskiden 3, şimdi 0.45)
         if (this.gameplayStats.basesCaptured > 0) {
-            newTokens += this.gameplayStats.basesCaptured * 3;
+            newTokens += this.gameplayStats.basesCaptured * 0.45;
         }
         
         // Distance driving bonus (1 token per 1000 units driven)

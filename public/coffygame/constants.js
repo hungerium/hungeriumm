@@ -292,7 +292,7 @@ export const BOSS_PROPERTIES = {
         bulletCount2: 12, 
         bulletSpeed2: 0.9, // 1.8'den 0.9'a düşürüldü - %50 yavaşlama
         attackInterval2: 2300,
-        reward: 1000,
+        reward: 150, // Reduced by 85% (was 1000, now 150)
         vulnerableTime: 1000,
         maxAttacks: 3,
         phase2Threshold: 0.5
@@ -310,7 +310,7 @@ export const BOSS_PROPERTIES = {
         spreadAngle2: Math.PI / 6, 
         bulletCount2: 7, 
         attackInterval2: 2100,
-        reward: 800,
+        reward: 120, // Reduced by 85% (was 800, now 120)
         vulnerableTime: 1000,
         maxAttacks: 3,
         phase2Threshold: 0.5

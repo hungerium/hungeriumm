@@ -630,8 +630,8 @@ class CoinManager {
     collectCoin(coin) {
         // Skip if already collected
         if (coin.isCollected) return;
-        // Her coin için 50 coin ekle
-        const value = 50;
+        // Her coin için 7.5 coin ekle (85% azaltıldı, eskiden 50)
+        const value = 7.5;
         coin.collect && coin.collect();
         coin.isCollected = true;
         if (coin.mesh) {
@@ -723,9 +723,9 @@ class CoinManager {
         if (counter) counter.remove();
     }
     
-    // Robot öldürülünce 50 coin ekleyecek fonksiyon
+    // Robot öldürülünce 7.5 coin ekleyecek fonksiyon (85% azaltıldı, eskiden 50)
     addRobotKillCoins() {
-        this.totalValue += 50;
+        this.totalValue += 7.5;
         this.updateUI();
         const coffyAmount = this.totalValue * this.coffyPerCoin;
         localStorage.setItem('coffyTokens', coffyAmount.toString());

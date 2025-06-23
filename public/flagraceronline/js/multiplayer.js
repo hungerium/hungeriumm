@@ -4919,26 +4919,26 @@ class MultiplayerManager {
     }
     
     handlePlayerKill(killerName, targetName, weaponType, isHeadshot = false) {
-        let scoreGained = 100; // Base kill score
+        let scoreGained = 15; // Base kill score (85% azaltıldı, eskiden 100)
         
         // Bonus scoring
         if (isHeadshot) {
-            scoreGained += 50;
+            scoreGained += 7.5; // Headshot bonus (85% azaltıldı, eskiden 50)
             this.playerStats.headshotKills++;
-            this.showNotification('💀 HEADSHOT! +150 pts', 'success');
+            this.showNotification('💀 HEADSHOT! +22.5 pts', 'success');
         } else {
             this.showNotification(`💀 KILL! +${scoreGained} pts`, 'success');
         }
         
         if (weaponType === 'rocket') {
-            scoreGained += 25; // Rocket bonus
+            scoreGained += 3.75; // Rocket bonus (85% azaltıldı, eskiden 25)
         }
         
         // Kill streak bonuses
         this.playerStats.killStreak++;
         if (this.playerStats.killStreak >= 5) {
-            scoreGained += 50; // Multi-kill bonus
-            this.showNotification(`🔥 ${this.playerStats.killStreak} KILL STREAK! +50 bonus`, 'warning');
+            scoreGained += 7.5; // Multi-kill bonus (85% azaltıldı, eskiden 50)
+            this.showNotification(`🔥 ${this.playerStats.killStreak} KILL STREAK! +7.5 bonus`, 'warning');
         }
         
         this.playerStats.kills++;
