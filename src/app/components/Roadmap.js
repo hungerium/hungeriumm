@@ -3,41 +3,49 @@
 import { motion } from 'framer-motion';
 
 export default function Roadmap() {
-  const phases = [
+  const roadmapData = [
     {
-      quarter: "Q1 2025",
-      title: "Launch Prep",
+      quarter: "Q1 2025 - V2 Launch & Migration",
+      status: "✅ COMPLETED",
       items: [
-        "Smart contract development and testing",
-        "Community building and partnership discussions",
-        "Security audits and optimization"
+        "V2 smart contract deployment & security audit",
+        "Migration system launch (1:1 token transfer)",
+        "Staking system (10% APR) & Game rewards (5K daily)",
+        "NFT Marketplace & Character system (13 characters)",
+        "DEX listing with anti-sybil protection"
       ]
     },
     {
-      quarter: "Q2 2025",
-      title: "System Launch",
+      quarter: "Q2 2025 - SocialFi & Partnerships",
+      status: "🔄 IN PROGRESS",
       items: [
-        "Launch of staking and gaming rewards system",
-        "Introduction of the SocialFi platform",
-        "Initial DEX listings"
+        "DAO governance implementation (Character price voting)",
+        "SocialFi platform development (Coffee community)",
+        "Coffee shop partnerships (Real-world integration)",
+        "Gaming studio collaborations (P2E partnerships)",
+        "Major DEX listings & liquidity expansion"
       ]
     },
     {
-      quarter: "Q3 2025",
-      title: "Expansion",
+      quarter: "Q3 2025 - Ecosystem Expansion",
+      status: "📅 PLANNED",
       items: [
-        "Development of NFT-based reward systems",
-        "Major exchange listings",
-        "International marketing campaigns"
+        "Character-to-NFT migration (Limited editions)",
+        "Cross-chain bridge development (Polygon, Base)",
+        "International marketing campaigns",
+        "Strategic gaming partnerships (Major P2E projects)",
+        "Advanced DAO governance features"
       ]
     },
     {
-      quarter: "Q4 2025",
-      title: "Global Reach",
+      quarter: "Q4 2025 - Global Scale",
+      status: "📅 FUTURE",
       items: [
-        "Transition to DAO model",
-        "Expansion into global markets",
-        "Advanced features deployment"
+        "Full DAO transition (Complete decentralization)",
+        "Metaverse integration (Coffyverse expansion)",
+        "Major CEX listings (Binance, Coinbase)",
+        "Global coffee industry partnerships",
+        "Mobile app & cross-chain gaming ecosystem"
       ]
     }
   ];
@@ -70,7 +78,7 @@ export default function Roadmap() {
         </motion.div>
 
         <div className="max-w-5xl mx-auto">
-          {phases.map((phase, index) => (
+          {roadmapData.map((phase, index) => (
             <motion.div
               key={phase.quarter}
               initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
@@ -99,8 +107,9 @@ export default function Roadmap() {
                   className="bg-[#2C1B12] p-6 rounded-xl border border-[#D4A017]/20 hover:border-[#D4A017] transition-all duration-300"
                 >
                   <h3 className="text-2xl font-bold text-[#D4A017] mb-4">
-                    {phase.title}
+                    {phase.quarter}
                   </h3>
+                  <p className="text-sm text-[#E8D5B5] mb-4">{phase.status}</p>
                   <ul className="space-y-3">
                     {phase.items.map((item, itemIndex) => (
                       <motion.li

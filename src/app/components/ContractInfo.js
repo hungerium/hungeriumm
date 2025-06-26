@@ -21,35 +21,6 @@ export default function ContractInfo() {
   return (
     <section className="py-16 bg-[#1A0F0A]" id="contract-info">
       <div className="container mx-auto px-6">
-        {/* Migration Notice */}
-        <div className="flex items-center justify-center mb-6">
-          <span className="inline-flex items-center bg-blue-100 border border-blue-400 rounded-full px-4 py-2 mr-2">
-            <svg className="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span className="text-blue-700 font-semibold text-sm">New V2 Contract - Migration Available</span>
-          </span>
-        </div>
-
-        {/* Honeypot KYC/Honeypot Test Badge */}
-        <div className="flex items-center justify-center mb-6">
-          <span className="inline-flex items-center bg-green-100 border border-green-400 rounded-full px-3 py-1 mr-2">
-            {/* SVG Shield with Check */}
-            <svg className="w-5 h-5 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 2C6.13 2 2 4.13 2 7.5c0 5.25 7.5 10.5 7.5 10.5s7.5-5.25 7.5-10.5C18 4.13 13.87 2 10 2zm-1 11l-3-3 1.41-1.41L9 10.17l4.59-4.59L15 7l-6 6z" clipRule="evenodd" />
-            </svg>
-            <span className="text-green-700 font-semibold text-sm">Anti-Sybil Protected</span>
-          </span>
-          <a
-            href={`https://honeypot.is/?address=${contractAddress}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-green-600 underline hover:text-green-800 font-medium text-sm"
-          >
-            View Report
-          </a>
-        </div>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

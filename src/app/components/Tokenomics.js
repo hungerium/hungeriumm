@@ -39,6 +39,33 @@ const Tokenomics = () => {
     { name: 'Team & Dev', percentage: 15, color: '#5F4B32', description: 'Locked & Vested' }
   ];
 
+  // Yeni tokenomics içeriği
+  const tokenomicsData = [
+    {
+      title: "Token Distribution",
+      items: [
+        "Total Supply: 15 Billion COFFY"
+      ]
+    },
+    {
+      title: "Initial Distribution (50%)",
+      items: [
+        "Treasury: 6B COFFY (40%) - Game rewards, development, migration pool",
+        "Liquidity: 4.5B COFFY (30%) - DEX liquidity pools",
+        "Marketing: 3B COFFY (20%) - Marketing campaigns, partnerships",
+        "Team: 1.5B COFFY (10%) - Team allocation, development"
+      ]
+    },
+    {
+      title: "Dynamic Supply Features",
+      items: [
+        "Semi-Annual Inflation: 5% - Every 6 months (Treasury 2%, Others 1% each)",
+        "Staking Rewards: 10% APR - From treasury pool",
+        "Game Rewards: 5K daily limit - Anti-sybil protected"
+      ]
+    }
+  ];
+
   return (
     <section 
       id="tokenomics" 
