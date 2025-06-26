@@ -5,7 +5,8 @@ import { useState } from 'react';
 
 export default function ContractInfo() {
   const [copyStatus, setCopyStatus] = useState('');
-  const contractAddress = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
+  const contractAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
+  const oldContractAddress = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
 
   const copyToClipboard = async (text) => {
     try {
@@ -20,6 +21,16 @@ export default function ContractInfo() {
   return (
     <section className="py-16 bg-[#1A0F0A]" id="contract-info">
       <div className="container mx-auto px-6">
+        {/* Migration Notice */}
+        <div className="flex items-center justify-center mb-6">
+          <span className="inline-flex items-center bg-blue-100 border border-blue-400 rounded-full px-4 py-2 mr-2">
+            <svg className="w-5 h-5 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span className="text-blue-700 font-semibold text-sm">New V2 Contract - Migration Available</span>
+          </span>
+        </div>
+
         {/* Honeypot KYC/Honeypot Test Badge */}
         <div className="flex items-center justify-center mb-6">
           <span className="inline-flex items-center bg-green-100 border border-green-400 rounded-full px-3 py-1 mr-2">
@@ -27,10 +38,10 @@ export default function ContractInfo() {
             <svg className="w-5 h-5 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 2C6.13 2 2 4.13 2 7.5c0 5.25 7.5 10.5 7.5 10.5s7.5-5.25 7.5-10.5C18 4.13 13.87 2 10 2zm-1 11l-3-3 1.41-1.41L9 10.17l4.59-4.59L15 7l-6 6z" clipRule="evenodd" />
             </svg>
-            <span className="text-green-700 font-semibold text-sm">Honeypot Test Passed</span>
+            <span className="text-green-700 font-semibold text-sm">Anti-Sybil Protected</span>
           </span>
           <a
-            href="https://honeypot.is/?address=0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f"
+            href={`https://honeypot.is/?address=${contractAddress}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-green-600 underline hover:text-green-800 font-medium text-sm"
@@ -38,6 +49,7 @@ export default function ContractInfo() {
             View Report
           </a>
         </div>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -46,21 +58,25 @@ export default function ContractInfo() {
           className="max-w-2xl mx-auto bg-[#3A2A1E] p-6 rounded-xl shadow-lg border border-[#D4A017] hover:shadow-[0_0_20px_#D4A017] transition-all duration-300"
         >
           <h2 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-center">
-            Contract Info
+            Contract Info V2
           </h2>
           
-          <div className="flex items-center bg-[#1A0F0A] p-3 rounded-lg border border-[#D4A017]/30 mb-4">
-            <code className="text-[#E8D5B5] flex-1 font-mono text-sm overflow-x-auto">
-              {contractAddress}
-            </code>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => copyToClipboard(contractAddress)}
-              className="ml-2 p-2 rounded-lg bg-[#D4A017]/20 hover:bg-[#D4A017]/30"
-            >
-              <i className="fas fa-copy text-[#D4A017]"></i>
-            </motion.button>
+          {/* New Contract */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-[#D4A017] mb-2">New Contract (V2)</h3>
+            <div className="flex items-center bg-[#1A0F0A] p-3 rounded-lg border border-[#D4A017]/30">
+              <code className="text-[#E8D5B5] flex-1 font-mono text-sm overflow-x-auto">
+                {contractAddress}
+              </code>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => copyToClipboard(contractAddress)}
+                className="ml-2 p-2 rounded-lg bg-[#D4A017]/20 hover:bg-[#D4A017]/30"
+              >
+                <i className="fas fa-copy text-[#D4A017]"></i>
+              </motion.button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -71,7 +87,7 @@ export default function ContractInfo() {
               whileHover={{ scale: 1.02 }}
               className="bg-gradient-to-r from-[#D4A017] to-[#A77B06] py-2 px-4 rounded-lg text-white text-center text-sm"
             >
-              View on BSCScan
+              View V2 on BSCScan
             </motion.a>
             <motion.a
               href="https://pancakeswap.finance/swap"

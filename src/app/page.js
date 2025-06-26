@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
+import Features from './components/Features';
+import GamesSection from './components/GamesSection';
 import Staking from './components/Staking';
 import NFTMarketplace from './components/NFTMarketplace';
 import Tokenomics from './components/Tokenomics';
@@ -14,6 +16,8 @@ import ScrollToTop from './components/ScrollToTop';
 import NetworkBanner from './components/NetworkBanner';
 import Loading from './components/Loading';
 import dynamic from 'next/dynamic';
+import Migration from './components/Migration';
+import CoffeeAnimation from './components/CoffeeAnimation';
 
 // Performans için geç yükleme
 const Roadmap = dynamic(() => import('./components/Roadmap'), { ssr: false });
@@ -71,9 +75,12 @@ export default function Home() {
       <Navbar />
       <main id="main-content" className="optimize-gpu">
         <Hero />
+        <GamesSection />
+        <About />
+        <Features />
+        <Migration />
         <Staking />
         <NFTMarketplace />
-        <About />
         <Tokenomics />
         <ContractInfo />
         <Roadmap />

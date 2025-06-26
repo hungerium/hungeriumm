@@ -119,9 +119,12 @@ export default function Hero() {
               <mark className="bg-transparent text-[#D4A017] font-semibold">Play-to-Earn</mark>, and{' '}
               <mark className="bg-transparent text-[#D4A017] font-semibold">SocialFi</mark> Coin on Binance Smart Chain. Coffy Coin merges DeFi, GameFi, and social engagement into a revolutionary coffee ecosystem!"
             </p>
+            
+
+
             <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 sm:gap-6 w-full sm:w-auto mb-8 sm:mb-12">
               <motion.a
-                href="https://pancakeswap.finance/swap?outputCurrency=0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f"
+                href="https://pancakeswap.finance/swap?outputCurrency=0x7071271057e4b116e7a650F7011FFE2De7C3d14b"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.05 }}
@@ -170,6 +173,8 @@ export default function Hero() {
             </div>
           </motion.div>
         </div>
+
+
       </div>
 
       {/* Responsive padding ve margin ayarlamaları */}

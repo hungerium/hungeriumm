@@ -182,6 +182,50 @@
             <div>P: Pause</div>
             <div>SPACE: Superpower</div>
         </div>
+
+        <!-- Top HUD -->
+        <div class="top-hud">
+            <div class="left-section">
+                <div class="balance-container">
+                    <div class="token-info">
+                        <span id="tokenCount">0</span> COFFY
+                    </div>
+                    <button id="claimTotalRewardButton" class="claim-button">
+                        CLAIM <span id="totalRewardsHud">0</span> COFFY
+                    </button>
+                </div>
+            </div>
+            
+            <div class="center-section">
+                <div class="score-display">
+                    <span>Score: </span><span id="currentScore">0</span>
+                </div>
+            </div>
+            
+            <div class="right-section">
+                <div class="wallet-info">
+                    <button id="connectButton" class="connect-btn">
+                        <i class="fas fa-wallet"></i> Connect Wallet
+                    </button>
+                    <div id="walletInfo" class="wallet-connected" style="display: none;">
+                        <span id="walletAddress">0x...</span>
+                        <button id="disconnectButton" class="disconnect-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Migration Section -->
+                <div id="migration-section" class="migration-section" style="display: none;">
+                    <div id="migration-info" class="migration-info">
+                        Eski kontratınızda COFFY token var. Migrate edebilirsiniz.
+                    </div>
+                    <button id="migration-button" class="migration-button">
+                        🚀 Migrate to V2
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Audio Elements -->

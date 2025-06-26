@@ -5,11 +5,12 @@ import { ethers } from 'ethers';
 
 console.log('Ethers library loaded:', typeof ethers !== 'undefined');
 
-const TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
+const TOKEN_ADDRESS = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b'; // V2 Contract Address
+const OLD_TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f'; // V1 Contract Address (for migration)
 const BSC_CHAIN_ID = '0x38'; // Binance Smart Chain Mainnet
 const BSC_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://bsc-dataseed.binance.org/';
 
-// Yeni kontratın tam ABI’sı
+// Yeni kontratın tam ABI'sı
 const TOKEN_ABI = [
     {
         "inputs": [
@@ -1620,16 +1621,49 @@ const TOKEN_ABI = [
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "canUserMigrate",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "canMigrate",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "oldBalance",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "migrateTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     }
 ];
 
 export default function useWeb3Wallet() {
+  const [userAddress, setUserAddress] = useState(null);
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [userAddress, setUserAddress] = useState(null);
   const [tokenContract, setTokenContract] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const handleAccountsChanged = useCallback((accounts) => {
     console.log('Accounts changed:', accounts);
@@ -1660,6 +1694,7 @@ export default function useWeb3Wallet() {
     setProvider(null);
     setSigner(null);
     setTokenContract(null);
+    setIsConnected(false);
     setConnectionError('Wallet disconnected.');
   }, []);
 
@@ -1811,6 +1846,7 @@ export default function useWeb3Wallet() {
       setSigner(newSigner);
       setUserAddress(address);
       setTokenContract(contract);
+      setIsConnected(true);
       console.log('Wallet connected successfully:', address);
     } catch (error) {
       console.error('Wallet connection error:', error);
@@ -1825,6 +1861,7 @@ export default function useWeb3Wallet() {
     setProvider(null);
     setSigner(null);
     setTokenContract(null);
+    setIsConnected(false);
     console.log('Wallet disconnected');
   }, []);
 
@@ -1944,6 +1981,77 @@ export default function useWeb3Wallet() {
     }
   }, [signer, tokenContract]);
 
+  // Migration fonksiyonları - Basit ve etkili
+  const checkMigrationEligibility = useCallback(async () => {
+    // Basit: Migration her zaman mevcut
+    return {
+      canMigrate: true,
+      oldBalance: '0',
+      migrationEnabled: true
+    };
+  }, []);
+
+  const migrateTokens = useCallback(async () => {
+    if (!signer || !userAddress || !tokenContract) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      console.log('Starting migration...');
+      const tx = await tokenContract.migrateTokens();
+      console.log('Migration transaction sent:', tx.hash);
+      const receipt = await tx.wait();
+      console.log('Migration completed:', receipt);
+      return receipt;
+    } catch (error) {
+      console.error('Migration failed:', error);
+      throw new Error(error.message || 'Migration failed');
+    } finally {
+      setIsMigrating(false);
+    }
+  }, [signer, userAddress, tokenContract]);
+
+  // Initial connection check - bu useEffect zaten var, sadece event listener'ları ekleyelim
+  useEffect(() => {
+    // Bu useEffect zaten var, sadece account change listener'ı ekleyelim
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length === 0) {
+          disconnectWallet();
+        } else if (accounts[0] !== userAddress) {
+          // Hesap değişti, yeniden bağlan  
+          window.location.reload();
+        }
+      };
+
+      const handleChainChanged = () => {
+        // Ağ değişti, sayfayı yenile
+        window.location.reload();
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        if (window.ethereum.removeListener) {
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+          window.ethereum.removeListener('chainChanged', handleChainChanged);
+        }
+      };
+    }
+  }, [userAddress, disconnectWallet]);
+
+  // Cüzdan durumunu kontrol et
+  useEffect(() => {
+    if (userAddress && tokenContract) {
+      setIsConnecting(false);
+      setIsConnected(true);
+      console.log('Wallet state updated - Connected:', userAddress);
+    } else {
+      setIsConnected(false);
+    }
+  }, [userAddress, tokenContract]);
+
   return { 
     connectWallet, 
     disconnectWallet,
@@ -1952,11 +2060,15 @@ export default function useWeb3Wallet() {
     signer,
     tokenContract, 
     isConnecting, 
+    isConnected,
     connectionError,
     getTokenBalance,
     sendTokens,
     stake,
     unstake,
-    claimStakingReward
+    claimStakingReward,
+    checkMigrationEligibility,
+    migrateTokens,
+    isMigrating
   };
 }

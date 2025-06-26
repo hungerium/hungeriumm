@@ -2376,199 +2376,203 @@ class GameManager {
      * @returns {boolean} Success status
      */
     async claimCoffyTokens() {
-        // First check if wallet is connected
-        if (!window.gameState.walletConnected || !window.gameState.walletAddress) {
-            const connectNow = confirm('You need to connect your wallet first to claim COFFY tokens.\n\nWould you like to connect your wallet now?');
-            if (connectNow) {
-                const connected = await this.connectWallet();
-                if (!connected) {
+        try {
+            // First check if wallet is connected
+            if (!window.gameState.walletConnected || !window.gameState.walletAddress) {
+                const connectNow = confirm('You need to connect your wallet first to claim COFFY tokens.\n\nWould you like to connect your wallet now?');
+                if (connectNow) {
+                    const connected = await this.connectWallet();
+                    if (!connected) {
+                        return false;
+                    }
+                } else {
                     return false;
                 }
-            } else {
+            }
+            
+            // Check if tokens are available to claim
+            if (this.coffyTokens <= 0) {
+                alert('No COFFY tokens to claim!');
                 return false;
             }
-        }
-        
-        // Check if tokens are available to claim
-        if (this.coffyTokens <= 0) {
-            alert('No COFFY tokens to claim!');
-            return false;
-        }
-        
-        // Check rate limit
-        const rateLimit = this.checkClaimRateLimit();
-        if (!rateLimit.canClaim) {
-            alert(rateLimit.message);
-            return false;
-        }
+            
+            // Check rate limit
+            const rateLimit = this.checkClaimRateLimit();
+            if (!rateLimit.canClaim) {
+                alert(rateLimit.message);
+                return false;
+            }
 
-        if (!window.ethereum) {
-            alert('No wallet detected. Please install MetaMask, Trust Wallet, BNB Wallet or OKX Wallet.');
-            this.tryAlternativeWallets();
-            return false;
-        }
-        
-        try {
-            // Check if tokens exceed the 9999 limit
-            const MAX_CLAIM_LIMIT = 9999;
-            const claimAmount = this.coffyTokens > MAX_CLAIM_LIMIT ? MAX_CLAIM_LIMIT : this.coffyTokens;
-            
-            // Display claiming status to user
-            const statusElement = document.createElement('div');
-            statusElement.style.position = 'fixed';
-            statusElement.style.top = '50%';
-            statusElement.style.left = '50%';
-            statusElement.style.transform = 'translate(-50%, -50%)';
-            statusElement.style.background = 'rgba(0, 0, 0, 0.8)';
-            statusElement.style.color = 'white';
-            statusElement.style.padding = '20px';
-            statusElement.style.borderRadius = '10px';
-            statusElement.style.zIndex = '10000';
-            statusElement.style.textAlign = 'center';
-            statusElement.innerHTML = `
-                <h3>Claiming COFFY Tokens</h3>
-                <p>Amount: ${claimAmount} COFFY${this.coffyTokens > MAX_CLAIM_LIMIT ? ` (of ${this.coffyTokens} total)` : ''}</p>
-                <div id="claimStatus">Connecting to wallet...</div>
-                <button id="cancelClaim" style="margin-top: 15px; padding: 5px 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer;">Cancel</button>
-            `;
-            document.body.appendChild(statusElement);
-            
-            // Add cancel button listener
-            document.getElementById('cancelClaim').addEventListener('click', () => {
-                document.body.removeChild(statusElement);
-            });
-            
-            const updateStatus = (message) => {
-                const statusDiv = document.getElementById('claimStatus');
-                if (statusDiv) statusDiv.textContent = message;
-            };
-            
-            // Get appropriate provider based on available wallets
-            const provider = await this.getWalletProvider();
-            if (!provider) {
-                updateStatus('No supported wallet found. Please install MetaMask, Trust Wallet, BNB Wallet or OKX Wallet.');
-                setTimeout(() => document.body.removeChild(statusElement), 3000);
+            if (!window.ethereum) {
+                alert('No wallet detected. Please install MetaMask, Trust Wallet, BNB Wallet or OKX Wallet.');
+                this.tryAlternativeWallets();
                 return false;
             }
-            
-            updateStatus('Checking wallet connection...');
             
             try {
-                await provider.send('eth_requestAccounts', []);
-            } catch (err) {
-                updateStatus('Wallet access denied. Please approve the connection in your wallet.');
-                setTimeout(() => document.body.removeChild(statusElement), 3000);
-                return false;
-            }
-            
-            const signer = provider.getSigner();
-            const address = await signer.getAddress();
-            
-            // Update status with wallet address
-            updateStatus(`Connected to wallet: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`);
-            
-            // Check if we're on BSC network
-            updateStatus('Checking network...');
-            const network = await provider.getNetwork();
-            if (network.chainId !== 56) { // BSC Mainnet
-                updateStatus('Switching to Binance Smart Chain...');
-                // Try to switch to BSC
+                // Check if tokens exceed the 9999 limit
+                const MAX_CLAIM_LIMIT = 9999;
+                const claimAmount = this.coffyTokens > MAX_CLAIM_LIMIT ? MAX_CLAIM_LIMIT : this.coffyTokens;
+                
+                // Display claiming status to user
+                const statusElement = document.createElement('div');
+                statusElement.style.position = 'fixed';
+                statusElement.style.top = '50%';
+                statusElement.style.left = '50%';
+                statusElement.style.transform = 'translate(-50%, -50%)';
+                statusElement.style.background = 'rgba(0, 0, 0, 0.8)';
+                statusElement.style.color = 'white';
+                statusElement.style.padding = '20px';
+                statusElement.style.borderRadius = '10px';
+                statusElement.style.zIndex = '10000';
+                statusElement.style.textAlign = 'center';
+                statusElement.innerHTML = `
+                    <h3>Claiming COFFY Tokens</h3>
+                    <p>Amount: ${claimAmount} COFFY${this.coffyTokens > MAX_CLAIM_LIMIT ? ` (of ${this.coffyTokens} total)` : ''}</p>
+                    <div id="claimStatus">Connecting to wallet...</div>
+                    <button id="cancelClaim" style="margin-top: 15px; padding: 5px 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer;">Cancel</button>
+                `;
+                document.body.appendChild(statusElement);
+                
+                // Add cancel button listener
+                document.getElementById('cancelClaim').addEventListener('click', () => {
+                    document.body.removeChild(statusElement);
+                });
+                
+                const updateStatus = (message) => {
+                    const statusDiv = document.getElementById('claimStatus');
+                    if (statusDiv) statusDiv.textContent = message;
+                };
+                
+                // Get appropriate provider based on available wallets
+                const provider = await this.getWalletProvider();
+                if (!provider) {
+                    updateStatus('No supported wallet found. Please install MetaMask, Trust Wallet, BNB Wallet or OKX Wallet.');
+                    setTimeout(() => document.body.removeChild(statusElement), 3000);
+                    return false;
+                }
+                
+                updateStatus('Checking wallet connection...');
+                
                 try {
-                    await provider.send('wallet_switchEthereumChain', [{ chainId: '0x38' }]); // 56 in hex
-                } catch (switchError) {
-                    // If BSC not added to wallet, add it
-                    if (switchError.code === 4902) {
-                        updateStatus('Adding Binance Smart Chain to wallet...');
-                        try {
-                            await provider.send('wallet_addEthereumChain', [{
-                                chainId: '0x38',
-                                chainName: 'Binance Smart Chain',
-                                nativeCurrency: {
-                                    name: 'BNB',
-                                    symbol: 'BNB',
-                                    decimals: 18
-                                },
-                                rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                                blockExplorerUrls: ['https://bscscan.com/']
-                            }]);
-                        } catch (addError) {
-                            updateStatus('Failed to add BSC network. Please add it manually in your wallet.');
+                    await provider.send('eth_requestAccounts', []);
+                } catch (err) {
+                    updateStatus('Wallet access denied. Please approve the connection in your wallet.');
+                    setTimeout(() => document.body.removeChild(statusElement), 3000);
+                    return false;
+                }
+                
+                const signer = provider.getSigner();
+                const address = await signer.getAddress();
+                
+                // Update status with wallet address
+                updateStatus(`Connected to wallet: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`);
+                
+                // Check if we're on BSC network
+                updateStatus('Checking network...');
+                const network = await provider.getNetwork();
+                if (network.chainId !== 56) { // BSC Mainnet
+                    updateStatus('Switching to Binance Smart Chain...');
+                    // Try to switch to BSC
+                    try {
+                        await provider.send('wallet_switchEthereumChain', [{ chainId: '0x38' }]); // 56 in hex
+                    } catch (switchError) {
+                        // If BSC not added to wallet, add it
+                        if (switchError.code === 4902) {
+                            updateStatus('Adding Binance Smart Chain to wallet...');
+                            try {
+                                await provider.send('wallet_addEthereumChain', [{
+                                    chainId: '0x38',
+                                    chainName: 'Binance Smart Chain',
+                                    nativeCurrency: {
+                                        name: 'BNB',
+                                        symbol: 'BNB',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                    blockExplorerUrls: ['https://bscscan.com/']
+                                }]);
+                            } catch (addError) {
+                                updateStatus('Failed to add BSC network. Please add it manually in your wallet.');
+                                setTimeout(() => document.body.removeChild(statusElement), 3000);
+                                throw addError;
+                            }
+                        } else {
+                            updateStatus('Failed to switch network. Please switch to BSC manually.');
                             setTimeout(() => document.body.removeChild(statusElement), 3000);
-                            throw addError;
+                            throw switchError;
                         }
-                    } else {
-                        updateStatus('Failed to switch network. Please switch to BSC manually.');
-                        setTimeout(() => document.body.removeChild(statusElement), 3000);
-                        throw switchError;
                     }
                 }
-            }
-            
-            // Token contract info (BSC)
-            const tokenAddress = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
-            const tokenABI = [
-                "function claimGameRewards(uint256 amount) external",
-                "function balanceOf(address account) view returns (uint256)"
-            ];
-            
-            const tokenContract = new window.ethers.Contract(tokenAddress, tokenABI, signer);
-            
-            // Convert to token decimal amount
-            const decimals = 18;
-            const rewardAmount = window.ethers.utils.parseUnits(claimAmount.toString(), decimals);
-            
-            // Call the claim function - this will trigger MetaMask approval
-            updateStatus('Please approve the transaction in your wallet...');
-            try {
-                // Try to reconnect to wallet silently
-                const tx = await tokenContract.claimGameRewards(rewardAmount);
                 
-                // Wait for transaction to be confirmed
-                await tx.wait();
+                // Token contract info (BSC)
+                const tokenAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
+                const tokenABI = [
+                    "function claimGameRewards(uint256 amount) external",
+                    "function balanceOf(address account) view returns (uint256)"
+                ];
                 
-                // Record the claim for rate limiting
-                this.recordClaim();
+                const tokenContract = new window.ethers.Contract(tokenAddress, tokenABI, signer);
                 
-                // Reduce tokens by claimed amount
-                this.coffyTokens -= claimAmount;
-                this.saveCoffyTokens();
+                // Convert to token decimal amount
+                const decimals = 18;
+                const rewardAmount = window.ethers.utils.parseUnits(claimAmount.toString(), decimals);
                 
-                // Update the balance display
-                const newBalance = await tokenContract.balanceOf(window.gameState.walletAddress);
-                const formattedBalance = window.ethers.utils.formatUnits(newBalance, decimals);
-                this.updateTokenBalance(formattedBalance);
-                
-                // Hide modal
-                document.body.removeChild(statusElement);
-                
-                // Show confirmation with information about remaining tokens and claim limits
-                const claimCount = this.getClaimCountToday();
-                
-                if (this.coffyTokens > 0) {
-                    alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nRemaining tokens to claim: ${this.coffyTokens}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
-                } else {
-                    alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
+                // Call the claim function - this will trigger MetaMask approval
+                updateStatus('Please approve the transaction in your wallet...');
+                try {
+                    // Try to reconnect to wallet silently
+                    const tx = await tokenContract.claimGameRewards(rewardAmount);
+                    
+                    // Wait for transaction to be confirmed
+                    await tx.wait();
+                    
+                    // Record the claim for rate limiting
+                    this.recordClaim();
+                    
+                    // Reduce tokens by claimed amount
+                    this.coffyTokens -= claimAmount;
+                    this.saveCoffyTokens();
+                    
+                    // Update the balance display
+                    const newBalance = await tokenContract.balanceOf(window.gameState.walletAddress);
+                    const formattedBalance = window.ethers.utils.formatUnits(newBalance, decimals);
+                    this.updateTokenBalance(formattedBalance);
+                    
+                    // Hide modal
+                    document.body.removeChild(statusElement);
+                    
+                    // Show confirmation with information about remaining tokens and claim limits
+                    const claimCount = this.getClaimCountToday();
+                    
+                    if (this.coffyTokens > 0) {
+                        alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nRemaining tokens to claim: ${this.coffyTokens}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
+                    } else {
+                        alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
+                    }
+                    
+                    // Update pending rewards display
+                    this.updatePendingRewards();
+                    
+                    return true;
+                } catch (err) {
+                    console.error("Error during claim process:", err);
+                    // Check if user rejected the transaction
+                    if (err.code === 4001) {
+                        updateStatus(`Transaction rejected in wallet.`);
+                    } else {
+                        updateStatus(`Error: ${err.message || err.reason || 'Unknown error'}`);
+                    }
+                    setTimeout(() => document.body.removeChild(statusElement), 3000);
+                    return false;
                 }
-                
-                // Update pending rewards display
-                this.updatePendingRewards();
-                
-                return true;
             } catch (err) {
-                console.error("Error during claim process:", err);
-                // Check if user rejected the transaction
-                if (err.code === 4001) {
-                    updateStatus(`Transaction rejected in wallet.`);
-                } else {
-                    updateStatus(`Error: ${err.message || err.reason || 'Unknown error'}`);
-                }
-                setTimeout(() => document.body.removeChild(statusElement), 3000);
+                console.error("Error claiming COFFY tokens:", err);
+                alert('Failed to claim tokens: ' + (err.message || err.reason || err));
                 return false;
             }
-        } catch (err) {
-            console.error("Error claiming COFFY tokens:", err);
-            alert('Failed to claim tokens: ' + (err.message || err.reason || err));
-            return false;
+        } catch (error) {
+            // ... existing error handling ...
         }
     }
     
@@ -2885,7 +2889,7 @@ class GameManager {
             
             // Token contract setup
             updateStatus("Setting up token contract...");
-            const tokenAddress = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
+            const tokenAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
             const tokenABI = [
                 "function balanceOf(address account) view returns (uint256)",
                 "function claimGameRewards(uint256 amount) external"
