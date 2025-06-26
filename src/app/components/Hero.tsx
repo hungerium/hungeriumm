@@ -93,14 +93,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-6 w-full sm:w-auto mb-12 animate-fadeIn"
             >
-              <motion.a
-                href="https://pancakeswap.finance/swap?outputCurrency=0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f"
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-primary flex items-center justify-center group w-full sm:w-auto animate-scaleIn font-body"
-              >
+              <span className="btn-primary flex items-center justify-center group w-full sm:w-auto animate-scaleIn font-body opacity-60 cursor-not-allowed">
                 <span>Trade Now</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +104,7 @@ export default function Hero() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-              </motion.a>
+              </span>
               <motion.a
                 href="#tokenomics"
                 whileHover={{ scale: 1.05 }}
