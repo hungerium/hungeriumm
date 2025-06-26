@@ -2353,6 +2353,22 @@ const MARKETPLACE_CONTRACT_ABI = [
 	}
 ];
 
+// Batch çağrı fonksiyonu
+async function batchCall(promises, batchSize = 10) {
+	const results = [];
+	for (let i = 0; i < promises.length; i += batchSize) {
+		const batch = promises.slice(i, i + batchSize);
+		const batchResults = await Promise.all(batch);
+		results.push(...batchResults);
+		// Gerekirse kısa bir bekleme eklenebilir
+		// await new Promise(res => setTimeout(res, 50));
+	}
+	return results;
+}
+
+// Admin adresini belirle (gerekirse dışarıdan al veya sabit tanımla)
+const ADMIN_ADDRESS = "0xD45024E3fC67DFAA456e111204950D510Bd44B9B"; // örnek admin/owner adresi
+
 export default function NFTMarketplace() {
 	const { userAddress, provider, signer } = useWeb3Wallet();
 	const [nfts, setNfts] = useState([]);
@@ -2419,8 +2435,8 @@ export default function NFTMarketplace() {
 					return;
 				}
 				const total = await contract.totalSupply();
-				let items = [];
 				let ownersSet = new Set();
+
 				// Fetch all active listings from marketplace
 				let activeListings = [];
 				try {
@@ -2433,87 +2449,82 @@ export default function NFTMarketplace() {
 						listingMap[Number(listing.tokenId)] = listing;
 					}
 				}
-				for (let i = 1; i <= total; i++) {
-					try {
-						const owner = await contract.ownerOf(i);
-						ownersSet.add(owner.toLowerCase());
-						
-						// Get metadata from IPFS with fallback
-						let meta = {};
-						let displayBonus = 10;
-						let tierName = 'Bronze';
-						let nftImage = '/images/coffy-logo.png';
-						let nftName = `Coffy Memories #${i}`;
-						let nftDescription = '';
 
-						// Skip IPFS metadata loading temporarily due to 404 errors
-						// Will use fallback data instead
-						try {
-							// Attempt to get URI but don't fail if it errors
-							let uri = await contract.tokenURI(i);
-							console.log(`Token ${i} URI: ${uri}`);
-							// Don't try to fetch since IPFS URLs are returning 404
-						} catch (error) {
-							console.log(`Failed to get tokenURI for NFT ${i}, using defaults`);
-						}
-						
-						// Determine tier and bonus based on token ID (fallback system)
-						if (i >= 1 && i <= 10) {
-							tierName = 'Gold';
-							displayBonus = 30;
-						} else if (i >= 11 && i <= 30) {
-							tierName = 'Silver';
-							displayBonus = 20;
-						} else if (i >= 31 && i <= 50) {
-							tierName = 'Bronze';
-							displayBonus = 10;
-						}
+				// TokenId dizisi oluştur
+				const tokenIds = Array.from({ length: Number(total) }, (_, i) => i + 1);
 
-						// Try to get contract info, but fallback to defaults if it fails
-						try {
-							const info = await contract.getTokenInfo(i);
-							// Only use contract info if it's valid
-							if (info.tierName && info.tierName !== '') {
-								tierName = info.tierName;
-							}
-							if (info.bonusPercentage && Number(info.bonusPercentage) > 0) {
-								displayBonus = Number(info.bonusPercentage);
-							}
-						} catch (error) {
-							console.log(`Failed to get token info for ${i}, using defaults`);
-						}
+				// ownerOf, tokenURI, getTokenInfo çağrılarını batchCall ile parça parça yap
+				const ownerPromises = tokenIds.map(id => contract.ownerOf(id).catch(() => null));
+				const tokenURIPromises = tokenIds.map(id => contract.tokenURI(id).catch(() => null));
+				const tokenInfoPromises = tokenIds.map(id => contract.getTokenInfo(id).catch(() => null));
 
-						// Use description from metadata or create default
-						if (!nftDescription) {
-							nftDescription = `This exclusive ${tierName} NFT grants ${displayBonus}% bonus to all in-game rewards and provides 1 year free coffee at partner cafes.`;
-						}
+				const owners = await batchCall(ownerPromises, 10);
+				const uris = await batchCall(tokenURIPromises, 10);
+				const infos = await batchCall(tokenInfoPromises, 10);
 
-						// Marketplace listing info
-						let forSale = false;
-						let price = "0";
-						let listingId = null;
-						if (listingMap[i]) {
-							forSale = true;
-							price = formatEther(listingMap[i].priceBNB);
-							listingId = Number(listingMap[i].listingId);
-						}
+				let items = [];
+				for (let idx = 0; idx < tokenIds.length; idx++) {
+					const i = tokenIds[idx];
+					const owner = owners[idx];
+					if (!owner) continue;
+					ownersSet.add(owner.toLowerCase());
 
-						items.push({
-							id: i,
-							owner,
-							image: nftImage,
-							name: nftName,
-							description: nftDescription,
-							tier: tierName === 'Gold' ? 2 : tierName === 'Silver' ? 1 : 0,
-							bonus: displayBonus,
-							tierName: tierName,
-							forSale,
-							price,
-							listingId,
-						});
-					} catch (error) {
-						console.log(`Failed to load NFT ${i}:`, error);
+					let displayBonus = 10;
+					let tierName = 'Bronze';
+					let nftImage = '/images/coffy-logo.png';
+					let nftName = `Coffy Memories #${i}`;
+					let nftDescription = '';
+
+					const uri = uris[idx];
+
+					if (i >= 1 && i <= 10) {
+						tierName = 'Gold';
+						displayBonus = 30;
+					} else if (i >= 11 && i <= 30) {
+						tierName = 'Silver';
+						displayBonus = 20;
+					} else if (i >= 31 && i <= 50) {
+						tierName = 'Bronze';
+						displayBonus = 10;
 					}
+
+					const info = infos[idx];
+					if (info && info.tierName && info.tierName !== '') {
+						tierName = info.tierName;
+					}
+					if (info && info.bonusPercentage && Number(info.bonusPercentage) > 0) {
+						displayBonus = Number(info.bonusPercentage);
+					}
+
+					if (!nftDescription) {
+						nftDescription = `This exclusive ${tierName} NFT grants ${displayBonus}% bonus to all in-game rewards and provides 1 year free coffee at partner cafes.`;
+					}
+
+					let forSale = false;
+					let price = "0";
+					let listingId = null;
+					let seller = null;
+					if (listingMap[i]) {
+						forSale = true;
+						price = formatEther(listingMap[i].priceBNB);
+						listingId = Number(listingMap[i].listingId);
+						seller = listingMap[i].seller;
+					}
+
+					items.push({
+						id: i,
+						owner,
+						image: nftImage,
+						name: nftName,
+						description: nftDescription,
+						tier: tierName === 'Gold' ? 2 : tierName === 'Silver' ? 1 : 0,
+						bonus: displayBonus,
+						tierName: tierName,
+						forSale,
+						price,
+						listingId,
+						seller
+					});
 				}
 				setNfts(items);
 				setCollectionStats({ total, owners: ownersSet.size });
@@ -2867,25 +2878,31 @@ export default function NFTMarketplace() {
 	};
 	
 	// Handle removing NFT from sale
-	const handleRemoveFromSale = async (nftId) => {
+	const handleRemoveFromSale = async (nft) => {
 		setIsLoading(true);
 		setStatus('Removing NFT from sale...');
-		
 		try {
-			const contract = getNFTContract();
-			
-			// Check if contract supports this function
-			if (typeof contract.removeFromSale === 'function') {
-				const tx = await contract.removeFromSale(nftId);
-				setStatus('Transaction sent...');
-				await tx.wait();
-				setStatus('NFT removed from sale!');
-				
-				// Reload NFTs
-				setTimeout(() => window.location.reload(), 2000);
-			} else {
-				setStatus('Marketplace functionality not supported by this contract');
+			const marketplace = getMarketplaceContract();
+			const listingId = nft.listingId; // veya await marketplace.tokenToListing(nft.id);
+			if (!listingId) {
+				setStatus('Listing ID bulunamadı.');
+				setIsLoading(false);
+				return;
 			}
+			// Sadece seller veya admin ise işlemi yap
+			if (
+				userAddress.toLowerCase() !== (nft.seller?.toLowerCase() || '') &&
+				userAddress.toLowerCase() !== ADMIN_ADDRESS.toLowerCase()
+			) {
+				setStatus('Sadece NFT sahibi veya admin kaldırabilir.');
+				setIsLoading(false);
+				return;
+			}
+			const tx = await marketplace.cancelListing(listingId);
+			setStatus('Transaction sent...');
+			await tx.wait();
+			setStatus('NFT removed from sale!');
+			setTimeout(() => window.location.reload(), 2000);
 		} catch (err) {
 			console.error('Remove from sale error:', err);
 			if (err.code === 4001) {
@@ -3034,6 +3051,15 @@ export default function NFTMarketplace() {
 		verifyContracts();
 	}, [provider]);
 
+	// Aktif ve sahipliği doğrulanmış NFT'leri filtrele
+	const filteredNFTs = useMemo(() => {
+		return sortedNFTs.filter(nft => {
+			if (!nft.forSale) return true; // Satışta değilse zaten göster
+			// Satışta ise, NFT'nin owner'ı ile listing seller aynı mı?
+			return nft.owner && nft.seller && nft.owner.toLowerCase() === nft.seller.toLowerCase();
+		});
+	}, [sortedNFTs]);
+
 	return (
 		<section className="py-20 bg-[#1A0F0A] relative overflow-hidden" id="nft-marketplace">
 			<div className="absolute inset-0">
@@ -3122,7 +3148,7 @@ export default function NFTMarketplace() {
 						<div className="inline-block w-8 h-8 border-2 border-[#D4A017] border-t-transparent rounded-full animate-spin mr-2"></div>
 						Loading NFTs...
 					</div>
-				) : sortedNFTs.length === 0 ? (
+				) : filteredNFTs.length === 0 ? (
 					<div className="text-center text-[#D4A017] p-10 bg-[#2A1B13]/30 rounded-lg">
 						{nfts.length === 0 ? "No NFTs found in collection." : "No NFTs match your filters."}
 					</div>
@@ -3130,7 +3156,7 @@ export default function NFTMarketplace() {
 					<div className="w-full max-w-5xl mx-auto">
 						{/* Carousel NFT cards */}
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-							{sortedNFTs.slice(carouselIndex * 4, carouselIndex * 4 + 4).map((nft) => (
+							{filteredNFTs.slice(carouselIndex * 4, carouselIndex * 4 + 4).map((nft) => (
 								<motion.div
 									key={nft.id}
 									className={`bg-gradient-to-b from-[#3A2A1E] to-[#2A1B13] rounded-xl border ${
@@ -3185,12 +3211,12 @@ export default function NFTMarketplace() {
 								&lt;
 							</button>
 							<div className="flex gap-2">
-								{Array.from({ length: Math.max(1, Math.ceil(sortedNFTs.length / 4)) }).map((_, i) => (
+								{Array.from({ length: Math.max(1, Math.ceil(filteredNFTs.length / 4)) }).map((_, i) => (
 									<button
 										key={i}
 										className={`w-3 h-3 rounded-full transition-all ${carouselIndex === i ? 'bg-[#D4A017] scale-110' : 'bg-[#E8D5B5]/30'}`}
 										onClick={() => handleDot(i)}
-										disabled={sortedNFTs.length === 0}
+										disabled={filteredNFTs.length === 0}
 									/>
 								))}
 							</div>
@@ -3204,7 +3230,7 @@ export default function NFTMarketplace() {
 					</div>
 				) : (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-						{sortedNFTs.map((nft) => (
+						{filteredNFTs.map((nft) => (
 							<motion.div
 								key={nft.id}
 								className={`bg-gradient-to-b from-[#3A2A1E] to-[#2A1B13] rounded-xl border ${
@@ -3334,7 +3360,7 @@ export default function NFTMarketplace() {
 										className="flex-1 py-2 rounded-lg border border-[#D4A017]/50 text-[#D4A017] font-semibold hover:bg-[#D4A017]/10 transition-all duration-300 text-xs"
 										onClick={() => { 
 											if (previewNFT.forSale) {
-												handleRemoveFromSale(previewNFT.id);
+												handleRemoveFromSale(previewNFT);
 											} else {
 												setSelectedNFT(previewNFT); 
 												setShowListingModal(true); 
