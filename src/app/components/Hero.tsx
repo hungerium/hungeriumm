@@ -93,7 +93,7 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-col sm:flex-row items-center lg:items-start gap-4 sm:gap-6 w-full sm:w-auto mb-12 animate-fadeIn"
             >
-              <span className="btn-primary flex items-center justify-center group w-full sm:w-auto animate-scaleIn font-body opacity-60 cursor-not-allowed">
+              <span className="btn-primary flex items-center justify-center group w-full sm:w-auto animate-scaleIn font-body">
                 <span>Trade Now</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -105,6 +105,7 @@ export default function Hero() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </span>
+              <span className="ml-3 text-[#D4A017] text-xs font-semibold">Listing Coming Soon</span>
               <motion.a
                 href="#tokenomics"
                 whileHover={{ scale: 1.05 }}

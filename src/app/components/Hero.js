@@ -123,12 +123,19 @@ export default function Hero() {
 
 
             <div className="flex flex-col sm:flex-row items-center lg:items-start gap-3 sm:gap-6 w-full sm:w-auto mb-8 sm:mb-12">
-              <span className="bg-gradient-to-br from-[#D4A017] to-[#A77B06] text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-[#D4A017]/50 transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center group opacity-60 cursor-not-allowed">
+              <motion.a
+                href="https://pancakeswap.finance/swap?outputCurrency=0x7071271057e4b116e7a650F7011FFE2De7C3d14b"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-br from-[#D4A017] to-[#A77B06] text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg hover:shadow-[#D4A017]/50 transition-all duration-300 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center group"
+              >
                 <span>Trade Now</span>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-              </span>
+              </motion.a>
               <motion.a
                 href="#tokenomics"
                 whileHover={{ scale: 1.05 }}
