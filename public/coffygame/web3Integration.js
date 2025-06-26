@@ -412,51 +412,71 @@ function showWalletGuidance() {
 }
 
 export async function claimTotalReward(gameState, uiElements) {
-    const { 
-        totalRewardElement, 
-        totalRewardsHudElement, 
-        tokenCountElement 
-    } = uiElements;
-
-    const rewardsToClaim = gameState.pendingRewards;
-
-    if (rewardsToClaim <= 0) {
-        showNotification("Talep edilecek ödül yok!", 'warning');
+    const { claimTotalRewardButton, totalRewardElement, totalRewardsHudElement, tokenCountElement } = uiElements;
+    
+    if (!gameState.walletConnected) {
+        showNotification("Please connect your wallet first", "warning");
         return;
     }
 
-    // Rate limiting kontrolü
-    const rateLimit = Utils.checkClaimRateLimit();
-    if (!rateLimit.canClaim) {
-        const minutes = Math.ceil((rateLimit.timeRemaining || 0) / 60000);
-        showNotification(rateLimit.message + (minutes ? ` (${minutes} dakika)` : ''), 'warning');
+    if (gameState.pendingRewards <= 0) {
+        showNotification("No rewards to claim", "warning");
         return;
     }
+
+    // Apply daily maximum limit of 5000 tokens (YENİ LİMİT - Coffy Adventure)
+    const MAX_DAILY_CLAIM = 5000;
+    const actualClaimAmount = Math.min(gameState.pendingRewards, MAX_DAILY_CLAIM);
+    
+    if (actualClaimAmount < gameState.pendingRewards) {
+        console.log(`Limiting claim amount: ${gameState.pendingRewards} -> ${actualClaimAmount} (daily max: ${MAX_DAILY_CLAIM})`);
+    }
+
+    console.log(`Claiming ${actualClaimAmount} tokens (available: ${gameState.pendingRewards})`);
 
     try {
-        const weiAmount = ethers.utils.parseUnits(rewardsToClaim.toString(), 18);
-
-        let gasLimitEstimate;
-        try {
-            gasLimitEstimate = await gameState.tokenContract.estimateGas.claimGameRewards(weiAmount);
-        } catch (gasError) {
-            console.warn("Gas estimation failed, using default limit:", gasError);
-            gasLimitEstimate = ethers.BigNumber.from("300000");
+        // Check IP rate limit first
+        const rateLimit = Utils.checkClaimRateLimit();
+        if (!rateLimit.canClaim) {
+            showNotification(rateLimit.message, 'warning');
+            return;
         }
-        const gasLimitWithBuffer = gasLimitEstimate.mul(120).div(100);
 
-        const tx = await gameState.tokenContract.claimGameRewards(weiAmount, { gasLimit: gasLimitWithBuffer });
+        // Disable claim button
+        claimTotalRewardButton.disabled = true;
+        claimTotalRewardButton.textContent = "CLAIMING...";
+        
+        console.log("Attempting to claim total reward...");
+        
+        // Check if tokenContract is available first
+        if (!gameState.tokenContract) {
+            showNotification("Smart contract not available. Please refresh and try again.", 'error');
+            claimTotalRewardButton.disabled = false;
+            claimTotalRewardButton.textContent = "CLAIM REWARDS";
+            return;
+        }
+        
+        // Try to get decimals
+        const decimals = await gameState.tokenContract.decimals();
+        const rewardAmount = ethers.utils.parseUnits(actualClaimAmount.toString(), decimals);
+        
         showNotification("Claim transaction sent! Waiting for confirmation...", 'info', 5000);
+        
+        // Call the smart contract claim function with actual claim amount
+        const tx = await gameState.tokenContract.claimGameRewards(rewardAmount);
+        
+        // Wait for transaction to be confirmed
         await tx.wait();
-
-        // Record successful claim for rate limiting
-        recordClaim();
-
-        gameState.pendingRewards = 0;
-        Utils.savePendingRewards(gameState);
-
-        totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
-        totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
+        
+        // Record the claim for rate limiting
+        Utils.recordClaim();
+        
+        // Reduce pending rewards by claimed amount only
+        gameState.pendingRewards = Math.max(0, gameState.pendingRewards - actualClaimAmount);
+        
+        // Update UI elements with new pending rewards
+        if (totalRewardElement) totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
+        if (totalRewardsHudElement) totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
 
         try {
             const balance = await gameState.tokenContract.balanceOf(gameState.walletAddress);
@@ -466,7 +486,13 @@ export async function claimTotalReward(gameState, uiElements) {
             console.error("Failed to update token balance after claim:", balanceError);
         }
 
-        showNotification("Rewards claimed successfully!", 'success');
+        // Show appropriate success message
+        let successMessage = `Successfully claimed ${actualClaimAmount} COFFY tokens!`;
+        if (actualClaimAmount < gameState.pendingRewards + actualClaimAmount) {
+            const remainingTokens = gameState.pendingRewards;
+            successMessage += ` (${remainingTokens} tokens remaining for tomorrow)`;
+        }
+        showNotification(successMessage, 'success');
 
     } catch (error) {
         console.error("Error claiming rewards:", error);

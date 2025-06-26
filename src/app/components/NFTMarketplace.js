@@ -4,81 +4,1257 @@ import useWeb3Wallet from './useWeb3Wallet';
 import { ethers, parseEther, formatEther, isAddress } from 'ethers';
 import { } from './contractDebugHelper';
 
-// CoffyMemories NFT contract information
+// CoffyMemories NFT contract information - CORRECT ADDRESS
 const NFT_CONTRACT_ADDRESS = "0xE08a93D25e1bF9BF9cB4908e30a6dfEd5fce51b4";
 const NFT_CONTRACT_ABI = [
-	{ "inputs": [ { "internalType": "string", "name": "baseURI", "type": "string" }, { "internalType": "address", "name": "_royaltyReceiver", "type": "address" } ], "stateMutability": "nonpayable", "type": "constructor" },
-	{ "inputs": [ { "internalType": "address", "name": "sender", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "address", "name": "owner", "type": "address" } ], "name": "ERC721IncorrectOwner", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ERC721InsufficientApproval", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "approver", "type": "address" } ], "name": "ERC721InvalidApprover", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "operator", "type": "address" } ], "name": "ERC721InvalidOperator", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "ERC721InvalidOwner", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "receiver", "type": "address" } ], "name": "ERC721InvalidReceiver", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "sender", "type": "address" } ], "name": "ERC721InvalidSender", "type": "error" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ERC721NonexistentToken", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "OwnableInvalidOwner", "type": "error" },
-	{ "inputs": [ { "internalType": "address", "name": "account", "type": "address" } ], "name": "OwnableUnauthorizedAccount", "type": "error" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "approved", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Approval", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "operator", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "ApprovalForAll", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": false, "internalType": "string", "name": "newBaseURI", "type": "string" } ], "name": "BaseURIUpdated", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "gameContract", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "authorized", "type": "bool" } ], "name": "GameAuthorized", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": false, "internalType": "bool", "name": "active", "type": "bool" } ], "name": "MintStatusChanged", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "indexed": false, "internalType": "enum CoffyMemories.Tier", "name": "tier", "type": "uint8" }, { "indexed": false, "internalType": "uint256", "name": "bonusPercentage", "type": "uint256" } ], "name": "NFTMinted", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "OwnershipTransferred", "type": "event" },
-	{ "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Transfer", "type": "event" },
-	{ "inputs": [], "name": "BRONZE_BONUS", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "BRONZE_SUPPLY", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "GOLD_BONUS", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "GOLD_SUPPLY", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "MAX_SUPPLY", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "SILVER_BONUS", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "SILVER_SUPPLY", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "approve", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "", "type": "address" } ], "name": "authorizedGames", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "bronzeMinted", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "player", "type": "address" }, { "internalType": "uint256", "name": "baseReward", "type": "uint256" } ], "name": "calculateBonusReward", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "coffyCoinContract", "outputs": [ { "internalType": "contract IERC20", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "contractURI", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "getApproved", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "getContractInfo", "outputs": [ { "internalType": "uint256", "name": "maxSupply", "type": "uint256" }, { "internalType": "uint256", "name": "currentSupply", "type": "uint256" }, { "internalType": "uint256", "name": "price", "type": "uint256" }, { "internalType": "bool", "name": "active", "type": "bool" }, { "internalType": "address", "name": "coffyToken", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "player", "type": "address" } ], "name": "getPlayerMaxBonus", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "player", "type": "address" } ], "name": "getPlayerNFTInfo", "outputs": [ { "internalType": "uint256[]", "name": "tokenIds", "type": "uint256[]" }, { "internalType": "enum CoffyMemories.Tier[]", "name": "tiers", "type": "uint8[]" }, { "internalType": "uint256[]", "name": "bonuses", "type": "uint256[]" }, { "internalType": "string[]", "name": "tierNames", "type": "string[]" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "getTierSupplyInfo", "outputs": [ { "internalType": "uint256", "name": "bronzeTotal", "type": "uint256" }, { "internalType": "uint256", "name": "bronzeRemaining", "type": "uint256" }, { "internalType": "uint256", "name": "silverTotal", "type": "uint256" }, { "internalType": "uint256", "name": "silverRemaining", "type": "uint256" }, { "internalType": "uint256", "name": "goldTotal", "type": "uint256" }, { "internalType": "uint256", "name": "goldRemaining", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "getTokenInfo", "outputs": [ { "internalType": "enum CoffyMemories.Tier", "name": "tier", "type": "uint8" }, { "internalType": "uint256", "name": "bonusPercentage", "type": "uint256" }, { "internalType": "string", "name": "tierName", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "goldMinted", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "player", "type": "address" } ], "name": "hasNFTBonus", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "operator", "type": "address" } ], "name": "isApprovedForAll", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "quantity", "type": "uint256" } ], "name": "mint", "outputs": [], "stateMutability": "payable", "type": "function" },
-	{ "inputs": [], "name": "mintActive", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "mintPrice", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "enum CoffyMemories.Tier", "name": "tier", "type": "uint8" }, { "internalType": "uint256", "name": "quantity", "type": "uint256" } ], "name": "mintSpecificTier", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "owner", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ownerOf", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "tokenAddress", "type": "address" }, { "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "recoverToken", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "uint256", "name": "salePrice", "type": "uint256" } ], "name": "royaltyInfo", "outputs": [ { "internalType": "address", "name": "", "type": "address" }, { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "royaltyPercentage", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "royaltyReceiver", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes", "name": "data", "type": "bytes" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "setApprovalForAll", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "gameContract", "type": "address" }, { "internalType": "bool", "name": "authorized", "type": "bool" } ], "name": "setAuthorizedGame", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "string", "name": "newBaseURI", "type": "string" } ], "name": "setBaseURI", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "bool", "name": "active", "type": "bool" } ], "name": "setMintActive", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "newPrice", "type": "uint256" } ], "name": "setMintPrice", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "receiver", "type": "address" }, { "internalType": "uint256", "name": "percentage", "type": "uint256" } ], "name": "setRoyaltyInfo", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [], "name": "silverMinted", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" } ], "name": "supportsInterface", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "name": "tokenTier", "outputs": [ { "internalType": "enum CoffyMemories.Tier", "name": "tier", "type": "uint8" }, { "internalType": "uint256", "name": "bonusPercentage", "type": "uint256" }, { "internalType": "string", "name": "tierName", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "tokenURI", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "tokensOfOwner", "outputs": [ { "internalType": "uint256[]", "name": "", "type": "uint256[]" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "transferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "transferOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-	{ "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "baseURI",
+				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "_royaltyReceiver",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "ERC721IncorrectOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC721InsufficientApproval",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "approver",
+				"type": "address"
+			}
+		],
+		"name": "ERC721InvalidApprover",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"name": "ERC721InvalidOperator",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "ERC721InvalidOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			}
+		],
+		"name": "ERC721InvalidReceiver",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "ERC721InvalidSender",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC721NonexistentToken",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "OwnableInvalidOwner",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "OwnableUnauthorizedAccount",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "approved",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "ApprovalForAll",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "newBaseURI",
+				"type": "string"
+			}
+		],
+		"name": "BaseURIUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "gameContract",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "authorized",
+				"type": "bool"
+			}
+		],
+		"name": "GameAuthorized",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
+			}
+		],
+		"name": "MintStatusChanged",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "enum CoffyMemories.Tier",
+				"name": "tier",
+				"type": "uint8"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "bonusPercentage",
+				"type": "uint256"
+			}
+		],
+		"name": "NFTMinted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "previousOwner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "BRONZE_BONUS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "BRONZE_SUPPLY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "GOLD_BONUS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "GOLD_SUPPLY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_SUPPLY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "SILVER_BONUS",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "SILVER_SUPPLY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "authorizedGames",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "bronzeMinted",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "player",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "baseReward",
+				"type": "uint256"
+			}
+		],
+		"name": "calculateBonusReward",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "coffyCoinContract",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "contractURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getApproved",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getContractInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "maxSupply",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "currentSupply",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
+			},
+			{
+				"internalType": "address",
+				"name": "coffyToken",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "player",
+				"type": "address"
+			}
+		],
+		"name": "getPlayerMaxBonus",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "player",
+				"type": "address"
+			}
+		],
+		"name": "getPlayerNFTInfo",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "tokenIds",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "enum CoffyMemories.Tier[]",
+				"name": "tiers",
+				"type": "uint8[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "bonuses",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "tierNames",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTierSupplyInfo",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "bronzeTotal",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bronzeRemaining",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "silverTotal",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "silverRemaining",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "goldTotal",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "goldRemaining",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getTokenInfo",
+		"outputs": [
+			{
+				"internalType": "enum CoffyMemories.Tier",
+				"name": "tier",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bonusPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tierName",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "goldMinted",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "player",
+				"type": "address"
+			}
+		],
+		"name": "hasNFTBonus",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedForAll",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "mint",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "mintActive",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "mintPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "enum CoffyMemories.Tier",
+				"name": "tier",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "mintSpecificTier",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "ownerOf",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "recoverToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "renounceOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "salePrice",
+				"type": "uint256"
+			}
+		],
+		"name": "royaltyInfo",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "royaltyPercentage",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "royaltyReceiver",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "gameContract",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "authorized",
+				"type": "bool"
+			}
+		],
+		"name": "setAuthorizedGame",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "newBaseURI",
+				"type": "string"
+			}
+		],
+		"name": "setBaseURI",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
+			}
+		],
+		"name": "setMintActive",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "newPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "setMintPrice",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "percentage",
+				"type": "uint256"
+			}
+		],
+		"name": "setRoyaltyInfo",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "silverMinted",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes4",
+				"name": "interfaceId",
+				"type": "bytes4"
+			}
+		],
+		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenTier",
+		"outputs": [
+			{
+				"internalType": "enum CoffyMemories.Tier",
+				"name": "tier",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bonusPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "tierName",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			}
+		],
+		"name": "tokensOfOwner",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
 ];
 
 // Convert IPFS urls to HTTP gateway
@@ -1261,16 +2437,27 @@ export default function NFTMarketplace() {
 					try {
 						const owner = await contract.ownerOf(i);
 						ownersSet.add(owner.toLowerCase());
-						let uri = await contract.tokenURI(i);
-						uri = ipfsToHttp(uri);
+						
+						// Get metadata from IPFS with fallback
 						let meta = {};
-						try {
-							meta = await fetch(uri).then(res => res.json());
-						} catch {}
-						const info = await contract.getTokenInfo(i);
 						let displayBonus = 10;
-						let tierName = info.tierName;
-						// TierName'ı id'ye göre zorunlu olarak düzelt
+						let tierName = 'Bronze';
+						let nftImage = '/images/coffy-logo.png';
+						let nftName = `Coffy Memories #${i}`;
+						let nftDescription = '';
+
+						// Skip IPFS metadata loading temporarily due to 404 errors
+						// Will use fallback data instead
+						try {
+							// Attempt to get URI but don't fail if it errors
+							let uri = await contract.tokenURI(i);
+							console.log(`Token ${i} URI: ${uri}`);
+							// Don't try to fetch since IPFS URLs are returning 404
+						} catch (error) {
+							console.log(`Failed to get tokenURI for NFT ${i}, using defaults`);
+						}
+						
+						// Determine tier and bonus based on token ID (fallback system)
 						if (i >= 1 && i <= 10) {
 							tierName = 'Gold';
 							displayBonus = 30;
@@ -1281,6 +2468,26 @@ export default function NFTMarketplace() {
 							tierName = 'Bronze';
 							displayBonus = 10;
 						}
+
+						// Try to get contract info, but fallback to defaults if it fails
+						try {
+							const info = await contract.getTokenInfo(i);
+							// Only use contract info if it's valid
+							if (info.tierName && info.tierName !== '') {
+								tierName = info.tierName;
+							}
+							if (info.bonusPercentage && Number(info.bonusPercentage) > 0) {
+								displayBonus = Number(info.bonusPercentage);
+							}
+						} catch (error) {
+							console.log(`Failed to get token info for ${i}, using defaults`);
+						}
+
+						// Use description from metadata or create default
+						if (!nftDescription) {
+							nftDescription = `This exclusive ${tierName} NFT grants ${displayBonus}% bonus to all in-game rewards and provides 1 year free coffee at partner cafes.`;
+						}
+
 						// Marketplace listing info
 						let forSale = false;
 						let price = "0";
@@ -1290,20 +2497,23 @@ export default function NFTMarketplace() {
 							price = formatEther(listingMap[i].priceBNB);
 							listingId = Number(listingMap[i].listingId);
 						}
+
 						items.push({
 							id: i,
 							owner,
-							image: ipfsToHttp(meta.image) || '',
-							name: meta.name || `Coffy NFT #${i}`,
-							description: meta.description || '',
-							tier: info.tier,
+							image: nftImage,
+							name: nftName,
+							description: nftDescription,
+							tier: tierName === 'Gold' ? 2 : tierName === 'Silver' ? 1 : 0,
 							bonus: displayBonus,
 							tierName: tierName,
 							forSale,
 							price,
 							listingId,
 						});
-					} catch {}
+					} catch (error) {
+						console.log(`Failed to load NFT ${i}:`, error);
+					}
 				}
 				setNfts(items);
 				setCollectionStats({ total, owners: ownersSet.size });
@@ -1344,40 +2554,109 @@ export default function NFTMarketplace() {
 			return;
 		}
 		if (!listingPrice || isNaN(parseFloat(listingPrice)) || parseFloat(listingPrice) <= 0) {
-			setStatus('Please enter a valid price');
+			setStatus('Please enter a valid price greater than 0');
 			return;
 		}
+
 		setIsLoading(true);
-		setStatus('Listing NFT for sale...');
+		setStatus('Preparing to list NFT for sale...');
+		
 		try {
 			const nftContract = getNFTContract();
 			const marketplaceContract = getMarketplaceContract();
-			// 1. Approve marketplace to transfer NFT (if not already approved)
+
+			if (!nftContract || !marketplaceContract) {
+				setStatus('Failed to connect to contracts');
+				setIsLoading(false);
+				return;
+			}
+
+			// 1. Verify user owns the NFT
+			setStatus('Verifying ownership...');
+			const owner = await nftContract.ownerOf(selectedNFT.id);
+			if (owner.toLowerCase() !== userAddress.toLowerCase()) {
+				setStatus('You do not own this NFT');
+				setIsLoading(false);
+				return;
+			}
+
+			// 2. Check if NFT is already listed
+			setStatus('Checking existing listings...');
+			try {
+				const existingListingId = await marketplaceContract.tokenToListing(selectedNFT.id);
+				if (existingListingId > 0) {
+					const existingListing = await marketplaceContract.listings(existingListingId);
+					if (existingListing.active) {
+						setStatus('This NFT is already listed for sale. Cancel the existing listing first.');
+						setIsLoading(false);
+						return;
+					}
+				}
+			} catch (error) {
+				// tokenToListing might not exist or return 0, which is fine
+				console.log('No existing listing found or error checking:', error);
+			}
+
+			// 3. Check and handle approval
 			const approvedAddress = await nftContract.getApproved(selectedNFT.id);
-			if (approvedAddress.toLowerCase() !== MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()) {
+			const isApprovedForAll = await nftContract.isApprovedForAll(userAddress, MARKETPLACE_CONTRACT_ADDRESS);
+			
+			if (approvedAddress.toLowerCase() !== MARKETPLACE_CONTRACT_ADDRESS.toLowerCase() && !isApprovedForAll) {
 				setStatus('Approving marketplace to transfer NFT...');
 				const approveTx = await nftContract.approve(MARKETPLACE_CONTRACT_ADDRESS, selectedNFT.id);
+				setStatus('Approval transaction sent. Waiting for confirmation...');
 				await approveTx.wait();
+				setStatus('NFT approved for marketplace');
 			} else {
-				setStatus('NFT already approved for marketplace, listing directly...');
+				setStatus('NFT already approved for marketplace');
 			}
-			// 2. List item on marketplace
+
+			// 4. List item on marketplace
+			setStatus('Listing NFT on marketplace...');
 			const priceInWei = parseEther(listingPrice);
-			const tx = await marketplaceContract.listItem(selectedNFT.id, priceInWei, 0, true, false);
-			setStatus('Transaction sent...');
-			await tx.wait();
-			setStatus('NFT successfully listed for sale!');
+			const tx = await marketplaceContract.listItem(
+				selectedNFT.id, 
+				priceInWei, 
+				0, // CoffyCoin price (0 = not accepted)
+				true, // accepts BNB
+				false // accepts CoffyCoin
+			);
+			
+			setStatus('Listing transaction sent. Waiting for confirmation...');
+			const receipt = await tx.wait();
+			
+			console.log('Listing successful:', receipt);
+			setStatus('NFT successfully listed for sale! 🎉');
+			
+			// Close modal and reset
 			setShowListingModal(false);
 			setListingPrice('');
 			setSelectedNFT(null);
-			setTimeout(() => window.location.reload(), 2000);
+			
+			// Reload page after 3 seconds
+			setTimeout(() => {
+				window.location.reload();
+			}, 3000);
+
 		} catch (err) {
 			console.error('Listing error:', err);
+			let errorMessage = 'Listing failed: ';
+			
 			if (err.code === 4001) {
-				setStatus('Transaction rejected by user');
+				errorMessage += 'Transaction was rejected by user';
+			} else if (err.code === -32603) {
+				errorMessage += 'Internal error occurred';
+			} else if (err.message?.includes('insufficient funds')) {
+				errorMessage += 'Insufficient funds for transaction';
+			} else if (err.message?.includes('execution reverted')) {
+				errorMessage += 'Transaction was reverted by contract';
+			} else if (err.message?.includes('Marketplace not approved')) {
+				errorMessage += 'Please approve the marketplace to transfer your NFT';
 			} else {
-				setStatus('Listing failed: ' + (err.reason || err.message || 'Unknown error'));
+				errorMessage += err.reason || err.message || 'Unknown error occurred';
 			}
+			
+			setStatus(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
@@ -1385,46 +2664,205 @@ export default function NFTMarketplace() {
 	
 	// 5. Buying NFT from marketplace
 	const handlePurchase = async (nft) => {
+		if (!nft || !nft.listingId) {
+			setStatus('Invalid NFT or listing information');
+			return;
+		}
+
+		setIsLoading(true);
+		setStatus('Preparing purchase...');
+
+		console.log('=== PURCHASE DEBUG INFO ===');
+		console.log('NFT:', nft);
+		console.log('User address:', userAddress);
+		console.log('Listing ID:', nft.listingId);
+		console.log('Price:', nft.price, 'BNB');
+
 		try {
+			// Check if marketplace is connected to correct NFT contract
+			const marketplaceContractCheck = getMarketplaceContract();
+			if (marketplaceContractCheck) {
+				try {
+					const connectedNFTContract = await marketplaceContractCheck.coffyMemoriesContract();
+					if (connectedNFTContract.toLowerCase() !== NFT_CONTRACT_ADDRESS.toLowerCase()) {
+						setStatus('⚠️ Marketplace contract incompatibility detected. This NFT may not be purchasable through the current marketplace.');
+						console.error('Marketplace NFT contract mismatch:', {
+							expected: NFT_CONTRACT_ADDRESS,
+							found: connectedNFTContract
+						});
+						setIsLoading(false);
+						return;
+					}
+				} catch (checkError) {
+					console.warn('Could not verify marketplace contract compatibility:', checkError);
+				}
+			}
 			// 1. Network kontrolü
 			const network = await provider.getNetwork();
+			console.log('Network chainId:', network.chainId);
 			if (network.chainId !== 56n) {
-				alert('Please switch to BSC Mainnet');
+				setStatus('Please switch to BSC Mainnet (Chain ID: 56)');
+				setIsLoading(false);
 				return;
 			}
 
 			// 2. Balance kontrolü
-			const hasEnoughBNB = await checkGasRequirement();
-			if (!hasEnoughBNB) return;
-
-			// 3. Debug listing
-			await debugListing(nft.listingId);
-
-			// 4. Static call test
+			const balance = await provider.getBalance(userAddress);
 			const priceInWei = parseEther(nft.price);
-			const canPurchase = await testPurchaseCall(nft.listingId, priceInWei);
-			if (!canPurchase) {
-				alert('Purchase would fail. Check console for details.');
+			const requiredAmount = priceInWei + parseEther('0.001'); // Extra for gas
+
+			if (balance < requiredAmount) {
+				setStatus(`Insufficient BNB balance. Required: ${formatEther(requiredAmount)} BNB`);
+				setIsLoading(false);
 				return;
 			}
 
-			// 5. Actual purchase (ethers v6: getGasPrice yok, getFeeData var)
-			// İsterseniz gasPrice'ı elle verebilirsiniz, ama çoğu durumda gerek yoktur.
-			// const feeData = await provider.getFeeData();
-			// const gasPrice = feeData.gasPrice;
-			const tx = await getMarketplaceContract().buyWithBNB(nft.listingId, {
+			// 3. Marketplace contract check
+			const marketplaceContractMain = getMarketplaceContract();
+			if (!marketplaceContractMain) {
+				setStatus('Failed to connect to marketplace contract');
+				setIsLoading(false);
+				return;
+			}
+			
+			console.log('Marketplace contract address:', MARKETPLACE_CONTRACT_ADDRESS);
+			console.log('Marketplace contract connected:', !!marketplaceContractMain);
+
+			// 4. Verify listing exists and is active
+			setStatus('Verifying listing...');
+			let listing;
+			try {
+				listing = await marketplaceContractMain.listings(nft.listingId);
+				console.log('Listing details:', {
+					listingId: nft.listingId,
+					tokenId: listing.tokenId?.toString(),
+					seller: listing.seller,
+					priceBNB: listing.priceBNB?.toString(),
+					priceCoffyCoin: listing.priceCoffyCoin?.toString(),
+					acceptsBNB: listing.acceptsBNB,
+					acceptsCoffyCoin: listing.acceptsCoffyCoin,
+					active: listing.active,
+					listedAt: listing.listedAt?.toString()
+				});
+				
+				if (!listing.active) {
+					setStatus('This NFT is no longer available for sale');
+					setIsLoading(false);
+					return;
+				}
+			} catch (error) {
+				console.error('Failed to fetch listing:', error);
+				setStatus('Failed to verify listing. It may no longer exist.');
+				setIsLoading(false);
+				return;
+			}
+
+			// 5. Check listing acceptsBNB flag
+			setStatus('Checking payment method...');
+			if (!listing.acceptsBNB) {
+				setStatus('This seller does not accept BNB payments. Only CoffyCoin accepted.');
+				setIsLoading(false);
+				return;
+			}
+
+			// 6. Check if user is trying to buy their own NFT
+			if (listing.seller.toLowerCase() === userAddress.toLowerCase()) {
+				setStatus('You cannot buy your own NFT');
+				setIsLoading(false);
+				return;
+			}
+
+			// 7. Verify price matches
+			const expectedPrice = listing.priceBNB;
+			if (priceInWei.toString() !== expectedPrice.toString()) {
+				setStatus(`Price mismatch. Expected: ${formatEther(expectedPrice)} BNB`);
+				setIsLoading(false);
+				return;
+			}
+
+			// 8. Static call test to check if purchase would succeed
+			setStatus('Verifying transaction...');
+			console.log('Static call params:', {
+				listingId: nft.listingId,
+				value: priceInWei.toString(),
+				from: userAddress
+			});
+			
+			try {
+				await marketplaceContractMain.buyWithBNB.staticCall(nft.listingId, { 
+					value: priceInWei,
+					from: userAddress 
+				});
+				console.log('✅ Static call successful');
+			} catch (staticError) {
+				console.error('❌ Static call failed:', staticError);
+				console.error('Error details:', {
+					code: staticError.code,
+					reason: staticError.reason,
+					message: staticError.message
+				});
+				
+				let errorMsg = 'Transaction verification failed: ';
+				if (staticError.message?.includes('BNB not accepted')) {
+					errorMsg += 'BNB payments not accepted for this item';
+				} else if (staticError.message?.includes('Insufficient BNB')) {
+					errorMsg += 'Insufficient BNB amount sent';
+				} else if (staticError.message?.includes('Cannot buy own item')) {
+					errorMsg += 'Cannot purchase your own NFT';
+				} else if (staticError.message?.includes('Listing not active')) {
+					errorMsg += 'This listing is no longer active';
+				} else if (staticError.message?.includes('revert')) {
+					errorMsg += 'Contract rejected transaction - check marketplace settings';
+				} else if (staticError.data) {
+					errorMsg += `Contract error: ${staticError.data}`;
+				} else {
+					errorMsg += staticError.reason || staticError.message || 'Unknown error';
+				}
+				setStatus(errorMsg);
+				setIsLoading(false);
+				return;
+			}
+
+			// 9. Execute the actual purchase
+			setStatus('Processing purchase...');
+			console.log('Executing buyWithBNB transaction...');
+			
+			const tx = await marketplaceContractMain.buyWithBNB(nft.listingId, {
 				value: priceInWei,
-				gasLimit: 250000
-				// gasPrice: gasPrice // Eğer elle vermek isterseniz yukarıdaki satırları açın
+				gasLimit: 350000 // Increased gas limit
 			});
 
-			await tx.wait();
-			setStatus('NFT successfully purchased!');
-			setTimeout(() => window.location.reload(), 2000);
+			console.log('Transaction hash:', tx.hash);
+			setStatus('Transaction sent. Waiting for confirmation...');
+			const receipt = await tx.wait();
+			
+			console.log('✅ Purchase successful:', receipt);
+			setStatus('NFT successfully purchased! 🎉');
+			
+			// Reload page after 3 seconds
+			setTimeout(() => {
+				window.location.reload();
+			}, 3000);
 
 		} catch (error) {
 			console.error('Purchase failed:', error);
-			setStatus('Purchase failed: ' + (error.reason || error.message || 'Unknown error'));
+			let errorMessage = 'Purchase failed: ';
+			
+			if (error.code === 4001) {
+				errorMessage += 'Transaction was rejected by user';
+			} else if (error.code === -32603) {
+				errorMessage += 'Internal error occurred';
+			} else if (error.message?.includes('insufficient funds')) {
+				errorMessage += 'Insufficient funds for transaction';
+			} else if (error.message?.includes('execution reverted')) {
+				errorMessage += 'Transaction was reverted by contract';
+			} else {
+				errorMessage += error.reason || error.message || 'Unknown error occurred';
+			}
+			
+			setStatus(errorMessage);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 	
@@ -1529,51 +2967,71 @@ export default function NFTMarketplace() {
 		return new ethers.Contract(MARKETPLACE_CONTRACT_ADDRESS, MARKETPLACE_CONTRACT_ABI, signer || provider);
 	};
 
-	// Hızlı test için yardımcı fonksiyonlar
-	async function checkGasRequirement() {
-		const balance = await provider.getBalance(userAddress);
-		if (balance <= 0n) {
-			alert('Insufficient BNB balance');
-			return false;
-		}
-		return true;
-	}
-
-	async function debugListing(listingId) {
-		const listing = await getMarketplaceContract().listings(listingId);
-		console.log('Listing debug:', listing);
-	}
-
-	async function testPurchaseCall(listingId, priceInWei) {
-		try {
-			await getMarketplaceContract().buyWithBNB.staticCall(listingId, { value: priceInWei });
-			return true;
-		} catch (err) {
-			console.error('Static call (test purchase) failed:', err);
-			return false;
-		}
-	}
-
-	// EMERGENCY DEBUG TOOLS
+	// Contract verification and debug (only run once)
 	useEffect(() => {
-		const emergencyDebug = async () => {
-			console.log('=== EMERGENCY DEBUG ===');
-			// 1. Real network
-			const network = await provider.getNetwork();
-			console.log('Network chainId:', network.chainId);
-			// 2. Contract verification
-			const code = await provider.getCode(MARKETPLACE_CONTRACT_ADDRESS);
-			console.log('Marketplace contract code exists:', code !== '0x');
-			// 3. Function selector check
-			const iface = new ethers.Interface(MARKETPLACE_CONTRACT_ABI);
-			const selector = iface.getFunction('buyWithBNB').selector;
-			console.log('buyWithBNB selector:', selector);
-			// 4. Test with correct provider
-			const network2 = await provider.getNetwork();
-			console.log('Provider network (again):', network2.chainId);
-			console.log('=== DEBUG COMPLETE ===');
+		const verifyContracts = async () => {
+			if (!provider) return;
+			
+			try {
+				console.log('=== CONTRACT VERIFICATION ===');
+				
+				// 1. Network check
+				const network = await provider.getNetwork();
+				console.log('Connected to network:', network.chainId);
+				
+				// 2. NFT Contract verification
+				const nftCode = await provider.getCode(NFT_CONTRACT_ADDRESS);
+				console.log('NFT contract exists:', nftCode !== '0x');
+				
+				// 3. Marketplace Contract verification
+				const marketplaceCode = await provider.getCode(MARKETPLACE_CONTRACT_ADDRESS);
+				console.log('Marketplace contract exists:', marketplaceCode !== '0x');
+				
+				// 4. Test marketplace connection
+				if (marketplaceCode !== '0x') {
+					const marketplace = getMarketplaceContract();
+					try {
+						// Check marketplace basic info
+						const feePercentage = await marketplace.feePercentage();
+						const feeRecipient = await marketplace.feeRecipient();
+						const coffyMemoriesContract = await marketplace.coffyMemoriesContract();
+						
+						console.log('Marketplace info:', {
+							feePercentage: feePercentage.toString(),
+							feeRecipient,
+							coffyMemoriesContract,
+							expectedNFTContract: NFT_CONTRACT_ADDRESS
+						});
+						
+						// Check if marketplace is connected to the correct NFT contract
+						if (coffyMemoriesContract.toLowerCase() !== NFT_CONTRACT_ADDRESS.toLowerCase()) {
+							console.error('❌ MARKETPLACE ERROR: Connected to wrong NFT contract!');
+							console.error('Expected:', NFT_CONTRACT_ADDRESS);
+							console.error('Found:', coffyMemoriesContract);
+						} else {
+							console.log('✅ Marketplace correctly connected to NFT contract');
+						}
+						
+						// Try to get active listings
+						try {
+							const activeListings = await marketplace.getActiveListings();
+							console.log('Active listings count:', activeListings.length);
+						} catch (listingsErr) {
+							console.error('Failed to get active listings:', listingsErr);
+						}
+						
+					} catch (err) {
+						console.error('Failed to get marketplace info:', err);
+					}
+				}
+				
+				console.log('=== VERIFICATION COMPLETE ===');
+			} catch (error) {
+				console.error('Contract verification failed:', error);
+			}
 		};
-		if (provider) emergencyDebug();
+		
+		verifyContracts();
 	}, [provider]);
 
 	return (
@@ -1699,13 +3157,13 @@ export default function NFTMarketplace() {
 											nft.tierName?.toLowerCase().includes('silver') ? 'from-gray-300/30' : 
 											'from-amber-700/30'
 										} to-transparent rounded-lg opacity-70`}></div>
-										<img
-											src={ipfsToHttp(nft.image) || '/images/nft-placeholder.png'}
-											alt={nft.name}
-											className="w-full h-24 object-cover rounded-lg border border-[#D4A017]/20 bg-[#1A0F0A]"
-											loading="lazy"
-											style={{ background: '#222', minHeight: 96 }}
-										/>
+																		<img
+									src={nft.image || '/images/coffy-logo.png'}
+									alt={nft.name}
+									className="w-full h-24 object-cover rounded-lg border border-[#D4A017]/20 bg-[#1A0F0A]"
+									loading="lazy"
+									style={{ background: '#222', minHeight: 96 }}
+								/>
 									</div>
 									<div className="text-sm font-bold text-[#D4A017] truncate w-full text-center mb-1">{nft.name}</div>
 									<div className={`text-xs font-medium px-2 py-1 rounded-full mb-2 ${
@@ -1774,7 +3232,7 @@ export default function NFTMarketplace() {
 										'from-amber-700/30'
 									} to-transparent rounded-lg opacity-70`}></div>
 									<img
-										src={ipfsToHttp(nft.image) || '/images/nft-placeholder.png'}
+										src={nft.image || '/images/coffy-logo.png'}
 										alt={nft.name}
 										className="w-full h-24 object-cover rounded-lg border border-[#D4A017]/20 bg-[#1A0F0A]"
 										loading="lazy"
@@ -1824,13 +3282,13 @@ export default function NFTMarketplace() {
 									previewNFT.tierName?.toLowerCase().includes('silver') ? 'from-gray-300 to-gray-500' : 
 									'from-amber-700 to-amber-900'
 								} rounded-xl blur opacity-30`}></div>
-								<img
-									src={ipfsToHttp(previewNFT.image) || '/images/nft-placeholder.png'}
-									alt={previewNFT.name}
-									className="w-full h-32 sm:h-36 md:h-40 object-cover rounded-lg border border-[#D4A017]/30 mx-auto bg-[#1A0F0A] relative"
-									loading="lazy"
-									style={{ background: '#222', minHeight: 80 }}
-								/>
+															<img
+								src={previewNFT.image || '/images/coffy-logo.png'}
+								alt={previewNFT.name}
+								className="w-full h-32 sm:h-36 md:h-40 object-cover rounded-lg border border-[#D4A017]/30 mx-auto bg-[#1A0F0A] relative"
+								loading="lazy"
+								style={{ background: '#222', minHeight: 80 }}
+							/>
 							</div>
 							<div className="text-lg font-bold text-[#D4A017] mb-2 text-center break-words">{previewNFT.name}</div>
 							<div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
@@ -1980,4 +3438,4 @@ export default function NFTMarketplace() {
 			)}
 		</section>
 	);
-} 
+}

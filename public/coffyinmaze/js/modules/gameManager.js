@@ -2410,8 +2410,8 @@ class GameManager {
             }
             
             try {
-                // Check if tokens exceed the 9999 limit
-                const MAX_CLAIM_LIMIT = 9999;
+                // Apply daily maximum limit of 5000 tokens (YENİ LİMİT - consistency with other games)
+                const MAX_CLAIM_LIMIT = 5000;
                 const claimAmount = this.coffyTokens > MAX_CLAIM_LIMIT ? MAX_CLAIM_LIMIT : this.coffyTokens;
                 
                 // Display claiming status to user
