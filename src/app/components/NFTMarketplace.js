@@ -774,33 +774,53 @@ export default function NFTMarketplace() {
 
 	// Karakter satın alma fonksiyonu (tokenContract üzerinden)
 	const handleBuy = async (char) => {
-		console.log('userAddress:', userAddress);
-		console.log('tokenContract:', tokenContract);
-		console.log('char.id:', char.id);
-		if (!userAddress) {
-			alert('Please connect your wallet first.');
+		console.log('🛒 Buy button clicked for character:', char.name, char.id);
+		
+		if (!window.ethereum) {
+			console.log('❌ Metamask not found');
+			alert('Metamask gerekli!');
 			return;
 		}
-		if (!tokenContract) {
-			alert('Smart contract not loaded. Please refresh the page.');
-			return;
-		}
+		console.log('✅ Metamask found');
+		
 		setBuyingId(char.id);
+		console.log('🔄 Setting buying state for character:', char.id);
+		
 		try {
-			// Doğru fonksiyon ve parametreler
-			const tx = await tokenContract.purchaseCharacter(char.id, 1);
-			alert('Purchase transaction sent. Waiting for confirmation...');
+			console.log('🔗 Creating provider...');
+			const provider = new ethers.BrowserProvider(window.ethereum);
+			
+			console.log('✍️ Getting signer...');
+			const signer = await provider.getSigner();
+			console.log('✅ Signer obtained:', await signer.getAddress());
+			
+			console.log('📄 Creating contract...');
+			const contract = new ethers.Contract(
+				'0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78',
+				["function purchaseCharacter(uint256,uint256) payable"],
+				signer
+			);
+			console.log('✅ Contract created');
+			
+			console.log('💰 Calling purchaseCharacter with params:', char.id, 1);
+			const tx = await contract.purchaseCharacter(char.id, 1);
+			console.log('📝 Transaction sent:', tx.hash);
+			
+			console.log('⏳ Waiting for confirmation...');
 			await tx.wait();
-			alert(`${char.name} purchased successfully!`);
-			setModalChar(char);
+			console.log('✅ Transaction confirmed!');
+			alert('Satın alma başarılı!');
 		} catch (err) {
-			alert('Purchase failed');
-			if (err?.reason || err?.message) {
-				alert(err.reason || err.message);
-			}
-		} finally {
-			setBuyingId(null);
+			console.error('❌ Purchase error:', err);
+			console.error('Error details:', {
+				reason: err.reason,
+				message: err.message,
+				code: err.code,
+				data: err.data
+			});
+			alert('Satın alma başarısız: ' + (err.reason || err.message));
 		}
+		setBuyingId(null);
 	};
 
 	return (
@@ -834,6 +854,13 @@ function KeenSliderCarousel({ characterNFTs, handleBuy, userAddress, buyingId, w
 			'max-width: 640px': { slides: { perView: 1.1, spacing: 12 } },
 			'min-width: 1024px': { slides: { perView: 3.2, spacing: 32 } },
 		},
+	});
+	
+	console.log('🎠 KeenSliderCarousel rendered with:', {
+		handleBuy: typeof handleBuy,
+		userAddress,
+		buyingId,
+		charactersCount: characterNFTs.length
 	});
 	return (
 		<div ref={sliderRef} className="keen-slider py-8">
@@ -891,7 +918,18 @@ function KeenSliderCarousel({ characterNFTs, handleBuy, userAddress, buyingId, w
 										? 'bg-gradient-to-r from-[#A77B06] to-[#7A5E05] text-white cursor-wait'
 										: 'bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white hover:shadow-xl hover:scale-105'
 									}`}
-									onClick={() => !isOwned && !isProcessing && handleBuy(char)}
+									onClick={() => {
+										console.log('🔘 Button clicked!', {
+											isOwned,
+											isProcessing,
+											userAddress,
+											charId: char.id,
+											handleBuyType: typeof handleBuy
+										});
+										if (!isOwned && !isProcessing) {
+											handleBuy(char);
+										}
+									}}
 									disabled={!userAddress || isProcessing || isOwned}
 									whileHover={!isOwned && !isProcessing ? { scale: 1.05 } : {}}
 									whileTap={!isOwned && !isProcessing ? { scale: 0.95 } : {}}
