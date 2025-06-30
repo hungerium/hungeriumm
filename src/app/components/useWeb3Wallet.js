@@ -1,2074 +1,457 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { ethers } from 'ethers';
-
-console.log('Ethers library loaded:', typeof ethers !== 'undefined');
-
-const TOKEN_ADDRESS = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b'; // V2 Contract Address
-const OLD_TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f'; // V1 Contract Address (for migration)
-const BSC_CHAIN_ID = '0x38'; // Binance Smart Chain Mainnet
-const BSC_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://bsc-dataseed.binance.org/';
-
-// Yeni kontratın tam ABI'sı
-const TOKEN_ABI = [
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "_treasury",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_liquidityPool",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_marketing",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "_team",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-    },
-    {
-        "inputs": [],
-        "name": "AccessControlBadConfirmation",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            },
-            {
-                "internalType": "bytes32",
-                "name": "neededRole",
-                "type": "bytes32"
-            }
-        ],
-        "name": "AccessControlUnauthorizedAccount",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "AlreadyVoted",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "CharacterNotFound",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "DailyRewardLimitExceeded",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "allowance",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "needed",
-                "type": "uint256"
-            }
-        ],
-        "name": "ERC20InsufficientAllowance",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "balance",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "needed",
-                "type": "uint256"
-            }
-        ],
-        "name": "ERC20InsufficientBalance",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "approver",
-                "type": "address"
-            }
-        ],
-        "name": "ERC20InvalidApprover",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "receiver",
-                "type": "address"
-            }
-        ],
-        "name": "ERC20InvalidReceiver",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            }
-        ],
-        "name": "ERC20InvalidSender",
-        "type": "error"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            }
-        ],
-        "name": "ERC20InvalidSpender",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InsufficientBalance",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InvalidAddress",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NotDAOMember",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NotInflationTime",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NothingStaked",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "ProposalNotFound",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "StakingPeriodNotMet",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "ZeroAmount",
-        "type": "error"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "Approval",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "buyer",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "characterId",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-            }
-        ],
-        "name": "CharacterBought",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "GameRewardsClaimed",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "timestamp",
-                "type": "uint256"
-            }
-        ],
-        "name": "InflationMinted",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "Paused",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            },
-            {
-                "indexed": false,
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "creator",
-                "type": "address"
-            }
-        ],
-        "name": "ProposalCreated",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "previousAdminRole",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "newAdminRole",
-                "type": "bytes32"
-            }
-        ],
-        "name": "RoleAdminChanged",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            }
-        ],
-        "name": "RoleGranted",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "sender",
-                "type": "address"
-            }
-        ],
-        "name": "RoleRevoked",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "Staked",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "StakingRewardClaimed",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "burner",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "TokensBurned",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "from",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "Transfer",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "Unpaused",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "Unstaked",
-        "type": "event"
-    },
-    {
-        "anonymous": false,
-        "inputs": [
-            {
-                "indexed": true,
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
-                "name": "voter",
-                "type": "address"
-            }
-        ],
-        "name": "VoteCast",
-        "type": "event"
-    },
-    {
-        "inputs": [],
-        "name": "ANNUAL_INFLATION_RATE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "ANNUAL_STAKING_RATE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "BLOCKS_PER_DAY",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "DEFAULT_ADMIN_ROLE",
-        "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "ESPRESSO_MAGE_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "LATTE_WARRIOR_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "LEGENDARY_DRAGON_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "LIQUIDITY_AMOUNT",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MARKETING_AMOUNT",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MAX_DAILY_REWARD",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MINIMUM_STAKE_TIME",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "MIN_TREASURY_RESERVE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "PALADIN_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "ROGUE_PRICE",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "SECONDS_IN_YEAR",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "TEAM_AMOUNT",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "TREASURY_AMOUNT",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "from",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "adminBurn",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "owner",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            }
-        ],
-        "name": "allowance",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "approve",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "balanceOf",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "characterId",
-                "type": "uint256"
-            }
-        ],
-        "name": "buyCharacter",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "calculatePendingReward",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "canTriggerInflation",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "name": "characters",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "name",
-                "type": "string"
-            },
-            {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "claimGameRewards",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "claimStakingReward",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-            }
-        ],
-        "name": "createProposal",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "dailyClaims",
-        "outputs": [
-            {
-                "internalType": "uint48",
-                "name": "lastClaimTime",
-                "type": "uint48"
-            },
-            {
-                "internalType": "uint208",
-                "name": "claimedToday",
-                "type": "uint208"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "decimals",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "characterId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getCharacter",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "name",
-                "type": "string"
-            },
-            {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "getDailyRewardLimit",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getInflationRate",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getMinimumStakeTime",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getProposalCount",
-        "outputs": [
-            {
-                "internalType": "uint32",
-                "name": "",
-                "type": "uint32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            }
-        ],
-        "name": "getProposalInfo",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-            },
-            {
-                "internalType": "uint32",
-                "name": "voteCount",
-                "type": "uint32"
-            },
-            {
-                "internalType": "bool",
-                "name": "executed",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            }
-        ],
-        "name": "getProposalVotes",
-        "outputs": [
-            {
-                "internalType": "uint32",
-                "name": "",
-                "type": "uint32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getRoleAdmin",
-        "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "getStakeInfo",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "stakedAmount",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "pendingReward",
-                "type": "uint256"
-            },
-            {
-                "internalType": "uint256",
-                "name": "stakingDuration",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getStakingAPY",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "pure",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "getTotalStaked",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "grantRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "hasBoughtLegendaryDragon",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "hasRole",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            },
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "hasVoted",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "isDAOMember",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "lastInflationTime",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "name",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "pause",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "paused",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "proposalCount",
-        "outputs": [
-            {
-                "internalType": "uint32",
-                "name": "",
-                "type": "uint32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint32",
-                "name": "",
-                "type": "uint32"
-            }
-        ],
-        "name": "proposals",
-        "outputs": [
-            {
-                "internalType": "uint32",
-                "name": "id",
-                "type": "uint32"
-            },
-            {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-            },
-            {
-                "internalType": "uint32",
-                "name": "voteCount",
-                "type": "uint32"
-            },
-            {
-                "internalType": "bool",
-                "name": "executed",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "callerConfirmation",
-                "type": "address"
-            }
-        ],
-        "name": "renounceRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "role",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "account",
-                "type": "address"
-            }
-        ],
-        "name": "revokeRole",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "stake",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "name": "stakes",
-        "outputs": [
-            {
-                "internalType": "uint208",
-                "name": "amount",
-                "type": "uint208"
-            },
-            {
-                "internalType": "uint48",
-                "name": "startTime",
-                "type": "uint48"
-            },
-            {
-                "internalType": "uint48",
-                "name": "lastRewardClaim",
-                "type": "uint48"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes4",
-                "name": "interfaceId",
-                "type": "bytes4"
-            }
-        ],
-        "name": "supportsInterface",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "symbol",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "totalStaked",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "totalSupply",
-        "outputs": [
-            {
-                "internalType": "uint256",
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "transfer",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "from",
-                "type": "address"
-            },
-            {
-                "internalType": "address",
-                "name": "to",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "transferFrom",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "treasury",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "triggerInflation",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "unpause",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "unstake",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint32",
-                "name": "proposalId",
-                "type": "uint32"
-            }
-        ],
-        "name": "vote",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "user",
-                "type": "address"
-            }
-        ],
-        "name": "canUserMigrate",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "canMigrate",
-                "type": "bool"
-            },
-            {
-                "internalType": "uint256",
-                "name": "oldBalance",
-                "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "migrateTokens",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }
-];
+import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
+import useAppStore from '../stores/useAppStore';
 
 export default function useWeb3Wallet() {
   const [userAddress, setUserAddress] = useState(null);
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
-  const [tokenContract, setTokenContract] = useState(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [connectionError, setConnectionError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [isMigrating, setIsMigrating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [tokenContract, setTokenContract] = useState(null);
+  const [balance, setBalance] = useState('0');
+  const [network, setNetwork] = useState(null);
 
-  const handleAccountsChanged = useCallback((accounts) => {
-    console.log('Accounts changed:', accounts);
-    if (accounts.length === 0) {
-      setUserAddress(null);
-      setProvider(null);
-      setSigner(null);
-      setTokenContract(null);
-      setConnectionError('Wallet disconnected.');
-    } else {
-      setUserAddress(accounts[0]);
+  // Zustand store integration
+  const { updateWalletConnection, addNotification, updatePortfolio } = useAppStore();
+
+  // Token configuration
+  const TOKEN_CONFIG = {
+    address: '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78',
+    decimals: 18,
+    symbol: 'COFFY',
+    name: 'Coffy'
+  };
+
+  // Use the new ABI provided by the user
+  const TOKEN_ABI = [
+    {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+    {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},
+    {"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bytes32","name":"neededRole","type":"bytes32"}],"name":"AccessControlUnauthorizedAccount","type":"error"},
+    {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},
+    {"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},
+    {"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},
+    {"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},
+    {"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},
+    {"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":true,"internalType":"uint256","name":"characterId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"CharacterPurchased","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"bool","name":"enabled","type":"bool"}],"name":"CrossChainEnabled","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"module","type":"address"}],"name":"CrossChainModuleSet","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"penalty","type":"uint256"}],"name":"EarlyUnstakePenalty","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"GameRewardsClaimed","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"module","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"totalBurnedThisYear","type":"uint256"}],"name":"GlobalModuleBurn","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"module","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"totalMintedThisYear","type":"uint256"}],"name":"GlobalModuleMint","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"time","type":"uint256"}],"name":"InflationMinted","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"module","type":"address"},{"indexed":false,"internalType":"uint256","name":"executeTime","type":"uint256"}],"name":"ModuleDeauthorizationScheduled","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"moduleType","type":"string"}],"name":"ModuleEnabled","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"moduleType","type":"string"},{"indexed":false,"internalType":"address","name":"module","type":"address"}],"name":"ModuleSet","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"string","name":"rewardType","type":"string"}],"name":"PendingRewardAdded","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"totalAmount","type":"uint256"}],"name":"PendingRewardsClaimed","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Staked","type":"event"},
+    {"anonymous":false,"inputs":[],"name":"TradingEnabled","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Unstaked","type":"event"},
+    {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"wallet","type":"address"},{"indexed":false,"internalType":"string","name":"profileId","type":"string"}],"name":"UserProfileLinked","type":"event"},
+    {"inputs":[],"name":"ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"ANNUAL_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"COMMUNITY_ALLOCATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"DAO_MEMBERSHIP_THRESHOLD","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"DEX_TAX","outputs":[{"internalType":"uint16","name":"","type":"uint16"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"EARLY_UNSTAKE_PENALTY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"FIXED_CHARACTERS_COUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"LEGENDARY_CHARACTER_ID","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"LIQUIDITY_ALLOCATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MARKETING_ALLOCATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MAX_DAILY_CLAIM","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MIN_ACTIVITY_DURATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MIN_BALANCE_FOR_ACCUMULATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MIN_CLAIM_BALANCE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MIN_STAKE_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MIN_WALLET_AGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MODULE_ANNUAL_LIMIT_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"MODULE_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"PENDING_REWARD_EXPIRY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"SEMIANNUAL_INFLATION_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"TEAM_ALLOCATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"TIMELOCK_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"TIMELOCK_DELAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"TOTAL_SUPPLY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"TREASURY_ALLOCATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"authorizedModules","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnForCrossChain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"burnFromModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"characterNames","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"characters","outputs":[{"internalType":"uint128","name":"price","type":"uint128"},{"internalType":"uint128","name":"totalSupply","type":"uint128"},{"internalType":"uint128","name":"maxSupply","type":"uint128"},{"internalType":"uint16","name":"multiplier","type":"uint16"},{"internalType":"uint16","name":"claimMultiplier","type":"uint16"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"string","name":"metadataURI","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"baseAmount","type":"uint256"}],"name":"claimGameRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"claimPendingRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"claimedToday","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"community","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"crossChainEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"crossChainModule","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"currentChainId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"dailyRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"daoEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"daoModule","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"emergencyUnstake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"enableCrossChain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"enableDAO","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"enableNFT","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"enableSocial","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"enableTrading","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"module","type":"address"}],"name":"executeModuleDeauthorization","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"gameStats","outputs":[{"internalType":"uint256","name":"totalGamesPlayed","type":"uint256"},{"internalType":"uint256","name":"totalRewardsClaimed","type":"uint256"},{"internalType":"uint256","name":"lastGameTimestamp","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getActivityStatus","outputs":[{"internalType":"uint256","name":"gameStartTime","type":"uint256"},{"internalType":"uint256","name":"stepStartTime","type":"uint256"},{"internalType":"bool","name":"canClaimGame","type":"bool"},{"internalType":"bool","name":"canClaimStep","type":"bool"},{"internalType":"uint256","name":"remainingGameTime","type":"uint256"},{"internalType":"uint256","name":"remainingStepTime","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"_characterId","type":"uint256"}],"name":"getCharacter","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"uint256","name":"price","type":"uint256"},{"internalType":"uint256","name":"totalSupply","type":"uint256"},{"internalType":"uint256","name":"maxSupply","type":"uint256"},{"internalType":"uint256","name":"multiplier","type":"uint256"},{"internalType":"uint256","name":"claimMultiplier","type":"uint256"},{"internalType":"bool","name":"isActive","type":"bool"},{"internalType":"string","name":"metadataURI","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getCharacterMultiplier","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getGameStats","outputs":[{"internalType":"uint256","name":"totalGamesPlayed","type":"uint256"},{"internalType":"uint256","name":"totalRewardsClaimed","type":"uint256"},{"internalType":"uint256","name":"lastGameTimestamp","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"getGlobalModuleLimits","outputs":[{"internalType":"uint256","name":"maxAnnualMint","type":"uint256"},{"internalType":"uint256","name":"maxAnnualBurn","type":"uint256"},{"internalType":"uint256","name":"mintedThisYear","type":"uint256"},{"internalType":"uint256","name":"burnedThisYear","type":"uint256"},{"internalType":"uint256","name":"remainingMint","type":"uint256"},{"internalType":"uint256","name":"remainingBurn","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"getInflationInfo","outputs":[{"internalType":"uint256","name":"lastTime","type":"uint256"},{"internalType":"uint256","name":"nextTime","type":"uint256"},{"internalType":"bool","name":"canTrigger","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"getModuleStates","outputs":[{"internalType":"address","name":"dao","type":"address"},{"internalType":"bool","name":"daoActive","type":"bool"},{"internalType":"address","name":"nft","type":"address"},{"internalType":"bool","name":"nftActive","type":"bool"},{"internalType":"address","name":"social","type":"address"},{"internalType":"bool","name":"socialActive","type":"bool"},{"internalType":"address","name":"crossChain","type":"address"},{"internalType":"bool","name":"crossChainActive","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPendingRewardsStatus","outputs":[{"internalType":"uint256","name":"totalPending","type":"uint256"},{"internalType":"uint256","name":"gameRewards","type":"uint256"},{"internalType":"uint256","name":"stepRewards","type":"uint256"},{"internalType":"uint256","name":"snapRewards","type":"uint256"},{"internalType":"bool","name":"canClaim","type":"bool"},{"internalType":"bool","name":"hasExpired","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_user","type":"address"}],"name":"getRemainingDailyLimit","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getStakeInfo","outputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"uint256","name":"startTime","type":"uint256"},{"internalType":"uint256","name":"pendingReward","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"getStakingAPY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUnstakePenalty","outputs":[{"internalType":"uint256","name":"penalty","type":"uint256"},{"internalType":"bool","name":"hasPenalty","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_user","type":"address"},{"internalType":"uint256","name":"_characterId","type":"uint256"}],"name":"getUserCharacterBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserCharacterMultiplier","outputs":[{"internalType":"uint256","name":"multiplier","type":"uint256"},{"internalType":"string","name":"eligibleCharacter","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"wallet","type":"address"}],"name":"getUserProfile","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"string","name":"profileId","type":"string"}],"name":"getWalletByProfile","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"globalModuleBurnedThisYear","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"globalModuleMintedThisYear","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isConstWallet","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isDAOMember","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isDEXPair","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastClaimDay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastGameStart","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"lastInflationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastPendingUpdate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastRewardDay","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"lastStepStart","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"string","name":"profileId","type":"string"}],"name":"linkUserProfile","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"liquidity","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"marketing","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"_characterId","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"migrateToNFT","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"mintForModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"mintFromCrossChain","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"mobileAppBackend","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"moduleDeauthScheduled","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"moduleTrackingYear","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"nextCharacterId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"nftEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"nftModule","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"pendingGameRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"pendingSnapRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"pendingStepRewards","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"processSocialReward","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"profileToWallet","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"_characterId","type":"uint256"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"purchaseCharacter","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"callerConfirmation","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"module","type":"address"}],"name":"scheduleModuleDeauthorization","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"operation","type":"bytes32"}],"name":"scheduleOperation","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_module","type":"address"}],"name":"setCrossChainModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_module","type":"address"}],"name":"setDAOModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_backend","type":"address"}],"name":"setMobileBackend","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_module","type":"address"}],"name":"setNFTModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"_module","type":"address"}],"name":"setSocialModule","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"socialEnabled","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"socialModule","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"stakes","outputs":[{"internalType":"uint128","name":"amount","type":"uint128"},{"internalType":"uint64","name":"startTime","type":"uint64"},{"internalType":"uint64","name":"lastClaim","type":"uint64"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"startGame","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"startGameSession","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"startStep","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"team","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"timelockOperations","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalStaked","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+    {"inputs":[],"name":"triggerInflation","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"unstake","outputs":[],"stateMutability":"nonpayable","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"userCharacters","outputs":[{"internalType":"uint128","name":"","type":"uint128"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"userProfiles","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+    {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"walletCreatedAt","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+  ];
+
+  // Format balance
+  const formatBalance = (value) => {
+    const num = parseFloat(value);
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(2) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(2) + 'K';
     }
-  }, []);
+    return num.toFixed(2);
+  };
 
-  const handleChainChanged = useCallback((chainId) => {
-    console.log('Chain changed to:', chainId);
-    if (chainId !== BSC_CHAIN_ID) {
-      setConnectionError('Please switch to Binance Smart Chain.');
-    } else {
-      setConnectionError(null);
-      window.location.reload();
-    }
-  }, []);
-
-  const handleDisconnect = useCallback(() => {
-    console.log('Wallet disconnected');
-    setUserAddress(null);
-    setProvider(null);
-    setSigner(null);
-    setTokenContract(null);
-    setIsConnected(false);
-    setConnectionError('Wallet disconnected.');
-  }, []);
-
-  const setupWalletListeners = useCallback(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('disconnect', handleDisconnect);
-      return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
-      };
-    }
-  }, [handleAccountsChanged, handleChainChanged, handleDisconnect]);
-
+  // Check connection on load
   useEffect(() => {
-    const cleanupListeners = setupWalletListeners();
-    return () => cleanupListeners && cleanupListeners();
-  }, [setupWalletListeners]);
-
-  useEffect(() => {
-    const checkExistingConnection = async () => {
-      if (typeof window !== 'undefined') {
+    const checkConnection = async () => {
+      if (typeof window !== 'undefined' && window.ethereum) {
         try {
-          let newProvider;
-          let accounts = [];
-
-          // Cüzdan önceliklendirme
-          if (window.ethereum && window.ethereum.isMetaMask) {
-            console.log('MetaMask detected on initial load');
-            newProvider = new ethers.BrowserProvider(window.ethereum);
-            accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          } else if (window.ethereum && window.ethereum.isTrust) {
-            console.log('Trust Wallet detected on initial load');
-            newProvider = new ethers.BrowserProvider(window.ethereum);
-            accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          } else if (window.BinanceChain) {
-            console.log('Binance Wallet detected on initial load');
-            newProvider = new ethers.BrowserProvider(window.BinanceChain);
-            accounts = await window.BinanceChain.request({ method: 'eth_accounts' });
-          } else if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-            console.log('Coinbase Wallet detected on initial load');
-            newProvider = new ethers.BrowserProvider(window.ethereum);
-            accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          } else if (window.ethereum) {
-            console.log('Unknown Web3 wallet detected on initial load');
-            newProvider = new ethers.BrowserProvider(window.ethereum);
-            accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          } else {
-            // Fallback provider (salt okunur)
-            newProvider = new ethers.JsonRpcProvider(BSC_RPC_URL);
-            const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, newProvider);
-            setProvider(newProvider);
-            setTokenContract(contract);
-            console.log('Fallback provider used with RPC:', BSC_RPC_URL);
-            return;
-          }
-
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           if (accounts.length > 0) {
-            const newSigner = await newProvider.getSigner();
-            const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, newSigner);
-            setProvider(newProvider);
-            setSigner(newSigner);
-            setUserAddress(accounts[0]);
-            setTokenContract(contract);
-            const network = await newProvider.getNetwork();
-            console.log('Connected network chainId:', network.chainId.toString(16));
-            if (network.chainId !== parseInt(BSC_CHAIN_ID, 16)) {
-              setConnectionError('Please switch to Binance Smart Chain.');
-            }
+            await connectWallet();
           }
         } catch (error) {
-          console.error('Error checking existing connection:', error);
+          console.log('Connection check failed:', error);
         }
       }
     };
-    checkExistingConnection();
+
+    checkConnection();
   }, []);
 
-  const connectWallet = async () => {
-    if (isConnecting) {
-      console.log('Connection already in progress');
-      return;
-    }
-
-    setIsConnecting(true);
-    setConnectionError(null);
-
+  // Get network info
+  const getNetwork = async () => {
+    if (!window.ethereum) return null;
+    
     try {
-      if (typeof window === 'undefined') {
-        throw new Error('No Web3 wallet found. Please install a wallet.');
-      }
-
-      let ethereumProvider;
-
-      // Cüzdan önceliklendirme
-      if (window.ethereum && window.ethereum.isMetaMask) {
-        console.log('MetaMask detected');
-        ethereumProvider = window.ethereum;
-      } else if (window.ethereum && window.ethereum.isTrust) {
-        console.log('Trust Wallet detected');
-        ethereumProvider = window.ethereum;
-      } else if (window.BinanceChain) {
-        console.log('Binance Wallet detected');
-        ethereumProvider = window.BinanceChain;
-      } else if (window.ethereum && window.ethereum.isCoinbaseWallet) {
-        console.log('Coinbase Wallet detected');
-        ethereumProvider = window.ethereum;
-      } else if (window.ethereum) {
-        console.log('Unknown Web3 wallet detected');
-        ethereumProvider = window.ethereum;
-      } else {
-        throw new Error('No compatible Web3 wallet found. Please install MetaMask, Trust Wallet, or Binance Wallet.');
-      }
-
-      const newProvider = new ethers.BrowserProvider(ethereumProvider);
-      await ethereumProvider.request({ method: 'eth_requestAccounts' });
-      const newSigner = await newProvider.getSigner();
-      const address = await newSigner.getAddress();
-
-      const network = await newProvider.getNetwork();
-      if (network.chainId !== parseInt(BSC_CHAIN_ID, 16)) {
-        try {
-          await ethereumProvider.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: BSC_CHAIN_ID }],
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            await ethereumProvider.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: BSC_CHAIN_ID,
-                chainName: 'Binance Smart Chain',
-                nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 },
-                rpcUrls: [BSC_RPC_URL],
-                blockExplorerUrls: ['https://bscscan.com/']
-              }],
-            });
-          } else {
-            throw switchError;
-          }
-        }
-      }
-
-      const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, newSigner);
-      setProvider(newProvider);
-      setSigner(newSigner);
-      setUserAddress(address);
-      setTokenContract(contract);
-      setIsConnected(true);
-      console.log('Wallet connected successfully:', address);
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const networks = {
+        '0x38': { name: 'BSC Mainnet', chainId: 56 },
+        '0x61': { name: 'BSC Testnet', chainId: 97 },
+        '0x1': { name: 'Ethereum', chainId: 1 }
+      };
+      return networks[chainId] || { name: 'Unknown', chainId: parseInt(chainId, 16) };
     } catch (error) {
-      console.error('Wallet connection error:', error);
-      setConnectionError(error.message || 'Wallet connection failed');
-    } finally {
-      setIsConnecting(false);
+      console.log('Network detection failed:', error);
+      return null;
     }
   };
 
-  const disconnectWallet = useCallback(() => {
-    setUserAddress(null);
-    setProvider(null);
-    setSigner(null);
-    setTokenContract(null);
-    setIsConnected(false);
-    console.log('Wallet disconnected');
-  }, []);
-
-  const getTokenBalance = useCallback(async () => {
-    if (!tokenContract || !userAddress) return null;
+  // Get token balance
+  const getTokenBalance = async (address) => {
+    if (!window.ethereum || !address) return '0';
+    
     try {
-      const balance = await tokenContract.balanceOf(userAddress);
-      const decimals = await tokenContract.decimals();
-      return ethers.formatUnits(balance, decimals);
+      const { ethers } = await import('ethers');
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      
+      const tokenABI = [
+        "function balanceOf(address) view returns (uint256)",
+        "function symbol() view returns (string)",
+        "function decimals() view returns (uint8)",
+        "event Transfer(address indexed from, address indexed to, uint256 value)"
+      ];
+      
+      const contract = new ethers.Contract(TOKEN_CONFIG.address, tokenABI, provider);
+      const balance = await contract.balanceOf(address);
+      return ethers.formatEther(balance);
     } catch (error) {
-      console.error('Error fetching token balance:', error);
-      return null;
+      console.log('Balance check failed:', error);
+      return '0';
     }
-  }, [tokenContract, userAddress]);
+  };
 
-  const sendTokens = useCallback(async (recipientAddress, amount) => {
-    if (!tokenContract || !signer) throw new Error('Wallet not connected');
+  // Connect wallet function
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      const errorMessage = 'MetaMask not detected. Please install MetaMask.';
+      addNotification({
+        type: 'error',
+        title: 'Wallet Not Found',
+        message: errorMessage
+      });
+      toast.error(errorMessage);
+      return false;
+    }
+
+    setIsLoading(true);
+    
     try {
-      const decimals = await tokenContract.decimals();
-      const amountInWei = ethers.parseUnits(amount.toString(), decimals);
-      const tx = await tokenContract.transfer(recipientAddress, amountInWei);
-      console.log('Transaction sent:', tx.hash);
-      const receipt = await tx.wait();
-      console.log('Transaction confirmed:', receipt);
-      return receipt;
-    } catch (error) {
-      console.error('Error sending tokens:', error);
-      throw error;
-    }
-  }, [tokenContract, signer]);
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length > 0) {
+        const address = accounts[0];
+        setUserAddress(address);
+        setIsConnected(true);
+        
+        // Get network info
+        const networkInfo = await getNetwork();
+        setNetwork(networkInfo);
+        
+        // Get token balance
+        const tokenBalance = await getTokenBalance(address);
+        setBalance(tokenBalance);
+        
+        // Setup contract
+        const { ethers } = await import('ethers');
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
 
-  const stake = useCallback(async (amount) => {
-    if (!signer || !tokenContract) {
-      throw new Error('Wallet not connected');
-    }
+        // Use the full ABI provided by the user for all staking and balance functions
+        const contract = new ethers.Contract(TOKEN_CONFIG.address, TOKEN_ABI, signer);
+        setTokenContract(contract);
+        
+        // Update store
+        updateWalletConnection({
+          address: address,
+          isConnected: true,
+          chainId: networkInfo?.chainId
+        });
 
-    try {
-      console.log('Starting stake process...');
-      const decimals = await tokenContract.decimals();
-      const amountInWei = ethers.parseUnits(amount.toString(), decimals);
-      console.log('Amount in Wei:', amountInWei.toString());
+        updatePortfolio({
+          balance: parseFloat(tokenBalance)
+        });
 
-      // Önce approve işlemi
-      const allowance = await tokenContract.allowance(userAddress, TOKEN_ADDRESS);
-      console.log('Current allowance:', allowance.toString());
-      if (allowance.lt(amountInWei)) {
-        console.log('Approving tokens for staking...');
-        const approveTx = await tokenContract.approve(TOKEN_ADDRESS, amountInWei);
-        console.log('Approval transaction sent:', approveTx.hash);
-        await approveTx.wait();
-        console.log('Approval transaction confirmed');
+        // Success notification
+        addNotification({
+          type: 'success',
+          title: 'Wallet Connected',
+          message: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`
+        });
+
+        return true;
       }
-
-      // Stake işlemi
-      console.log('Sending stake transaction...');
-      const tx = await tokenContract.stake(amountInWei);
-      console.log('Stake transaction sent:', tx.hash);
-      const receipt = await tx.wait();
-      console.log('Stake transaction confirmed:', receipt);
-      return receipt;
     } catch (error) {
-      console.error('Error in staking process:', error);
-      if (error.code === 4001) {
-        throw new Error('Transaction rejected by user');
-      } else {
-        throw new Error(`Staking failed: ${error.message || 'Unknown error'}`);
-      }
-    }
-  }, [signer, tokenContract, userAddress]);
-
-  const unstake = useCallback(async (amount) => {
-    if (!signer || !tokenContract) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      console.log('Starting unstake process...');
-      const decimals = await tokenContract.decimals();
-      const amountInWei = ethers.parseUnits(amount.toString(), decimals);
-      console.log('Amount in Wei:', amountInWei.toString());
-
-      console.log('Sending unstake transaction...');
-      const tx = await tokenContract.unstake(amountInWei);
-      console.log('Unstake transaction sent:', tx.hash);
-      const receipt = await tx.wait();
-      console.log('Unstake transaction confirmed:', receipt);
-      return receipt;
-    } catch (error) {
-      console.error('Error in unstaking process:', error);
-      if (error.code === 4001) {
-        throw new Error('Transaction rejected by user');
-      } else {
-        throw new Error(`Unstaking failed: ${error.message || 'Unknown error'}`);
-      }
-    }
-  }, [signer, tokenContract]);
-
-  const claimStakingReward = useCallback(async () => {
-    if (!signer || !tokenContract) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      console.log('Starting claim staking reward process...');
-      const tx = await tokenContract.claimStakingReward();
-      console.log('Claim transaction sent:', tx.hash);
-      const receipt = await tx.wait();
-      console.log('Claim transaction confirmed:', receipt);
-      return receipt;
-    } catch (error) {
-      console.error('Error in claiming staking reward:', error);
-      if (error.code === 4001) {
-        throw new Error('Transaction rejected by user');
-      } else {
-        throw new Error(`Claiming failed: ${error.message || 'Unknown error'}`);
-      }
-    }
-  }, [signer, tokenContract]);
-
-  // Migration fonksiyonları - Basit ve etkili
-  const checkMigrationEligibility = useCallback(async () => {
-    // Basit: Migration her zaman mevcut
-    return {
-      canMigrate: true,
-      oldBalance: '0',
-      migrationEnabled: true
-    };
-  }, []);
-
-  const migrateTokens = useCallback(async () => {
-    if (!signer || !userAddress || !tokenContract) {
-      throw new Error('Wallet not connected');
-    }
-
-    try {
-      console.log('Starting migration...');
-      const tx = await tokenContract.migrateTokens();
-      console.log('Migration transaction sent:', tx.hash);
-      const receipt = await tx.wait();
-      console.log('Migration completed:', receipt);
-      return receipt;
-    } catch (error) {
-      console.error('Migration failed:', error);
-      throw new Error(error.message || 'Migration failed');
+      console.log('Connection failed:', error);
+      return false;
     } finally {
-      setIsMigrating(false);
+      setIsLoading(false);
     }
-  }, [signer, userAddress, tokenContract]);
+  };
 
-  // Initial connection check - bu useEffect zaten var, sadece event listener'ları ekleyelim
-  useEffect(() => {
-    // Bu useEffect zaten var, sadece account change listener'ı ekleyelim
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length === 0) {
-          disconnectWallet();
-        } else if (accounts[0] !== userAddress) {
-          // Hesap değişti, yeniden bağlan  
-          window.location.reload();
-        }
-      };
+  // Disconnect wallet function
+  const disconnectWallet = () => {
+    setUserAddress(null);
+    setIsConnected(false);
+    setTokenContract(null);
+    setBalance('0');
+    setNetwork(null);
+    updateWalletConnection({
+      address: null,
+      isConnected: false,
+      chainId: null
+    });
+    updatePortfolio({
+      balance: 0
+    });
+    addNotification({
+      type: 'success',
+      title: 'Wallet Disconnected',
+      message: 'You have been disconnected from your wallet.'
+    });
+  };
 
-      const handleChainChanged = () => {
-        // Ağ değişti, sayfayı yenile
-        window.location.reload();
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        if (window.ethereum.removeListener) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
-        }
-      };
+  // Switch to BSC function
+  const switchToBSC = async () => {
+    if (!window.ethereum) {
+      const errorMessage = 'MetaMask not detected. Please install MetaMask.';
+      addNotification({
+        type: 'error',
+        title: 'Wallet Not Found',
+        message: errorMessage
+      });
+      toast.error(errorMessage);
+      return false;
     }
-  }, [userAddress, disconnectWallet]);
 
-  // Cüzdan durumunu kontrol et
-  useEffect(() => {
-    if (userAddress && tokenContract) {
-      setIsConnecting(false);
-      setIsConnected(true);
-      console.log('Wallet state updated - Connected:', userAddress);
-    } else {
-      setIsConnected(false);
+    setIsLoading(true);
+    
+    try {
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      });
+      
+      if (accounts.length > 0) {
+        const address = accounts[0];
+        setUserAddress(address);
+        setIsConnected(true);
+        
+        // Get network info
+      const networkInfo = await getNetwork();
+      setNetwork(networkInfo);
+      
+        // Get token balance
+        const tokenBalance = await getTokenBalance(address);
+        setBalance(tokenBalance);
+        
+        // Setup contract
+        const { ethers } = await import('ethers');
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        // Use the full ABI provided by the user for all staking and balance functions
+        const contract = new ethers.Contract(TOKEN_CONFIG.address, TOKEN_ABI, signer);
+        setTokenContract(contract);
+        
+        // Update store
+        updateWalletConnection({
+          address: address,
+          isConnected: true,
+          chainId: networkInfo?.chainId
+        });
+
+        updatePortfolio({
+          balance: parseFloat(tokenBalance)
+        });
+
+        // Success notification
+          addNotification({
+            type: 'success',
+          title: 'Wallet Connected',
+          message: `Connected to ${address.slice(0, 6)}...${address.slice(-4)}`
+          });
+
+          return true;
+      }
+    } catch (error) {
+      console.log('Connection failed:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  }, [userAddress, tokenContract]);
+  };
+
+  // Refresh balance function
+  const refreshBalance = async () => {
+    if (!userAddress) return;
+    
+    try {
+      const tokenBalance = await getTokenBalance(userAddress);
+      setBalance(tokenBalance);
+      updatePortfolio({
+        balance: parseFloat(tokenBalance)
+      });
+    } catch (error) {
+      console.log('Balance refresh failed:', error);
+    }
+  };
 
   return { 
+    userAddress,
+    isConnected,
+    isLoading,
+    tokenContract,
+    balance: formatBalance(balance),
+    rawBalance: balance,
+    network,
     connectWallet, 
     disconnectWallet,
-    userAddress, 
-    provider,
-    signer,
-    tokenContract, 
-    isConnecting, 
-    isConnected,
-    connectionError,
-    getTokenBalance,
-    sendTokens,
-    stake,
-    unstake,
-    claimStakingReward,
-    checkMigrationEligibility,
-    migrateTokens,
-    isMigrating
+    switchToBSC,
+    refreshBalance,
+    TOKEN_CONFIG
   };
 }

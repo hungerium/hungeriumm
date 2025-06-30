@@ -1058,6 +1058,10 @@ class Game {
     }
 
     startGame() {
+        // Kontrata startGame fonksiyonunu çağır (cüzdan bağlıysa)
+        if (window.web3Handler && typeof window.web3Handler.startGameOnContract === 'function') {
+            window.web3Handler.startGameOnContract();
+        }
         // Set global game reference for other classes
         window.game = this;
         

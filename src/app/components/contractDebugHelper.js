@@ -43,55 +43,26 @@ export const detectAndSwitchNetwork = async () => {
 
 // Marketplace debug helper
 export const debugMarketplace = async (marketplaceContract, listingId) => {
-  console.log('=== MARKETPLACE DEBUG START ===');
   try {
     const code = await marketplaceContract.runner.provider.getCode(marketplaceContract.target);
-    console.log('Contract deployed:', code !== '0x');
     const stats = await marketplaceContract.getMarketplaceStats();
-    console.log('Marketplace Stats:', {
-      activeListings: stats[0].toString(),
-      feePercentage: stats[1].toString(),
-      feeRecipient: stats[2],
-      totalListings: stats[3].toString(),
-      totalOffers: stats[4].toString()
-    });
     if (listingId) {
       const listing = await marketplaceContract.listings(listingId);
-      console.log('Listing Details:', {
-        listingId: listing.listingId.toString(),
-        tokenId: listing.tokenId.toString(),
-        seller: listing.seller,
-        priceBNB: ethers.formatEther(listing.priceBNB),
-        priceCoffyCoin: ethers.formatEther(listing.priceCoffyCoin),
-        acceptsBNB: listing.acceptsBNB,
-        acceptsCoffyCoin: listing.acceptsCoffyCoin,
-        active: listing.active,
-        listedAt: new Date(Number(listing.listedAt) * 1000).toLocaleString()
-      });
       const nftContract = new ethers.Contract(
         await marketplaceContract.coffyMemoriesContract(),
         ['function ownerOf(uint256) view returns (address)', 'function getApproved(uint256) view returns (address)', 'function isApprovedForAll(address,address) view returns (bool)'],
         marketplaceContract.runner
       );
       const nftOwner = await nftContract.ownerOf(listing.tokenId);
-      console.log('NFT Owner:', nftOwner);
-      console.log('Seller matches NFT owner:', nftOwner.toLowerCase() === listing.seller.toLowerCase());
       const approved = await nftContract.getApproved(listing.tokenId);
       const isApprovedForAll = await nftContract.isApprovedForAll(listing.seller, marketplaceContract.target);
-      console.log('NFT Approvals:', {
-        singleApproved: approved,
-        approvedForAll: isApprovedForAll,
-        marketplaceApproved: approved.toLowerCase() === marketplaceContract.target.toLowerCase() || isApprovedForAll
-      });
     }
     const signer = await marketplaceContract.runner.provider.getSigner();
     const userAddress = await signer.getAddress();
     const userBalance = await marketplaceContract.runner.provider.getBalance(userAddress);
-    console.log('User Balance:', ethers.formatEther(userBalance), 'BNB');
   } catch (error) {
     console.error('Debug failed:', error);
   }
-  console.log('=== MARKETPLACE DEBUG END ===');
 };
 
 export const decodeMarketplaceError = (error) => {
@@ -120,11 +91,8 @@ export const decodeMarketplaceError = (error) => {
 export const safeContractCall = async (contractFunction, ...args) => {
   try {
     const result = await contractFunction.staticCall(...args);
-    console.log('Static call successful:', result);
     const tx = await contractFunction(...args);
-    console.log('Transaction sent:', tx.hash);
     const receipt = await tx.wait();
-    console.log('Transaction confirmed:', receipt);
     return receipt;
   } catch (error) {
     console.error('Contract call failed:', error);

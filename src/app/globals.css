@@ -165,45 +165,57 @@
 }
 
 .btn-variant-games:hover {
-  background: linear-gradient(135deg, #b45309, #c2410c);
-  border-color: #d97706;
+  background: linear-gradient(135deg, #ea580c, #d97706);
+  border-color: #ea580c;
   box-shadow: 0 8px 25px rgba(217, 119, 6, 0.5);
 }
 
 .btn-variant-staking {
-  background: linear-gradient(135deg, #059669, #0d9488);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  border: 1px solid rgba(5, 150, 105, 0.5);
+  border: 1px solid #16a34a;
 }
 
 .btn-variant-staking:hover {
-  background: linear-gradient(135deg, #047857, #0f766e);
-  border-color: #059669;
-  box-shadow: 0 8px 25px rgba(5, 150, 105, 0.5);
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border-color: #22c55e;
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
 }
 
 .btn-variant-nft {
-  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  background: linear-gradient(135deg, #a21caf, #7c3aed);
   color: white;
-  border: 1px solid rgba(124, 58, 237, 0.5);
+  border: 1px solid #7c3aed;
 }
 
 .btn-variant-nft:hover {
-  background: linear-gradient(135deg, #6d28d9, #7c3aed);
-  border-color: #7c3aed;
-  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, #7c3aed, #a21caf);
+  border-color: #a21caf;
+  box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
 }
 
 .btn-variant-migrate {
-  background: linear-gradient(135deg, #e11d48, #ec4899);
+  background: linear-gradient(135deg, #f43f5e, #f59e42);
   color: white;
-  border: 1px solid rgba(225, 29, 72, 0.5);
+  border: 1px solid #f59e42;
 }
 
 .btn-variant-migrate:hover {
-  background: linear-gradient(135deg, #be185d, #e11d48);
-  border-color: #e11d48;
-  box-shadow: 0 8px 25px rgba(225, 29, 72, 0.5);
+  background: linear-gradient(135deg, #f59e42, #f43f5e);
+  border-color: #f43f5e;
+  box-shadow: 0 8px 25px rgba(245, 158, 66, 0.3);
+}
+
+.btn-variant-wallet {
+  background: linear-gradient(135deg, #D4A017, #FFD700, #A77B06);
+  color: white;
+  border: 1px solid #FFD700;
+}
+
+.btn-variant-wallet:hover {
+  background: linear-gradient(135deg, #A77B06, #FFD700, #D4A017);
+  border-color: #D4A017;
+  box-shadow: 0 8px 25px rgba(212, 160, 23, 0.5);
 }
 
 /* Compact Games section enhancements */
@@ -289,6 +301,8 @@
     content-visibility: auto;
     /* Yazı tipi yükleme performansını artırın */
     font-display: swap;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
 
   body {
@@ -296,6 +310,8 @@
     font-family: 'Inter', system-ui, sans-serif;
     /* Daha iyi kaydırma deneyimi */
     overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -591,5 +607,98 @@ iframe {
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;
+  }
+}
+
+/* Mobile touch improvements */
+@media (max-width: 768px) {
+  html {
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Touch manipulation for better mobile interaction */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-[#1A0F0A];
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#D4A017]/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-[#D4A017]/50;
+}
+
+/* Button animations */
+.btn-primary {
+  @apply inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95;
+}
+
+/* Card styles */
+.card-coffee {
+  @apply bg-gradient-to-br from-[#3A2A1E]/80 to-[#2A1F15]/80 border border-[#BFA181]/20 rounded-xl backdrop-blur-sm;
+}
+
+.hover-lift {
+  @apply transition-transform duration-300 hover:scale-105 hover:-translate-y-2;
+}
+
+/* Text gradient */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017];
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Reveal on scroll */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease-out;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+  
+  /* Improve mobile text readability */
+  h1, h2, h3 {
+    line-height: 1.2;
+  }
+  
+  /* Better mobile button spacing */
+  .btn-primary {
+    @apply px-4 py-2.5 text-sm;
   }
 }

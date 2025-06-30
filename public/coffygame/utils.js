@@ -315,7 +315,7 @@ export async function checkOwnedCharactersOnChain(gameState, uiUpdateCallback) {
             return;
         }
 
-        const filter = gameState.tokenContract.filters.CharacterBought(gameState.walletAddress, null);
+        const filter = gameState.tokenContract.filters.CharacterBought(gameState.walletAddress);
         const events = await gameState.tokenContract.queryFilter(filter);
 
         let updated = false;

@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-const About = () => {
+const About = ({ id }) => {
   const sectionRef = useRef(null);
 
   // Scroll observer for animations
@@ -34,11 +34,7 @@ const About = () => {
   }, []);
 
   return (
-    <section 
-      id="about" 
-      ref={sectionRef}
-      className="py-20 bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] relative overflow-hidden"
-    >
+    <section id={id} ref={sectionRef} className="py-20 bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-[#D4A017] blur-3xl"></div>
@@ -64,8 +60,8 @@ const About = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            Coffy Coin creates an innovative ecosystem by combining blockchain technology with the coffee industry. 
-            Our aim is to provide a transparent, secure and community-focused platform in the crypto world.
+            Coffy Coin V2 introduces a revolutionary modular ecosystem combining gaming, DeFi, and community governance. 
+            Our advanced smart contract architecture provides sustainable rewards through character-based gameplay and enhanced staking mechanisms.
           </motion.p>
         </div>
 
@@ -123,14 +119,14 @@ const About = () => {
             >
               <h3 className="text-2xl md:text-3xl font-semibold text-[#E8D5B5]">Our Mission</h3>
               <p className="text-[#E8D5B5]/80">
-                We're working to create a more transparent, fair, and sustainable ecosystem by integrating 
-                blockchain technology with the coffee industry. Coffy Coin aims to create value across the 
-                entire supply chain, from coffee producers to consumers.
+                Our V2 modular smart contract creates a transparent, secure ecosystem that revolutionizes 
+                the coffee gaming experience. With advanced sybil protection and a character-based reward 
+                system, we provide sustainable value across our entire gaming ecosystem.
               </p>
               <p className="text-[#E8D5B5]/80">
-                With our community-oriented approach, we ensure token holders have a say in the future of our project. 
-                Our secure staking mechanisms allow users to earn passive income while our game ecosystem provides 
-                an entertaining experience.
+                Through our enhanced staking system (5% APY) and modular-ready architecture planned for 
+                DAO, NFT, Social, and Cross-chain modules in Q4, token holders will actively shape the project's future 
+                while earning through engaging gameplay and community participation.
               </p>
               <div className="pt-4">
                 <a href="#tokenomics" className="btn-primary">Explore Tokenomics</a>
@@ -159,9 +155,9 @@ const About = () => {
                 <path d="M14 15h4"></path>
               </svg>
             </div>
-            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Blockchain Technology</h4>
+            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Modular Ready</h4>
             <p className="text-[#E8D5B5]/70 text-sm">
-              Secure and transparent ecosystem using the latest blockchain technology.
+              V2 contract ready for DAO, NFT, Social, and Cross-chain modules in Q2.
             </p>
           </div>
           
@@ -175,9 +171,9 @@ const About = () => {
                 <path d="M8 14h8"></path>
               </svg>
             </div>
-            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Stake & Earn</h4>
+            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Enhanced Staking</h4>
             <p className="text-[#E8D5B5]/70 text-sm">
-              Earn passive income by staking your tokens and support the ecosystem.
+              5% APY with 50K minimum stake and early unstake protection.
             </p>
           </div>
           
@@ -191,9 +187,9 @@ const About = () => {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
               </svg>
             </div>
-            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Community Governance</h4>
+            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Future DAO</h4>
             <p className="text-[#E8D5B5]/70 text-sm">
-              Have a say in the future of the project with our DAO structure.
+              Legendary Dragon holders will get DAO membership for protocol governance in Q2.
             </p>
           </div>
           
@@ -208,9 +204,9 @@ const About = () => {
                 <path d="M18 11h.01"></path>
               </svg>
             </div>
-            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Game Ecosystem</h4>
+            <h4 className="text-lg font-semibold mb-2 text-[#E8D5B5]">Character System</h4>
             <p className="text-[#E8D5B5]/70 text-sm">
-              Earn Coffy Coin by playing fun games and expand your collection.
+              5 unique characters with 1.5x-5x multipliers and advanced sybil protection.
             </p>
           </div>
         </motion.div>

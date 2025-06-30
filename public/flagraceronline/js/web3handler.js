@@ -1,17 +1,8 @@
 class Web3Handler {
     constructor() {
-        // YENİ KONTRAT ADRESİ
-        this.tokenAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
-        
-        // YENİ ABI - Sadece gerekli fonksiyonlar
-        this.tokenABI = [
-            {"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"claimGameRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"migrateTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"canUserMigrate","outputs":[{"internalType":"bool","name":"canMigrate","type":"bool"},{"internalType":"uint256","name":"oldBalance","type":"uint256"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"getMigrationInfo","outputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"bool","name":"","type":"bool"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}
-        ];
+        // Token contract address and ABI
+        this.tokenAddress = '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78';
+        this.tokenABI = [{"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidityPool","type":"address"},{"internalType":"address","name":"_marketing","type":"address"},{"internalType":"address","name":"_team","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bytes32","name":"neededRole","type":"bytes32"}],"name":"AccessControlUnauthorizedAccount","type":"error"},{"inputs":[],"name":"AlreadyVoted","type":"error"},{"inputs":[],"name":"CharacterNotFound","type":"error"},{"inputs":[],"name":"DailyRewardLimitExceeded","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},{"inputs":[],"name":"InsufficientBalance","type":"error"},{"inputs":[],"name":"InvalidAddress","type":"error"},{"inputs":[],"name":"NotDAOMember","type":"error"},{"inputs":[],"name":"NotInflationTime","type":"error"},{"inputs":[],"name":"NothingStaked","type":"error"},{"inputs":[],"name":"ProposalNotFound","type":"error"},{"inputs":[],"name":"StakingPeriodNotMet","type":"error"},{"inputs":[],"name":"ZeroAmount","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"characterId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"price","type":"uint256"}],"name":"CharacterBought","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"GameRewardsClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"InflationMinted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Paused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint32","name":"proposalId","type":"uint32"},{"indexed":false,"internalType":"string","name":"description","type":"string"},{"indexed":false,"internalType":"address","name":"creator","type":"address"}],"name":"ProposalCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Staked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"StakingRewardClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"burner","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"TokensBurned","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"account","type":"address"}],"name":"Unpaused","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Unstaked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint32","name":"proposalId","type":"uint32"},{"indexed":false,"internalType":"address","name":"voter","type":"address"}],"name":"VoteCast","type":"event"},{"inputs":[],"name":"ANNUAL_INFLATION_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ANNUAL_STAKING_RATE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"BLOCKS_PER_DAY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ESPRESSO_MAGE_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"LATTE_WARRIOR_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"LEGENDARY_DRAGON_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"LIQUIDITY_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MARKETING_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DAILY_REWARD","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINIMUM_STAKE_TIME","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MIN_TREASURY_RESERVE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PALADIN_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ROGUE_PRICE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"SECONDS_IN_YEAR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TEAM_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"TREASURY_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"adminBurn","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"characterId","type":"uint256"}],"name":"buyCharacter","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"calculatePendingReward","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"canTriggerInflation","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"characters","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"uint256","name":"price","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"claimGameRewards","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"claimStakingReward","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"description","type":"string"}],"name":"createProposal","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"dailyClaims","outputs":[{"internalType":"uint48","name":"lastClaimTime","type":"uint48"},{"internalType":"uint208","name":"claimedToday","type":"uint208"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"characterId","type":"uint256"}],"name":"getCharacter","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"uint256","name":"price","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getDailyRewardLimit","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getInflationRate","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getMinimumStakeTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getProposalCount","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint32","name":"proposalId","type":"uint32"}],"name":"getProposalInfo","outputs":[{"internalType":"string","name":"description","type":"string"},{"internalType":"uint32","name":"voteCount","type":"uint32"},{"internalType":"bool","name":"executed","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint32","name":"proposalId","type":"uint32"}],"name":"getProposalVotes","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getStakeInfo","outputs":[{"internalType":"uint256","name":"stakedAmount","type":"uint256"},{"internalType":"uint256","name":"pendingReward","type":"uint256"},{"internalType":"uint256","name":"stakingDuration","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getStakingAPY","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getTotalStaked","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"hasBoughtLegendaryDragon","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint32","name":"proposalId","type":"uint32"},{"internalType":"address","name":"user","type":"address"}],"name":"hasVoted","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"isDAOMember","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastInflationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"pause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"proposalCount","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint32","name":"","type":"uint32"}],"name":"proposals","outputs":[{"internalType":"uint32","name":"id","type":"uint32"},{"internalType":"string","name":"description","type":"string"},{"internalType":"uint32","name":"voteCount","type":"uint32"},{"internalType":"bool","name":"executed","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"callerConfirmation","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"stakes","outputs":[{"internalType":"uint208","name":"amount","type":"uint208"},{"internalType":"uint48","name":"startTime","type":"uint48"},{"internalType":"uint48","name":"lastRewardClaim","type":"uint48"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalStaked","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"treasury","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"triggerInflation","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"unpause","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"unstake","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint32","name":"proposalId","type":"uint32"}],"name":"vote","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"startGame","outputs":[],"stateMutability":"nonpayable","type":"function"}];
         
         // Web3 instance
         this.web3 = null;
@@ -29,14 +20,6 @@ class Web3Handler {
         
         // Maximum number of claims allowed per day (IP based)
         this.maxClaimsPerDay = 2;
-        
-        // Migration durumu
-        this.migrationInfo = {
-            enabled: false,
-            deadline: 0,
-            oldBalance: 0,
-            canMigrate: false
-        };
         
         // Initialize if Web3 is available
         this.initialize();
@@ -103,54 +86,131 @@ class Web3Handler {
     }
     
     async connectWallet() {
+        if (!this.web3) {
+            this.showNotification("Please install MetaMask to connect your wallet", "error");
+            return false;
+        }
+        
+        this.connectionStatus = 'connecting';
+        this.showNotification("Connecting wallet... Please check your browser extension", "info");
+        
         try {
-            console.log("Attempting to connect wallet...");
+            // Clear any previous accounts to ensure we get a fresh approval dialog
+            this.currentAccount = null;
+            this.accounts = [];
             
-            if (typeof window.ethereum === 'undefined') {
-                this.showNotification("MetaMask is not installed. Please install MetaMask to continue.", "error");
+            // Give the user time to see the notification before the wallet popup appears
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Force wallet popup by using a specific approach - first check if wallet is locked
+            // This improves user experience by ensuring they see the approval dialog
+            const isLocked = !(await window.ethereum._metamask?.isUnlocked?.());
+            console.log("Wallet locked status:", isLocked);
+            
+            // Request accounts - This should ALWAYS trigger the wallet approval dialog now
+            console.log("Requesting wallet approval...");
+            try {
+                // Clear any cached permissions first
+                if (window.ethereum.request?.({method: 'wallet_requestPermissions'})) {
+                    await window.ethereum.request({
+                        method: 'wallet_requestPermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+                }
+                
+                // Now request accounts (this should always show the popup)
+                this.accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts',
+                    params: [{ eth_accounts: {} }]
+                });
+                
+                console.log("Accounts after request:", this.accounts);
+            } catch (permError) {
+                console.log("Permission request error:", permError);
+                // Try alternative approach if the above fails
+                this.accounts = await window.ethereum.enable();
+            }
+            
+            // Check if user approved and we have accounts
+            if (!this.accounts || this.accounts.length === 0) {
+                this.connectionStatus = 'error';
+                this.showNotification("No accounts found or access denied", "error");
                 return false;
             }
-
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            if (accounts.length === 0) {
-                this.showNotification("No accounts found. Please check your wallet.", "warning");
-                return false;
-            }
-            
-            this.currentAccount = accounts[0];
+            this.currentAccount = this.accounts[0];
             console.log("Connected account:", this.currentAccount);
             
-            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            console.log("Current chain ID:", chainId);
-
-            if (chainId !== '0x38') {
-                this.showNotification("Please switch to Binance Smart Chain (BSC)", "warning");
+            // Check if we're on BSC network
+            const chainId = await this.web3.eth.getChainId();
+            
+            if (chainId !== 56 && chainId !== 97) { // BSC Mainnet and Testnet IDs
+                this.showNotification("Your wallet needs to connect to Binance Smart Chain", "info");
+                
+                // Prompt to switch to BSC - this will show another wallet approval
                 try {
+                    this.showNotification("Please approve network switch in your wallet", "info");
                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x38' }],
+                        params: [{ chainId: '0x38' }], // BSC Mainnet
                     });
+                    this.showNotification("Successfully switched to BSC network", "success");
                 } catch (switchError) {
-                    console.error("Failed to switch chain:", switchError);
+                    // If BSC isn't added yet, prompt to add it
+                    if (switchError.code === 4902) {
+                        try {
+                            this.showNotification("Please approve adding BSC network to your wallet", "info");
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0x38',
+                                    chainName: 'Binance Smart Chain',
+                                    nativeCurrency: {
+                                        name: 'BNB',
+                                        symbol: 'BNB',
+                                        decimals: 18
+                                    },
+                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                    blockExplorerUrls: ['https://bscscan.com/']
+                            }],
+                        });
+                        this.showNotification("BSC network added successfully", "success");
+                        } catch (addError) {
+                            this.connectionStatus = 'error';
+                            this.showNotification("Failed to add BSC network: " + this.getErrorMessage(addError), "error");
+                            console.error("Failed to add BSC network:", addError);
+                            return false;
+                        }
+                    } else {
+                        this.connectionStatus = 'error';
+                        this.showNotification("Failed to switch to BSC network: " + this.getErrorMessage(switchError), "error");
+                        console.error("Failed to switch to BSC network:", switchError);
                         return false;
+                    }
                 }
             }
             
-            this.web3 = new Web3(window.ethereum);
-            this.tokenContract = new this.web3.eth.Contract(this.tokenABI, this.tokenAddress);
-
+            // Fetch token balance
             await this.fetchTokenBalance();
             
-            // Migration durumunu kontrol et
-            await this.checkMigrationStatus();
-
+            this.connectionStatus = 'connected';
             this.showNotification("Wallet connected successfully!", "success");
+            
+            // Notify any listeners that the balance has been updated
+            this.notifyBalanceUpdate();
+            
             return true;
-
         } catch (error) {
             console.error("Error connecting wallet:", error);
-            this.showNotification("Failed to connect wallet: " + error.message, "error");
+            this.connectionStatus = 'error';
+            
+            if (error.code === 4001) {
+                // User rejected the connection
+                this.showNotification("Connection rejected by user", "error");
+            } else {
+                this.showNotification("Failed to connect wallet: " + this.getErrorMessage(error), "error");
+            }
+            
             return false;
         }
     }
@@ -243,8 +303,8 @@ class Web3Handler {
                 return false;
             }
 
-            // Apply daily maximum limit of 5000 tokens (YENİ LİMİT)
-            const MAX_DAILY_CLAIM = 5000;
+            // Apply daily maximum limit of 9999 tokens
+            const MAX_DAILY_CLAIM = 9999;
             const actualClaimAmount = Math.min(earnedTokens, MAX_DAILY_CLAIM);
             
             if (actualClaimAmount < earnedTokens) {
@@ -253,6 +313,7 @@ class Web3Handler {
 
             console.log(`Claiming ${actualClaimAmount} tokens (available: ${earnedTokens})`);
             
+            // Since claimRewards doesn't exist in the contract, use claimGameRewards instead
             // Check if the method exists first
             if (!this.tokenContract.methods.claimGameRewards) {
                 console.warn("claimGameRewards method not found in contract, using demo mode");
@@ -344,13 +405,7 @@ class Web3Handler {
             let errorMsg = "Failed to claim rewards";
             
             if (error.message) {
-                if (error.message.includes("Daily reward limit exceeded")) {
-                    errorMsg = "Günlük ödül limiti aşıldı. Yarın tekrar deneyin.";
-                } else if (error.message.includes("Sybil protection")) {
-                    errorMsg = "Anti-Sybil koruması: Minimum 50,000 COFFY balance gerekli.";
-                } else if (error.message.includes("Claim cooldown")) {
-                    errorMsg = "Claim cooldown aktif. Biraz bekleyin.";
-                } else if (error.message.includes("toBigInt")) {
+                if (error.message.includes("toBigInt")) {
                     errorMsg = "Web3 version compatibility issue. Please try again.";
                 } else if (error.message.includes("User denied")) {
                     errorMsg = "Transaction rejected by user";
@@ -545,81 +600,22 @@ class Web3Handler {
     }
 
     /**
-     * Migration durumunu kontrol et
+     * Oyun başlatma fonksiyonu - Kontrat üzerinde lastGameStart'ı set eder
      */
-    async checkMigrationStatus() {
-        if (!this.tokenContract || !this.currentAccount) return;
-        
+    async startGameOnContract() {
         try {
-            // Migration bilgilerini al
-            const migrationInfo = await this.tokenContract.methods.getMigrationInfo().call();
-            this.migrationInfo.enabled = migrationInfo[1];
-            this.migrationInfo.deadline = migrationInfo[2];
-            
-            // Kullanıcının migration yapıp yapamayacağını kontrol et
-            const canMigrate = await this.tokenContract.methods.canUserMigrate(this.currentAccount).call();
-            this.migrationInfo.canMigrate = canMigrate.canMigrate;
-            this.migrationInfo.oldBalance = this.web3.utils.fromWei(canMigrate.oldBalance, 'ether');
-            
-            console.log("Migration durumu:", this.migrationInfo);
-            
-            // Migration UI'ını güncelle
-            this.updateMigrationUI();
-            
-        } catch (error) {
-            console.error("Migration durumu kontrol hatası:", error);
-        }
-    }
-
-    /**
-     * Migration işlemini gerçekleştir
-     */
-    async migrateTokens() {
-        if (!this.tokenContract || !this.migrationInfo.canMigrate) {
-            this.showNotification("Migration yapılamaz", "error");
-            return false;
-        }
-
-        try {
-            this.showNotification("Migration işlemi başlatılıyor...", "info");
-            
-            const result = await this.tokenContract.methods.migrateTokens().send({
-                from: this.currentAccount
-            });
-            
-            this.showNotification(`${this.migrationInfo.oldBalance} COFFY başarıyla migrate edildi!`, "success");
-            
-            // Migration durumunu güncelle
-            await this.checkMigrationStatus();
-            await this.fetchTokenBalance();
-            
-            return true;
-            
-        } catch (error) {
-            console.error("Migration hatası:", error);
-            this.showNotification("Migration işlemi başarısız: " + error.message, "error");
-            return false;
-        }
-    }
-
-    /**
-     * Migration UI'ını güncelle
-     */
-    updateMigrationUI() {
-        // Migration düğmesini göster/gizle
-        const migrationSection = document.getElementById('migration-section');
-        
-        if (migrationSection) {
-            if (this.migrationInfo.canMigrate && this.migrationInfo.oldBalance > 0) {
-                migrationSection.style.display = 'block';
-                
-                const migrationInfo = document.getElementById('migration-info');
-                if (migrationInfo) {
-                    migrationInfo.textContent = `Eski kontratınızda ${this.migrationInfo.oldBalance} COFFY var. Yeni kontraata migrate edebilirsiniz.`;
-                }
-            } else {
-                migrationSection.style.display = 'none';
+            if (!this.currentAccount || !this.tokenContract) {
+                console.log("Cüzdan bağlı değil veya kontrat nesnesi yok, startGame kontrata gönderilmeyecek");
+                return false;
             }
+            console.log("Kontrat üzerinde startGame çağrılıyor...");
+            const tx = await this.tokenContract.methods.startGame().send({ from: this.currentAccount });
+            console.log("✅ Kontrat startGame başarıyla çağrıldı:", tx.transactionHash);
+            return true;
+        } catch (error) {
+            console.error("Kontrat startGame hatası:", error);
+            // Bu hata kritik değil, oyun yine de başlatılabilir
+            return false;
         }
     }
 }

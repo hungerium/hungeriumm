@@ -2,10 +2,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 
-const TOKEN_ADDRESS = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
+const TOKEN_ADDRESS = '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78';
 const BSC_CHAIN_ID = '0x38'; // Binance Smart Chain Mainnet
 
-// Yeni kontratın tam ABI’sı
+// Yeni kontratın tam ABI'sı
 const TOKEN_ABI = [
     {
         "inputs": [
@@ -912,18 +912,12 @@ const TOKEN_ABI = [
 				"type": "uint256"
 			}
 		],
-		"name": "claimGameRewards",
+		"name": "claimPendingRewards",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
-	{
-		"inputs": [],
-		"name": "claimStakingReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
+
 	{
 		"inputs": [
 			{

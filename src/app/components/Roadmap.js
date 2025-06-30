@@ -5,47 +5,47 @@ import { motion } from 'framer-motion';
 export default function Roadmap() {
   const roadmapData = [
     {
-      quarter: "Q1 2025 - V2 Launch & Migration",
+      quarter: "Q1 2025 - V2 Core Foundation",
       status: "✅ COMPLETED",
       items: [
-        "V2 smart contract deployment & security audit",
-        "Migration system launch (1:1 token transfer)",
-        "Staking system (10% APR) & Game rewards (5K daily)",
-        "NFT Marketplace & Character system (13 characters)",
-        "DEX listing with anti-sybil protection"
+        "V2 Smart Contract Deployment with Modular Ready Architecture",
+        "Enhanced Staking System (50K min, 5% APY, 7-day lock)",
+        "5-Character System with Fixed Prices (1M-10M COFFY)",
+        "Game Rewards with Sybil Protection (5K daily limit)",
+        "Security Audits & BSC Mainnet Launch"
       ]
     },
     {
-      quarter: "Q2 2025 - SocialFi & Partnerships",
+      quarter: "Q2 2025 - Module Ecosystem Launch",
       status: "🔄 IN PROGRESS",
       items: [
-        "DAO governance implementation (Character price voting)",
-        "SocialFi platform development (Coffee community)",
-        "Coffee shop partnerships (Real-world integration)",
-        "Gaming studio collaborations (P2E partnerships)",
-        "Major DEX listings & liquidity expansion"
+        "DAO Module - Community governance for protocol decisions",
+        "Social Module - Step tracking & social rewards integration",
+        "NFT Module - Character-to-NFT migration system",
+        "Mobile App Backend - Native mobile game integration",
+        "Cross-chain Module - Polygon & Base network support"
       ]
     },
     {
-      quarter: "Q3 2025 - Ecosystem Expansion",
+      quarter: "Q3 2025 - Gaming & DeFi Expansion",
       status: "📅 PLANNED",
       items: [
-        "Character-to-NFT migration (Limited editions)",
-        "Cross-chain bridge development (Polygon, Base)",
-        "International marketing campaigns",
-        "Strategic gaming partnerships (Major P2E projects)",
-        "Advanced DAO governance features"
+        "Advanced Character System - Legendary Dragon DAO membership",
+        "Cross-chain Bridge - Multi-network token transfers",
+        "Social Gaming Features - Community challenges & tournaments",
+        "DeFi Integrations - Yield farming & liquidity mining",
+        "Mobile App Launch - iOS & Android native gaming"
       ]
     },
     {
-      quarter: "Q4 2025 - Global Scale",
+      quarter: "Q4 2025 - Ecosystem Maturation",
       status: "📅 FUTURE",
       items: [
-        "Full DAO transition (Complete decentralization)",
-        "Metaverse integration (Coffyverse expansion)",
-        "Major CEX listings (Binance, Coinbase)",
-        "Global coffee industry partnerships",
-        "Mobile app & cross-chain gaming ecosystem"
+        "Full DAO Governance - Community-driven protocol upgrades",
+        "Metaverse Integration - Virtual coffee shops & gaming worlds",
+        "Enterprise Partnerships - Real-world coffee shop integrations",
+        "Advanced Analytics - On-chain gaming metrics & insights",
+        "Global Expansion - Multi-language support & regional partnerships"
       ]
     }
   ];
@@ -77,7 +77,7 @@ export default function Roadmap() {
           <div className="w-24 h-1 bg-[#D4A017] mx-auto rounded-full"></div>
         </motion.div>
 
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {roadmapData.map((phase, index) => (
             <motion.div
               key={phase.quarter}
@@ -85,18 +85,18 @@ export default function Roadmap() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: index * 0.2 }}
               viewport={{ once: true }}
-              className={`flex flex-col md:flex-row items-center gap-8 mb-16 ${
+              className={`flex flex-col md:flex-row items-center gap-8 mb-12 ${
                 index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
               }`}
             >
               {/* Quarter Circle */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
-                className="w-32 h-32 rounded-full bg-gradient-to-br from-[#D4A017] to-[#A77B06] flex items-center justify-center shadow-lg"
+                className="w-24 h-24 rounded-lg bg-gradient-to-br from-[#D4A017] to-[#A77B06] flex items-center justify-center shadow-lg"
               >
                 <div className="text-white text-center">
-                  <div className="text-2xl font-bold">{phase.quarter.split(' ')[0]}</div>
-                  <div className="text-3xl font-bold">{phase.quarter.split(' ')[1]}</div>
+                  <div className="text-xl font-bold">{phase.quarter.split(' ')[0]}</div>
+                  <div className="text-2xl font-bold">{phase.quarter.split(' ')[1]}</div>
                 </div>
               </motion.div>
 
@@ -104,13 +104,13 @@ export default function Roadmap() {
               <div className="flex-1">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-[#2C1B12] p-6 rounded-xl border border-[#D4A017]/20 hover:border-[#D4A017] transition-all duration-300"
+                  className="bg-[#2C1B12] p-4 rounded-lg border border-[#D4A017]/20 hover:border-[#D4A017] transition-all duration-300"
                 >
-                  <h3 className="text-2xl font-bold text-[#D4A017] mb-4">
+                  <h3 className="text-xl font-bold text-[#D4A017] mb-3">
                     {phase.quarter}
                   </h3>
-                  <p className="text-sm text-[#E8D5B5] mb-4">{phase.status}</p>
-                  <ul className="space-y-3">
+                  <p className="text-xs text-[#E8D5B5] mb-3">{phase.status}</p>
+                  <ul className="space-y-2">
                     {phase.items.map((item, itemIndex) => (
                       <motion.li
                         key={itemIndex}
@@ -120,7 +120,7 @@ export default function Roadmap() {
                         viewport={{ once: true }}
                         className="flex items-center text-[#E8D5B5]"
                       >
-                        <span className="w-2 h-2 bg-[#D4A017] rounded-full mr-3"></span>
+                        <span className="w-2 h-2 bg-[#D4A017] rounded-full mr-2"></span>
                         {item}
                       </motion.li>
                     ))}

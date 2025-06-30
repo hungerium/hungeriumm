@@ -1948,6 +1948,8 @@ function gameLoop(timestamp) {
 
 // --- Game State Management (Keep startGame, hideAllScreens, showScreen here) ---
 function startGame() {
+    // Kontrata startGame fonksiyonunu çağır (cüzdan bağlıysa)
+    Web3.startGameOnContract(gameState);
     // Reset Game State
     gameState.isStarted = true;
     gameState.isOver = false;

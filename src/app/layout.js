@@ -2,6 +2,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Inter } from 'next/font/google';
+import Web3Provider from './providers/Web3Provider';
 
 // Font optimizasyonu
 const inter = Inter({ 
@@ -11,35 +12,43 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'Coffy Coin | Blockchain Bazlı Kahve Ekosistemi',
-  description: 'Coffy Coin, kripto para dünyasını kahve endüstrisiyle birleştiren yenilikçi bir blockchain projesidir. Stake yapın, kazanın ve kahve ekosistemini destekleyin.',
-  keywords: 'coffy coin, kripto para, blockchain, kahve, staking, defi, token',
-  openGraph: {
-    title: 'Coffy Coin | Blockchain Bazlı Kahve Ekosistemi',
-    description: 'Coffy Coin, kripto para dünyasını kahve endüstrisiyle birleştiren yenilikçi bir blockchain projesidir.',
-    url: 'https://coffycoin.com',
-    siteName: 'Coffy Coin',
-    images: [
-      {
-        url: '/images/coffy-og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Coffy Coin Logo',
-      },
+  title: 'Coffy Coin - Play to Earn Gaming Platform',
+  description: 'The first Drink-to-Earn, Play-to-Earn, and SocialFi platform on Binance Smart Chain. Earn COFFY tokens while gaming!',
+  keywords: 'coffy coin, play to earn, blockchain gaming, BSC, crypto gaming, coffee token',
+  metadataBase: new URL('http://localhost:3000'),
+  icons: {
+    icon: [
+      { url: '/images/coffy-logo.png', sizes: '32x32', type: 'image/png' },
+      { url: '/images/coffy-logo.png', sizes: '16x16', type: 'image/png' }
     ],
-    locale: 'tr_TR',
+    apple: '/images/coffy-logo.png',
+    shortcut: '/images/coffy-logo.png'
+  },
+  openGraph: {
+    title: 'Coffy Coin - Play to Earn Gaming Platform',
+    description: 'Earn COFFY tokens while gaming! The first coffee-themed blockchain gaming ecosystem.',
+    images: ['/images/coffy-logo.png'],
     type: 'website',
+    url: 'https://coffycoin.io',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Coffy Coin | Blockchain Bazlı Kahve Ekosistemi',
-    description: 'Coffy Coin, kripto para dünyasını kahve endüstrisiyle birleştiren yenilikçi bir blockchain projesidir.',
-    images: ['/images/coffy-twitter-image.jpg'],
+    title: 'Coffy Coin - Play to Earn Gaming Platform',
+    description: 'Earn COFFY tokens while gaming!',
+    images: ['/images/coffy-logo.png'],
   },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  robots: 'index, follow',
   themeColor: '#D4A017',
   manifest: '/site.webmanifest',
 };
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#D4A017'
+}
 
 export default function RootLayout({ children }) {
   return (
@@ -54,12 +63,14 @@ export default function RootLayout({ children }) {
         <meta name="format-detection" content="telephone=no" />
       </head>
       <body>
+        <Web3Provider>
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:top-0 focus:left-0 focus:z-50 focus:bg-[#D4A017] focus:text-white">
           İçeriğe geç
         </a>
         {children}
         <Analytics />
         <SpeedInsights />
+        </Web3Provider>
       </body>
     </html>
   );

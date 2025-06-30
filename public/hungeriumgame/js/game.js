@@ -852,6 +852,13 @@ class Game {
     }
     
     startGame() {
+        // ✅ YENİ: Kontrat üzerinde startGame fonksiyonunu çağır
+        if (this.web3Handler && this.web3Handler.currentAccount) {
+            this.web3Handler.startGameOnContract().catch(err => {
+                console.warn("Kontrat startGame çağrısı başarısız, oyun devam edecek:", err);
+            });
+        }
+
         // Mobilde tam ekranı tetikle
         if (window.innerWidth <= 600) {
             const docElm = document.documentElement;

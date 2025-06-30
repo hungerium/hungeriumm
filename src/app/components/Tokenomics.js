@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const Tokenomics = () => {
   const sectionRef = useRef(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -31,37 +36,43 @@ const Tokenomics = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Tokenomics data
+  // Tokenomics data - V2 Contract Distribution
   const tokenDistribution = [
-    { name: 'Treasury', percentage: 50, color: '#D4A017', description: 'Game & Staking Rewards' },
-    { name: 'Liquidity Pool', percentage: 20, color: '#E8D5B5', description: 'Initial DEX Liquidity' },
-    { name: 'Marketing', percentage: 15, color: '#A77B06', description: 'Marketing & Partnerships' },
-    { name: 'Team & Dev', percentage: 15, color: '#5F4B32', description: 'Locked & Vested' }
+    { name: 'Community', percentage: 35, color: '#D4A017', description: 'Community rewards & ecosystem growth' },
+    { name: 'Treasury', percentage: 25, color: '#E8D5B5', description: 'Game & Staking Rewards Pool' },
+    { name: 'Liquidity Pool', percentage: 20, color: '#A77B06', description: 'DEX Liquidity & Trading' },
+    { name: 'Marketing', percentage: 10, color: '#8B6914', description: 'Marketing & Partnerships' },
+    { name: 'Team & Dev', percentage: 10, color: '#5F4B32', description: 'Team allocation & development' }
   ];
 
-  // Yeni tokenomics içeriği
+  // V2 Contract tokenomics data
   const tokenomicsData = [
     {
-      title: "Token Distribution",
+      title: "V2 Token Supply",
       items: [
-        "Total Supply: 15 Billion COFFY"
+        "Total Supply: 15 Billion COFFY",
+        "Network: Binance Smart Chain (BSC)",
+        "Contract: Audited & Verified",
+        "Decimals: 18"
       ]
     },
     {
-      title: "Initial Distribution (50%)",
+      title: "Enhanced Distribution",
       items: [
-        "Treasury: 6B COFFY (40%) - Game rewards, development, migration pool",
-        "Liquidity: 4.5B COFFY (30%) - DEX liquidity pools",
-        "Marketing: 3B COFFY (20%) - Marketing campaigns, partnerships",
-        "Team: 1.5B COFFY (10%) - Team allocation, development"
+        "Community: 5.25B COFFY (35%) - Long-term ecosystem rewards",
+        "Treasury: 3.75B COFFY (25%) - Game rewards, staking, development",
+        "Liquidity: 3B COFFY (20%) - DEX liquidity pools & trading",
+        "Marketing: 1.5B COFFY (10%) - Partnerships & growth campaigns",
+        "Team: 1.5B COFFY (10%) - Development & operations"
       ]
     },
     {
-      title: "Dynamic Supply Features",
+      title: "Sustainable Growth Features",
       items: [
-        "Semi-Annual Inflation: 5% - Every 6 months (Treasury 2%, Others 1% each)",
-        "Staking Rewards: 10% APR - From treasury pool",
-        "Game Rewards: 5K daily limit - Anti-sybil protected"
+        "Semi-Annual Inflation: 2.5% every 6 months - Sustainable growth",
+        "Staking Rewards: 5% APY - Sustainable annual percentage yield",
+        "Game Rewards: 5K daily limit - Advanced sybil protection",
+        "Modular System: DAO, NFT, Social, Cross-chain planned for Q4"
       ]
     }
   ];
@@ -139,7 +150,7 @@ const Tokenomics = () => {
                 
                 {/* Colored segments */}
                 <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-md">
-                  {tokenDistribution.map((segment, index) => {
+                  {isClient && tokenDistribution.map((segment, index) => {
                     // Calculate segments and positions
                     const segmentAngle = (segment.percentage / 100) * 360;
                     const startAngle = tokenDistribution
@@ -163,8 +174,8 @@ const Tokenomics = () => {
                     // Path definition
                     const path = [
                       `M 50 50`,
-                      `L ${x1} ${y1}`,
-                      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                      `L ${x1.toFixed(2)} ${y1.toFixed(2)}`,
+                      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`,
                       `Z`
                     ].join(' ');
                     
@@ -176,7 +187,7 @@ const Tokenomics = () => {
                     const labelY = 50 + labelRadius * Math.sin(midAngleRad);
                     
                     return (
-                      <g key={index}>
+                      <g key={`segment-${index}`}>
                         <path 
                           d={path} 
                           fill={segment.color}
@@ -186,14 +197,13 @@ const Tokenomics = () => {
                         />
                         {segment.percentage >= 10 && (
                           <text 
-                            x={labelX} 
-                            y={labelY} 
+                            x={labelX.toFixed(2)} 
+                            y={labelY.toFixed(2)} 
                             textAnchor="middle" 
                             dominantBaseline="middle"
                             fill="#FFF"
                             fontSize="5"
                             fontWeight="bold"
-                            className="select-none pointer-events-none"
                           >
                             {segment.percentage}%
                           </text>
@@ -270,10 +280,10 @@ const Tokenomics = () => {
                   <h4 className="text-base text-[#D4A017] font-medium mb-2">Key Features</h4>
                   <ul className="space-y-2 text-sm">
                     {[
-                      { title: "50% Treasury", desc: "Dedicated to game rewards and development" },
-                      { title: "20% Liquidity", desc: "Ensuring stable trading on exchanges" },
-                      { title: "5% Inflation", desc: "Fixed annual rate to support ecosystem growth" },
-                      { title: "Burning Mechanism", desc: "Regular token burns to maintain scarcity" }
+                      { title: "35% Community", desc: "Long-term ecosystem rewards and growth" },
+                      { title: "25% Treasury", desc: "Game rewards, staking, and development" },
+                      { title: "2.5% Inflation", desc: "Semi-annual sustainable growth rate" },
+                      { title: "Future Modules", desc: "DAO, NFT, Social, and Cross-chain planned for Q4" }
                     ].map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <div className="w-4 h-4 rounded-full bg-[#D4A017]/20 flex items-center justify-center flex-shrink-0 mt-0.5">

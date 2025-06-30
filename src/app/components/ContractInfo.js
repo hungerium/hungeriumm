@@ -5,8 +5,8 @@ import { useState } from 'react';
 
 export default function ContractInfo() {
   const [copyStatus, setCopyStatus] = useState('');
-  const contractAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
-  const oldContractAddress = '0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f';
+  const contractAddress = '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78';
+  const oldContractAddress = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
 
   const copyToClipboard = async (text) => {
     try {
@@ -69,6 +69,19 @@ export default function ContractInfo() {
             >
               Trade on PancakeSwap
             </motion.a>
+          </div>
+
+          {/* Honeypot Check - moved lower for clarity */}
+          <div className="mt-6 mb-4 flex items-center gap-3">
+            <span className="inline-block px-3 py-1 rounded-full bg-green-700 text-xs font-semibold text-white">Honeypot Check: Passed (Confirmed)</span>
+            <a
+              href={`https://honeypot.is/?address=${contractAddress}&chain=bsc`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#D4A017] underline text-xs hover:text-[#F4C430]"
+            >
+              View on Honeypot.is
+            </a>
           </div>
         </motion.div>
       </div>

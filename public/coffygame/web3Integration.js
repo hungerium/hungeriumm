@@ -2,27 +2,6 @@ import * as Const from './constants.js';
 import * as Utils from './utils.js';
 const { showNotification, checkClaimRateLimit, recordClaim } = Utils; // Import the specific functions
 
-// YENİ KONTRAT ADRESLERİ VE ABI
-const NEW_TOKEN_ADDRESS = '0x7071271057e4b116e7a650F7011FFE2De7C3d14b';
-const MODULE_CONTRACT_ADDRESS = '0xfFe8666c1120Bbf58f6fD4A6B6F4d02A94C88AA3';
-
-// YENİ TOKEN ABI - Sadece gerekli fonksiyonlar
-const NEW_TOKEN_ABI = [
-    "function claimGameRewards(uint256 amount) external",
-    "function balanceOf(address account) view returns (uint256)",
-    "function migrateTokens() external",
-    "function canUserMigrate(address user) view returns (bool canMigrate, uint256 oldBalance)",
-    "function getMigrationInfo() view returns (address, bool, uint256, bool)",
-    "function name() view returns (string)",
-    "function symbol() view returns (string)",
-    "function decimals() view returns (uint8)"
-];
-
-// ESKİ TOKEN ABI - Sadece balanceOf
-const OLD_TOKEN_ABI = [
-    "function balanceOf(address account) view returns (uint256)"
-];
-
 // Function to wait for ethers.js to be available
 async function waitForEthers(maxWaitTime = 8000) {
     console.log("Waiting for ethers.js to be available...");
@@ -294,7 +273,7 @@ export async function connectWallet(gameState, uiElements) {
 
         gameState.signer = gameState.provider.getSigner();
         gameState.walletAddress = await gameState.signer.getAddress();
-        gameState.tokenContract = new ethers.Contract(NEW_TOKEN_ADDRESS, NEW_TOKEN_ABI, gameState.signer);
+        gameState.tokenContract = new ethers.Contract(Const.TOKEN_ADDRESS, Const.COFFY_ABI, gameState.signer);
         gameState.walletConnected = true;
 
         try {
@@ -413,70 +392,55 @@ function showWalletGuidance() {
 
 export async function claimTotalReward(gameState, uiElements) {
     const { claimTotalRewardButton, totalRewardElement, totalRewardsHudElement, tokenCountElement } = uiElements;
-    
+
     if (!gameState.walletConnected) {
-        showNotification("Please connect your wallet first", "warning");
+        showNotification("Please connect your wallet first.", 'warning');
         return;
     }
-
     if (gameState.pendingRewards <= 0) {
-        showNotification("No rewards to claim", "warning");
+        showNotification("No rewards to claim.", 'info');
         return;
     }
 
-    // Apply daily maximum limit of 5000 tokens (YENİ LİMİT - Coffy Adventure)
-    const MAX_DAILY_CLAIM = 5000;
-    const actualClaimAmount = Math.min(gameState.pendingRewards, MAX_DAILY_CLAIM);
-    
-    if (actualClaimAmount < gameState.pendingRewards) {
-        console.log(`Limiting claim amount: ${gameState.pendingRewards} -> ${actualClaimAmount} (daily max: ${MAX_DAILY_CLAIM})`);
+    // Check IP-based rate limiting
+    const rateLimit = checkClaimRateLimit();
+    if (!rateLimit.canClaim) {
+        showNotification(rateLimit.message, 'warning');
+        return;
     }
 
-    console.log(`Claiming ${actualClaimAmount} tokens (available: ${gameState.pendingRewards})`);
+    const rewardsToClaim = gameState.pendingRewards;
+    // Replace confirm with a notification and proceed
+    showNotification(`Attempting to claim ${rewardsToClaim.toFixed(2)} COFFY...`, 'info');
+    // if (!confirmClaim) return; // Removed confirm
+
+    claimTotalRewardButton.disabled = true;
+    claimTotalRewardButton.textContent = "Claiming...";
 
     try {
-        // Check IP rate limit first
-        const rateLimit = Utils.checkClaimRateLimit();
-        if (!rateLimit.canClaim) {
-            showNotification(rateLimit.message, 'warning');
-            return;
-        }
+        const weiAmount = ethers.utils.parseUnits(rewardsToClaim.toString(), 18);
 
-        // Disable claim button
-        claimTotalRewardButton.disabled = true;
-        claimTotalRewardButton.textContent = "CLAIMING...";
-        
-        console.log("Attempting to claim total reward...");
-        
-        // Check if tokenContract is available first
-        if (!gameState.tokenContract) {
-            showNotification("Smart contract not available. Please refresh and try again.", 'error');
-            claimTotalRewardButton.disabled = false;
-            claimTotalRewardButton.textContent = "CLAIM REWARDS";
-            return;
+        let gasLimitEstimate;
+        try {
+            gasLimitEstimate = await gameState.tokenContract.estimateGas.claimGameRewards(weiAmount);
+        } catch (gasError) {
+            console.warn("Gas estimation failed, using default limit:", gasError);
+            gasLimitEstimate = ethers.BigNumber.from("300000");
         }
-        
-        // Try to get decimals
-        const decimals = await gameState.tokenContract.decimals();
-        const rewardAmount = ethers.utils.parseUnits(actualClaimAmount.toString(), decimals);
-        
-        showNotification("Claim transaction sent! Waiting for confirmation...", 'info', 5000);
-        
-        // Call the smart contract claim function with actual claim amount
-        const tx = await gameState.tokenContract.claimGameRewards(rewardAmount);
-        
-        // Wait for transaction to be confirmed
+        const gasLimitWithBuffer = gasLimitEstimate.mul(120).div(100);
+
+        const tx = await gameState.tokenContract.claimGameRewards(weiAmount, { gasLimit: gasLimitWithBuffer });
+        showNotification("Claim transaction sent! Waiting for confirmation...", 'info', 5000); // Longer duration
         await tx.wait();
-        
-        // Record the claim for rate limiting
-        Utils.recordClaim();
-        
-        // Reduce pending rewards by claimed amount only
-        gameState.pendingRewards = Math.max(0, gameState.pendingRewards - actualClaimAmount);
-        
-        // Update UI elements with new pending rewards
-        if (totalRewardElement) totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
-        if (totalRewardsHudElement) totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
+
+        // Record successful claim for rate limiting
+        recordClaim();
+
+        gameState.pendingRewards = 0;
+        Utils.savePendingRewards(gameState);
+
+        totalRewardElement.textContent = gameState.pendingRewards.toFixed(2);
+        totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
 
         try {
             const balance = await gameState.tokenContract.balanceOf(gameState.walletAddress);
@@ -486,35 +450,22 @@ export async function claimTotalReward(gameState, uiElements) {
             console.error("Failed to update token balance after claim:", balanceError);
         }
 
-        // Show appropriate success message
-        let successMessage = `Successfully claimed ${actualClaimAmount} COFFY tokens!`;
-        if (actualClaimAmount < gameState.pendingRewards + actualClaimAmount) {
-            const remainingTokens = gameState.pendingRewards;
-            successMessage += ` (${remainingTokens} tokens remaining for tomorrow)`;
-        }
-        showNotification(successMessage, 'success');
+        showNotification("Rewards claimed successfully!", 'success');
 
     } catch (error) {
-        console.error("Error claiming rewards:", error);
-        
-        let errorMsg = "Failed to claim rewards";
-        if (error.message) {
-            if (error.message.includes("Daily reward limit exceeded")) {
-                errorMsg = "Günlük ödül limiti aşıldı. Yarın tekrar deneyin.";
-            } else if (error.message.includes("Sybil protection")) {
-                errorMsg = "Anti-Sybil koruması: Minimum 50,000 COFFY balance gerekli.";
-            } else if (error.message.includes("Claim cooldown")) {
-                errorMsg = "Claim cooldown aktif. Biraz bekleyin.";
-            } else if (error.message.includes("user rejected")) {
-                errorMsg = "Transaction rejected by user";
-            } else if (error.message.includes("insufficient funds")) {
-                errorMsg = "Insufficient funds for gas";
-            } else {
-                errorMsg = error.message;
-            }
-        }
-        
-        showNotification(errorMsg, 'error');
+        console.error("Reward claim failed:", error);
+        let errorMessage = "Reward claim failed.";
+        if (error.code === 'ACTION_REJECTED') {
+            errorMessage = "Transaction rejected by user.";
+        } else if (error.message?.includes("DailyRewardLimitExceeded")) {
+              errorMessage = "Daily reward limit exceeded.";
+         } else if (error.message) {
+              errorMessage += ` Error: ${error.message.substring(0, 100)}...`; // Truncate long messages
+         }
+        showNotification(errorMessage, 'error');
+    } finally {
+        claimTotalRewardButton.disabled = false;
+        claimTotalRewardButton.textContent = "CLAIM REWARDS";
     }
 }
 
@@ -607,143 +558,138 @@ export async function buyCharacter(characterId, gameState, uiElements) {
 }
 
 /**
- * Web3 yönetimi için ana sınıf
+ * Web3 entegrasyonu için yardımcı sınıf
+ * Bu dosya, cüzdan bağlantısı ve token işlemleri için fonksiyonlar içerir
  */
 class Web3Manager {
     constructor() {
         this.provider = null;
         this.signer = null;
-        this.connected = false;
-        this.walletAddress = null;
         this.tokenContract = null;
-        this.oldTokenContract = null;
-        this.tokenAddress = NEW_TOKEN_ADDRESS; // YENİ ADRES
-        this.chainId = '0x38'; // BSC
-        this.eventListeners = {};
-        
-        // Migration bilgileri
-        this.migrationInfo = {
-            enabled: false,
-            deadline: 0,
-            oldBalance: 0,
-            canMigrate: false
-        };
+        this.tokenAddress = '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78'; // COFFY Token addresi
+        this.connected = false;
+        this.chainId = '0x38'; // BSC Chain ID
+        this.account = null;
+        this.listeners = {};
     }
     
     /**
-     * Kontratları başlat
+     * MetaMask veya başka bir Web3 cüzdanına bağlanır
      */
-    async initContracts() {
-        if (!this.signer) {
-            console.error("Signer bulunamadı");
-            return;
-        }
-
+    async connect() {
         try {
-            // Yeni token kontratı
-            this.tokenContract = new ethers.Contract(
-                NEW_TOKEN_ADDRESS,
-                NEW_TOKEN_ABI,
-                this.signer
-            );
-
-            // Eski token kontratı (migration için)
-            this.oldTokenContract = new ethers.Contract(
-                OLD_TOKEN_ADDRESS,
-                OLD_TOKEN_ABI,
-                this.provider
-            );
-
-            console.log("Kontratlar başarıyla başlatıldı");
-            
-            // Migration bilgilerini kontrol et
-            await this.checkMigrationStatus();
-            
-        } catch (error) {
-            console.error("Kontrat başlatma hatası:", error);
-        }
-    }
-
-    /**
-     * Migration durumunu kontrol et
-     */
-    async checkMigrationStatus() {
-        if (!this.tokenContract || !this.walletAddress) return;
-        
-        try {
-            // Migration bilgilerini al
-            const migrationInfo = await this.tokenContract.getMigrationInfo();
-            this.migrationInfo.enabled = migrationInfo[1];
-            this.migrationInfo.deadline = migrationInfo[2];
-            
-            // Kullanıcının migration yapıp yapamayacağını kontrol et
-            const canMigrate = await this.tokenContract.canUserMigrate(this.walletAddress);
-            this.migrationInfo.canMigrate = canMigrate[0];
-            this.migrationInfo.oldBalance = ethers.utils.formatEther(canMigrate[1]);
-            
-            console.log("Migration durumu:", this.migrationInfo);
-            
-            // Migration UI'ını güncelle
-            this.updateMigrationUI();
-            
-        } catch (error) {
-            console.error("Migration durumu kontrol hatası:", error);
-        }
-    }
-
-    /**
-     * Migration işlemini gerçekleştir
-     */
-    async migrateTokens() {
-        if (!this.tokenContract || !this.migrationInfo.canMigrate) {
-            console.error("Migration yapılamaz");
-            return false;
-        }
-
-        try {
-            showNotification("Migration işlemi başlatılıyor...", 'info');
-            
-            const tx = await this.tokenContract.migrateTokens();
-            showNotification("Migration transaction gönderildi! Onay bekleniyor...", 'info', 5000);
-            
-            await tx.wait();
-            
-            showNotification(`${this.migrationInfo.oldBalance} COFFY başarıyla migrate edildi!`, 'success');
-            
-            // Migration durumunu güncelle
-            await this.checkMigrationStatus();
-            
-            return true;
-            
-        } catch (error) {
-            console.error("Migration hatası:", error);
-            showNotification("Migration işlemi başarısız: " + error.message, 'error');
-            return false;
-        }
-    }
-
-    /**
-     * Migration UI'ını güncelle
-     */
-    updateMigrationUI() {
-        // Migration düğmesini göster/gizle
-        const migrationButton = document.getElementById('migration-button');
-        const migrationInfo = document.getElementById('migration-info');
-        
-        if (migrationButton && migrationInfo) {
-            if (this.migrationInfo.canMigrate && this.migrationInfo.oldBalance > 0) {
-                migrationButton.style.display = 'block';
-                migrationInfo.textContent = `Eski kontratınızda ${this.migrationInfo.oldBalance} COFFY var. Yeni kontraata migrate edebilirsiniz.`;
-                migrationInfo.style.display = 'block';
+            // Tarayıcıda ethereum nesnesi var mı kontrol et
+            if (window.ethereum) {
+                console.log("MetaMask bulundu, bağlanmaya çalışılıyor...");
+                
+                // Provider oluştur
+                this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                
+                // Kullanıcı cüzdanını bağlamak için istek gönder
+                const accounts = await this.provider.send("eth_requestAccounts", []);
+                this.account = accounts[0];
+                
+                // Signer oluştur
+                this.signer = this.provider.getSigner();
+                
+                // Doğru ağda olup olmadığımızı kontrol et
+                await this.checkNetwork();
+                
+                // Token sözleşmesini oluştur
+                this.tokenContract = new ethers.Contract(
+                    this.tokenAddress,
+                    window.COFFY_ABI, // Global değişken olarak tanımlanmış ABI
+                    this.signer
+                );
+                
+                this.connected = true;
+                
+                // Bağlantı olayını tetikle
+                this.triggerEvent('connected', { account: this.account });
+                
+                // Hesap değişikliklerini dinle
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    this.account = accounts[0];
+                    this.triggerEvent('accountChanged', { account: this.account });
+                });
+                
+                // Ağ değişikliklerini dinle
+                window.ethereum.on('chainChanged', (chainId) => {
+                    window.location.reload();
+                });
+                
+                console.log("Web3 bağlantısı başarılı:", this.account);
+                return true;
+                
             } else {
-                migrationButton.style.display = 'none';
-                migrationInfo.style.display = 'none';
+                console.error("Web3 cüzdanı bulunamadı. Lütfen MetaMask veya benzer bir cüzdan yükleyin.");
+                this.triggerEvent('error', { 
+                    message: "Web3 cüzdanı bulunamadı. Lütfen MetaMask veya benzer bir cüzdan yükleyin."
+                });
+                return false;
+            }
+        } catch (error) {
+            console.error("Web3 bağlantısı sırasında hata:", error);
+            this.triggerEvent('error', { message: "Bağlantı hatası: " + error.message });
+            return false;
+        }
+    }
+    
+    /**
+     * Doğru blokzincirine bağlı olup olmadığını kontrol eder
+     */
+    async checkNetwork() {
+        const chainId = await this.provider.send('eth_chainId', []);
+        
+        if (chainId !== this.chainId) {
+            try {
+                // BSC ağına geçiş yap
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: this.chainId }]
+                });
+            } catch (error) {
+                // Ağ bulunamazsa, eklenmesini iste
+                if (error.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: this.chainId,
+                            chainName: 'Binance Smart Chain',
+                            nativeCurrency: {
+                                name: 'BNB',
+                                symbol: 'BNB',
+                                decimals: 18
+                            },
+                            rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                            blockExplorerUrls: ['https://bscscan.com/']
+                        }]
+                    });
+                }
             }
         }
     }
-
+    
     /**
-     * Oyun ödüllerini talep et - YENİ FONKSİYON
+     * Kullanıcının token bakiyesini getirir
+     */
+    async getTokenBalance() {
+        try {
+            if (!this.connected || !this.tokenContract) {
+                console.error("Web3 bağlantısı yok veya token sözleşmesi oluşturulmadı");
+                return 0;
+            }
+            
+            const balance = await this.tokenContract.balanceOf(this.account);
+            return ethers.utils.formatUnits(balance, 18);
+        } catch (error) {
+            console.error("Token bakiyesi alınırken hata:", error);
+            return 0;
+        }
+    }
+    
+    /**
+     * Oyun ödüllerini talep et
      */
     async claimGameRewards(amount) {
         try {
@@ -772,7 +718,7 @@ class Web3Manager {
             return false;
         }
     }
-
+    
     /**
      * Karakteri satın al
      */
@@ -805,18 +751,18 @@ class Web3Manager {
      * Olay dinleyici ekle
      */
     on(event, callback) {
-        if (!this.eventListeners[event]) {
-            this.eventListeners[event] = [];
+        if (!this.listeners[event]) {
+            this.listeners[event] = [];
         }
-        this.eventListeners[event].push(callback);
+        this.listeners[event].push(callback);
     }
     
     /**
      * Olayı tetikle
      */
     triggerEvent(event, data) {
-        if (this.eventListeners[event]) {
-            this.eventListeners[event].forEach(callback => {
+        if (this.listeners[event]) {
+            this.listeners[event].forEach(callback => {
                 callback(data);
             });
         }
@@ -847,9 +793,8 @@ class Web3Manager {
         this.provider = null;
         this.signer = null;
         this.tokenContract = null;
-        this.oldTokenContract = null;
         this.connected = false;
-        this.walletAddress = null;
+        this.account = null;
         this.triggerEvent('disconnected', {});
     }
     
@@ -857,8 +802,48 @@ class Web3Manager {
      * Bağlantı durumunu kontrol et
      */
     isConnected() {
-        return this.connected && this.walletAddress !== null;
+        return this.connected && this.account !== null;
+    }
+
+    /**
+     * Oyun başlatma fonksiyonu - Kontrat üzerinde lastGameStart'ı set eder (modül fonksiyonu)
+     */
+    async startGameOnContract(gameState) {
+        try {
+            if (!gameState || !gameState.walletConnected || !gameState.tokenContract) {
+                console.log("Cüzdan bağlı değil veya kontrat nesnesi yok, startGame kontrata gönderilmeyecek");
+                return false;
+            }
+            console.log("Kontrat üzerinde startGame çağrılıyor...");
+            const tx = await gameState.tokenContract.startGame();
+            await tx.wait();
+            console.log("✅ Kontrat startGame başarıyla çağrıldı:", tx.hash);
+            return true;
+        } catch (error) {
+            console.error("Kontrat startGame hatası:", error);
+            return false;
+        }
     }
 }
 
 export default Web3Manager;
+
+export const startGameOnContract = async (gameState) => {
+    // Create a temporary instance to call the method, or use the class if already instantiated elsewhere
+    // If you have a singleton Web3Manager instance, use that instead
+    // Here, we mimic the class method for direct usage
+    try {
+        if (!gameState || !gameState.walletConnected || !gameState.tokenContract) {
+            console.log("Cüzdan bağlı değil veya kontrat nesnesi yok, startGame kontrata gönderilmeyecek");
+            return false;
+        }
+        console.log("Kontrat üzerinde startGame çağrılıyor...");
+        const tx = await gameState.tokenContract.startGame();
+        await tx.wait();
+        console.log("✅ Kontrat startGame başarıyla çağrıldı:", tx.hash);
+        return true;
+    } catch (error) {
+        console.error("Kontrat startGame hatası:", error);
+        return false;
+    }
+};
