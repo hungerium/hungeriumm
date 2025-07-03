@@ -30,8 +30,8 @@ const characterNFTs = [
   {
     id: 1,
     name: 'Genesis',
-    description: 'The base character. Standard reward multiplier.',
-    multiplier: '1x',
+    description: 'The base character. 2x claim multiplier.',
+    multiplier: '2x',
     price: 1000000,
     priceLabel: '1,000,000 COFFY',
     image: '/coffygame/assets/coffee_cup.png',
@@ -40,8 +40,8 @@ const characterNFTs = [
   {
     id: 2,
     name: 'Mocha Knight',
-    description: 'Earn 50% more rewards with Mocha Knight.',
-    multiplier: '1.5x',
+    description: 'Earn 3x more rewards with Mocha Knight.',
+    multiplier: '3x',
     price: 3000000,
     priceLabel: '3,000,000 COFFY',
     image: '/coffygame/assets/player_mocha.png',
@@ -50,8 +50,8 @@ const characterNFTs = [
   {
     id: 3,
     name: 'Arabica Archmage',
-    description: 'Earn 100% more rewards with Arabica Archmage.',
-    multiplier: '2x',
+    description: 'Earn 5x more rewards with Arabica Archmage.',
+    multiplier: '5x',
     price: 5000000,
     priceLabel: '5,000,000 COFFY',
     image: '/coffygame/assets/player_arabica.png',
@@ -60,8 +60,8 @@ const characterNFTs = [
   {
     id: 4,
     name: 'Robusta Shadowblade',
-    description: 'Earn 200% more rewards with Robusta Shadowblade.',
-    multiplier: '3x',
+    description: 'Earn 7x more rewards with Robusta Shadowblade.',
+    multiplier: '7x',
     price: 7000000,
     priceLabel: '7,000,000 COFFY',
     image: '/coffygame/assets/player_robusta.png',
@@ -70,8 +70,8 @@ const characterNFTs = [
   {
     id: 5,
     name: 'Legendary Dragon',
-    description: 'Earn 400% more rewards and DAO membership with Legendary Dragon.',
-    multiplier: '5x',
+    description: 'Earn 10x more rewards and DAO membership with Legendary Dragon.',
+    multiplier: '10x',
     price: 10000000,
     priceLabel: '10,000,000 COFFY',
     image: '/coffygame/assets/player_espresso.png',
@@ -796,7 +796,7 @@ export default function NFTMarketplace() {
 			
 			console.log('📄 Creating contract...');
 			const contract = new ethers.Contract(
-				'0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78',
+				'0xeA44dc95f799D160B1F75cCBfAb34adF0Ef0F25B',
 				["function purchaseCharacter(uint256,uint256) payable"],
 				signer
 			);

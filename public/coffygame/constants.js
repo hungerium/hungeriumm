@@ -43,7 +43,7 @@ export const MANUAL_SHOOTING = {
 };
 
 // Web3 Constants
-export const TOKEN_ADDRESS = '0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78';
+export const TOKEN_ADDRESS = '0xeA44dc95f799D160B1F75cCBfAb34adF0Ef0F25B';
 export const SUPPORTED_WALLETS = ['MetaMask', 'Trust Wallet', 'Binance Wallet'];
 export const BSC_CHAIN_ID = '0x38';
 

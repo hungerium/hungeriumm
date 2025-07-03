@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { BrowserProvider, Contract } from "ethers";
 
-const COFFY_CONTRACT_ADDRESS = "0x50eD280D06fAbfC97709E3435c7dfD1Fa17Bbd78";
+const COFFY_CONTRACT_ADDRESS = "0xeA44dc95f799D160B1F75cCBfAb34adF0Ef0F25B";
 const COFFY_ABI = [
   {
     "inputs": [
@@ -63,8 +63,8 @@ export default function Navbar() {
 
   // Timer management
   useEffect(() => {
-    const ts = localStorage.getItem('coffy_human_verification_ts');
-    if (ts) setVerificationTimestamp(Number(ts));
+    localStorage.removeItem('coffy_human_verification_ts');
+    setVerificationTimestamp(null);
   }, []);
 
   useEffect(() => {
