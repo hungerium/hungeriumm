@@ -244,7 +244,7 @@
     function updateWalletStatus() {
       if (!walletStatus || !mainMenuClaimReward || !scoreSection || !totalScore || !claimableCoffy) return;
       if (web3Handler && web3Handler.currentAccount) {
-        walletStatus.textContent = 'Cüzdan Bağlandı: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
+        walletStatus.textContent = 'Wallet Connected: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
         mainMenuClaimReward.disabled = false;
         scoreSection.style.display = 'flex';
         walletConnected = true;
@@ -270,7 +270,7 @@
         
         claimableCoffy.textContent = coffy;
       } else {
-        walletStatus.textContent = 'Cüzdan Bağlı Değil';
+        walletStatus.textContent = 'Wallet Not Connected';
         mainMenuClaimReward.disabled = true;
         scoreSection.style.display = 'none';
         walletConnected = false;
@@ -304,7 +304,7 @@
       function updateWalletStatus() {
         if (!walletStatus || !mainMenuClaimReward || !scoreSection || !totalScore || !claimableCoffy) return;
         if (web3Handler && web3Handler.currentAccount) {
-          walletStatus.textContent = 'Cüzdan Bağlandı: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
+          walletStatus.textContent = 'Wallet Connected: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
           mainMenuClaimReward.disabled = false;
           scoreSection.style.display = 'flex';
           walletConnected = true;
@@ -330,7 +330,7 @@
         
           claimableCoffy.textContent = coffy;
         } else {
-          walletStatus.textContent = 'Cüzdan Bağlı Değil';
+          walletStatus.textContent = 'Wallet Not Connected';
           mainMenuClaimReward.disabled = true;
           scoreSection.style.display = 'none';
           walletConnected = false;
@@ -352,13 +352,13 @@
       }
       if (mainMenuConnectWallet) mainMenuConnectWallet.onclick = async function() {
         if (web3Handler && typeof web3Handler.connectWallet === 'function') {
-          showNotification('Cüzdan bağlanıyor...', 'info');
+          showNotification('Connecting wallet...', 'info');
           try {
             await web3Handler.connectWallet();
-            showNotification('Cüzdan bağlandı!', 'success');
+            showNotification('Wallet connected!', 'success');
             updateWalletStatus();
           } catch (e) {
-            showNotification('Cüzdan bağlanamadı!', 'error');
+            showNotification('Failed to connect wallet!', 'error');
           }
         }
       };
@@ -387,17 +387,17 @@
         }
         
         if (coffy <= 0) {
-          showNotification('Claim edilecek Coffy yok!', 'info');
+          showNotification('No Coffy to claim!', 'info');
           return;
         }
         
         if (web3Handler && typeof web3Handler.claimRewards === 'function') {
-          showNotification(`${coffy} Coffy claim ediliyor...`, 'info');
+          showNotification(`${coffy} Coffy is being claimed...`, 'info');
           try {
             // DOĞRU ÇAĞRI - claimGameRewards kontrata gönderilecek
             console.log('🌐 Calling claimRewards with amount:', coffy);
             await web3Handler.claimRewards(coffy);
-            showNotification(`Başarıyla ${coffy} Coffy claim edildi!`, 'success');
+            showNotification(`Successfully claimed ${coffy} Coffy!`, 'success');
             
             // Hem player hem localStorage'u sıfırla
             if (window.game && window.game.player && typeof window.game.player.resetLocalCoffy === 'function') {
@@ -410,7 +410,7 @@
             console.log('✅ Claim successful, all coffy reset to 0');
           } catch (e) {
             console.error('❌ Claim failed:', e);
-            showNotification('Ödül talep edilemedi: ' + (e.message || e), 'error');
+            showNotification('Failed to claim reward: ' + (e.message || e), 'error');
           }
         }
       };

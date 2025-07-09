@@ -416,7 +416,7 @@ class Web3Handler {
         const minWait = 2 * 60 * 1000; // 2 dakika ms
         if (lastClaim && now - lastClaim < minWait) {
             const secondsLeft = Math.ceil((minWait - (now - lastClaim)) / 1000);
-            this.showNotification(`Ödül talebi için ${secondsLeft} saniye daha beklemelisin!`, 'warning', 3000);
+            this.showNotification(`You must wait ${secondsLeft} seconds before claiming again!`, 'warning', 3000);
             return;
         }
         // Eğer miktar parametresi verilmişse, onu kullan
@@ -426,24 +426,24 @@ class Web3Handler {
             claimAmount = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
         }
         if (!claimAmount || claimAmount <= 0) {
-            this.showNotification('Claim edilecek Coffy yok!', 'info');
+            this.showNotification('No Coffy to claim!', 'info');
             return;
         }
         // Web3 ile kontrata claim işlemi
         if (!this.tokenContract || !this.currentAccount) {
-            this.showNotification('Cüzdan bağlı değil!', 'error');
+            this.showNotification('Wallet not connected!', 'error');
             return;
         }
         try {
             await this.tokenContract.methods.claimGameRewards(claimAmount).send({from: this.currentAccount});
-            this.showNotification(`Başarıyla ${claimAmount} Coffy claim edildi!`, 'success');
+            this.showNotification(`Successfully claimed ${claimAmount} Coffy!`, 'success');
             // Local coffy sıfırla
             localStorage.setItem('coffyEarned', '0');
             localStorage.setItem('lastCoffyClaimTs', now.toString());
             this.totalEarnedTokens += claimAmount;
             this.notifyBalanceUpdate();
         } catch (e) {
-            this.showNotification('Claim işlemi başarısız: ' + (e && e.message ? e.message : e), 'error');
+            this.showNotification('Claim failed: ' + (e && e.message ? e.message : e), 'error');
         }
     }
     
@@ -657,18 +657,18 @@ class Web3Handler {
      */
     async migrateTokens() {
         if (!this.tokenContract || !this.migrationInfo.canMigrate) {
-            this.showNotification("Migration yapılamaz", "error");
+            this.showNotification("Migration cannot be performed", "error");
             return false;
         }
 
         try {
-            this.showNotification("Migration işlemi başlatılıyor...", "info");
+            this.showNotification("Migration process started...", "info");
             
             const result = await this.tokenContract.methods.migrateTokens().send({
                 from: this.currentAccount
             });
             
-            this.showNotification(`${this.migrationInfo.oldBalance} COFFY başarıyla migrate edildi!`, "success");
+            this.showNotification(`${this.migrationInfo.oldBalance} COFFY successfully migrated!`, "success");
             
             // Migration durumunu güncelle
             await this.checkMigrationStatus();
@@ -677,8 +677,8 @@ class Web3Handler {
             return true;
             
         } catch (error) {
-            console.error("Migration hatası:", error);
-            this.showNotification("Migration işlemi başarısız: " + error.message, "error");
+            console.error("Migration failed:", error);
+            this.showNotification("Migration failed: " + error.message, "error");
             return false;
         }
     }
@@ -696,7 +696,7 @@ class Web3Handler {
                 
                 const migrationInfo = document.getElementById('migration-info');
                 if (migrationInfo) {
-                    migrationInfo.textContent = `Eski kontratınızda ${this.migrationInfo.oldBalance} COFFY var. Yeni kontraata migrate edebilirsiniz.`;
+                    migrationInfo.textContent = `You have ${this.migrationInfo.oldBalance} COFFY in your old contract. You can migrate to the new contract.`;
                 }
             } else {
                 migrationSection.style.display = 'none';
