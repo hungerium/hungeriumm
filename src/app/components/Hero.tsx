@@ -128,8 +128,8 @@ export default function Hero() {
               <motion.div className="absolute inset-0 bg-accent-amber/20 rounded-full blur-2xl animate-pulseGlow" />
               <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
                 <Image
-                  src="/images/coffy-logo.png"
-                  alt="Coffy Logo"
+                  src="/images/coffy-hero.png"
+                  alt="Coffy Hero"
                   width={256}
                   height={256}
                   className="relative animate-float shadow-[0_0_30px_#D4A017]"

@@ -301,8 +301,8 @@ export default function Hero() {
                 whileHover={{ scale: 1.1, rotateY: 5 }}
               >
                 <Image
-                  src="/images/coffy-logo.png"
-                  alt="Coffy Coin Logo"
+                  src="/images/coffy-hero.png"
+                  alt="Coffy Coin Hero"
                   width={320}
                   height={320}
                   className="w-full h-full object-contain drop-shadow-2xl filter brightness-110 rounded-[2.5rem]"
