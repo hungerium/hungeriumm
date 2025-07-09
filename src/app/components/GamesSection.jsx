@@ -7,12 +7,7 @@ import { motion } from 'framer-motion';
 const COFFEE_BEAN_IMAGE = '/images/coffee-beans-pattern.png';
 const FALLBACK_IMAGE = '/images/game-placeholder.jpg';
 
-const DIFFICULTY_COLORS = {
-  Easy: 'text-green-400 bg-green-400/10',
-  Medium: 'text-yellow-400 bg-yellow-400/10',
-  Hard: 'text-orange-400 bg-orange-400/10',
-  Expert: 'text-red-400 bg-red-400/10',
-};
+
 
 // Animation variants
 const containerVariants = {
@@ -55,7 +50,6 @@ const cardVariants = {
 };
 
 const GamesSection = ({ id }) => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
   const [isLoading, setIsLoading] = useState({});
   const [isClient, setIsClient] = useState(false);
 
@@ -66,15 +60,15 @@ const GamesSection = ({ id }) => {
   // Game data - could be moved to external config or API
   const games = useMemo(() => [
     {
-      id: 'coffy-adventure',
-      title: 'Coffy Adventure',
-      image: '/images/game-previews/coffy-adventure-preview.jpg',
-      purpose: 'Embark on an epic journey collecting coffee beans while battling tea enemies in this action-packed adventure. Master combat mechanics, unlock new abilities, and compete for global leaderboard dominance. Discover hidden secrets, power-ups, and face unique bosses as you progress through increasingly challenging levels.',
-      path: '/coffygame/game.html',
-      gradient: 'from-[#BFA181] to-[#6F4E37]',
+      id: 'bee-game',
+      title: 'Bee Game Adventure',
+      image: '/images/game-previews/beegame-preview.jpg',
+      purpose: 'Experience an immersive open-world adventure as a brave bee! Explore vast environments, battle enemies, collect nectar, and survive in this action-packed 3D world. Use flight mechanics, combat skills, and strategic thinking to overcome challenges while earning COFFY rewards.',
+      path: '/beegame/index.html',
+      gradient: 'from-[#FFD700] to-[#FFA500]',
       rewards: 'Max 5,000 COFFY/day',
-      difficulty: 'Easy',
-      category: 'Action'
+      category: 'Adventure',
+      isNew: true
     },
     {
       id: 'flagracer-online',
@@ -84,7 +78,6 @@ const GamesSection = ({ id }) => {
       path: '/flagraceronline/index.html',
       gradient: 'from-[#A77B06] to-[#3A2A1E]',
       rewards: 'Max 5,000 COFFY/day',
-      difficulty: 'Medium',
       category: 'Racing'
     },
     {
@@ -95,7 +88,6 @@ const GamesSection = ({ id }) => {
       path: '/coffyinmaze/index.html',
       gradient: 'from-[#8B6F4E] to-[#3A2A1E]',
       rewards: 'Max 5,000 COFFY/day',
-      difficulty: 'Hard',
       category: 'Puzzle'
     },
     {
@@ -106,8 +98,17 @@ const GamesSection = ({ id }) => {
       path: '/hungeriumgame/index.html',
       gradient: 'from-[#D4A017] to-[#A77B06]',
       rewards: 'Max 5,000 COFFY/day',
-      difficulty: 'Expert',
       category: 'Strategy'
+    },
+    {
+      id: 'coffy-adventure',
+      title: 'Coffy Adventure',
+      image: '/images/game-previews/coffy-adventure-preview.jpg',
+      purpose: 'Embark on an epic journey collecting coffee beans while battling tea enemies in this action-packed adventure. Master combat mechanics, unlock new abilities, and compete for global leaderboard dominance. Discover hidden secrets, power-ups, and face unique bosses as you progress through increasingly challenging levels.',
+      path: '/coffygame/game.html',
+      gradient: 'from-[#BFA181] to-[#6F4E37]',
+      rewards: 'Max 5,000 COFFY/day',
+      category: 'Action'
     }
   ], []);
 
@@ -149,13 +150,8 @@ const GamesSection = ({ id }) => {
     }
   ], []);
 
-  // Filter games by difficulty
-  const filteredGames = useMemo(() => {
-    if (selectedDifficulty === 'All') return games;
-    return games.filter(game => game.difficulty === selectedDifficulty);
-  }, [games, selectedDifficulty]);
-
-  const difficulties = useMemo(() => ['All', 'Easy', 'Medium', 'Hard', 'Expert'], []);
+  // No filtering needed - show all games
+  const filteredGames = games;
 
   // Handlers
   const handleGameClick = useCallback(async (gameId, gamePath) => {
@@ -192,23 +188,6 @@ const GamesSection = ({ id }) => {
             Dive into our immersive gaming ecosystem and earn COFFY tokens while experiencing 
             cutting-edge gameplay mechanics
           </p>
-          {/* Difficulty Filter */}
-          <div className="flex flex-wrap justify-center gap-2 mb-6">
-            {difficulties.map((difficulty) => (
-              <button
-                key={difficulty}
-                onClick={() => setSelectedDifficulty(difficulty)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
-                  selectedDifficulty === difficulty
-                    ? 'bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white shadow-lg scale-105'
-                    : 'bg-[#3A2A1E] text-[#BFA181] hover:bg-[#4A3A2E] border border-[#BFA181]/30'
-                }`}
-                aria-pressed={selectedDifficulty === difficulty}
-              >
-                {difficulty}
-              </button>
-            ))}
-          </div>
         </motion.div>
 
         {/* Anti-Sybil Security Section (compact, animated cards) */}
@@ -358,12 +337,29 @@ const GamesSection = ({ id }) => {
                   </motion.button>
                 </div>
                 
-                {/* Difficulty Badge */}
-                <div className="absolute top-4 right-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${DIFFICULTY_COLORS[game.difficulty]}`}>
-                    {game.difficulty}
-                  </span>
-                </div>
+                {/* NEW Badge for new games */}
+                {game.isNew && (
+                  <div className="absolute top-4 right-4">
+                    <motion.span 
+                      className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border-2 border-white/30"
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        boxShadow: [
+                          '0 0 0 0 rgba(255, 107, 107, 0.7)',
+                          '0 0 0 10px rgba(255, 107, 107, 0)',
+                          '0 0 0 0 rgba(255, 107, 107, 0)'
+                        ]
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      NEW
+                    </motion.span>
+                  </div>
+                )}
               </div>
 
               {/* Card Content */}
