@@ -1059,8 +1059,8 @@ class Game {
 
     startGame() {
         // ✅ YENİ: Kontrat üzerinde startGame fonksiyonunu çağır
-        if (this.web3Handler && this.web3Handler.currentAccount) {
-            this.web3Handler.startGameOnContract().catch(err => {
+        if (window.web3Handler && window.web3Handler.currentAccount) {
+            window.web3Handler.startGameOnContract().catch(err => {
                 console.warn("Kontrat startGame çağrısı başarısız, oyun devam edecek:", err);
             });
         }

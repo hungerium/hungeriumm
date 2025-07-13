@@ -67,9 +67,14 @@ const STAKING_ABI = [
   "function totalStaked() view returns (uint256)",
   "function totalSupply() view returns (uint256)",
   "function stakes(address) view returns (uint128 amount, uint64 startTime, uint64 lastClaim)",
-  "function getStakingAPY(address) view returns (uint256)"
+  "function getStakingAPY(address) view returns (uint256)",
+  "function claimStakingReward()",
+  "function getStakeInfo(address) view returns (uint128 amount, uint64 startTime, uint128 pendingReward)"
 ];
 const STAKING_ADDRESS = "0x54e3ffFD370E936323EC75551297b3bA5Fa63330";
+
+// Sabit APY
+const FIXED_APY = 5.00;
 
 export default function Staking({ id }) {
   const { connectWallet, userAddress, tokenContract, isConnecting, connectionError } = useWeb3Wallet();
@@ -122,9 +127,7 @@ export default function Staking({ id }) {
       const contract = await getStakingContract();
       if (!contract) throw new Error('Staking contract not available');
       const balance = await contract.balanceOf(userAddress);
-      
-      // ✅ DÜZELTME: stakes mapping kullan (gerçek staking data)
-      const stakeData = await contract.stakes(userAddress); // [amount, startTime, lastClaim]
+      const stakeInfo = await contract.getStakeInfo(userAddress); // [amount, startTime, pendingReward]
       const totalStakedAmount = await contract.totalStaked ? await contract.totalStaked() : 0;
       const totalSupplyAmount = await contract.totalSupply ? await contract.totalSupply() : 0;
 
@@ -132,32 +135,12 @@ export default function Staking({ id }) {
       setTotalSupply(`${ethers.formatUnits(totalSupplyAmount, 18)} COFFY`);
       setTotalStaked(`${ethers.formatUnits(totalStakedAmount, 18)} COFFY`);
 
-      // ✅ stakes mapping: [0]=amount, [1]=startTime, [2]=lastClaim
-      const stakedAmount = stakeData[0] ? ethers.formatUnits(stakeData[0], 18) : '0.00';
-      const startTime = stakeData[1] ? Number(stakeData[1]) : 0;
-      const lastClaim = stakeData[2] ? Number(stakeData[2]) : 0;
-      
+      // [0]=stakedAmount, [1]=startTime, [2]=pendingReward
+      const stakedAmount = stakeInfo[0] ? ethers.formatUnits(stakeInfo[0], 18) : '0.00';
+      const startTime = stakeInfo[1] ? Number(stakeInfo[1]) : 0;
+      const pendingReward = stakeInfo[2] ? ethers.formatUnits(stakeInfo[2], 18) : '0.00';
       setStakedBalance(stakedAmount);
-
-      // Dinamik APY'yi çek
-      let apyValue = '0';
-      try {
-        const apyRaw = await contract.getStakingAPY(userAddress);
-        apyValue = (Number(apyRaw) / 100).toFixed(2); // örn. 500 = 5.00
-      } catch {}
-      setApy(apyValue);
-
-      // ✅ Staking rewards hesaplama (APY based on time since lastClaim)
-      let calculatedRewards = '0.00';
-      if (parseFloat(stakedAmount) > 0 && startTime > 0) {
-        const currentTime = Math.floor(Date.now() / 1000);
-        const timeStaked = currentTime - (lastClaim || startTime);
-        const annualRate = Number(apyValue) / 100; // dinamik APY
-        const secondsInYear = 365 * 24 * 60 * 60;
-        const rewards = (parseFloat(stakedAmount) * annualRate * timeStaked) / secondsInYear;
-        calculatedRewards = Math.max(0, rewards).toFixed(6);
-      }
-      setRewards(calculatedRewards);
+      setRewards(pendingReward);
 
       // Lock/unlock kontrolü
       if (parseFloat(stakedAmount) > 0 && startTime > 0) {
@@ -170,7 +153,7 @@ export default function Staking({ id }) {
         setStakeStartTime(null);
       }
       setStatus('');
-      setStakeData(stakeData);
+      setStakeData(stakeInfo);
     } catch (error) {
       console.error('Error updating stake info:', error);
       setStatus('Error fetching data');
@@ -345,7 +328,26 @@ export default function Staking({ id }) {
 
   // ✅ Claim rewards
   const claimRewards = async () => {
-    return await handleTransaction('claim');
+    if (!tokenContract || !userAddress) {
+      toast.error('❌ Please connect your wallet first', { autoClose: 4000 });
+      return false;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const contract = await getStakingContract();
+      if (!contract) throw new Error('Staking contract not available');
+      const tx = await contract.claimStakingReward();
+      const receipt = await tx.wait();
+      showTransactionStatus(tx.hash);
+      await updateStakeInfo();
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      setError(error.message || 'claim failed');
+      setIsLoading(false);
+      return false;
+    }
   };
 
   const showTransactionStatus = (hash) => {
@@ -438,7 +440,7 @@ export default function Staking({ id }) {
                 <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
                   <FaChartLine className="text-[#D4A017] text-xl mx-auto mb-2" />
                   <p className="text-xs text-gray-400 mb-1">APY</p>
-                  <p className="text-lg font-bold text-white">{apy}%</p>
+                  <p className="text-lg font-bold text-white">{FIXED_APY}%</p>
                 </div>
                 <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
                   <FaClock className="text-[#D4A017] text-xl mx-auto mb-2" />
@@ -510,56 +512,111 @@ export default function Staking({ id }) {
                   <div className="text-xs text-gray-400 relative z-10">Locked in V2 staking</div>
                 </div>
 
-                {/* Yeni: Toplam Arz, Staking Oranı, Katılımcı Sayısı, Wallet Adresi */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
+                {/* Yeni: Toplam Arz, Aylık APY, Wallet Adresi */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 place-items-center">
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
                     <FaCoins className="text-[#D4A017] text-xl mb-1" />
                     <span className="text-xs text-gray-400">Total Supply</span>
                     <span className="text-lg font-bold text-white">{totalSupply}</span>
                   </div>
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
-                    <FaLock className="text-[#D4A017] text-xl mb-1" />
-                    <span className="text-xs text-gray-400">Staking Ratio</span>
-                    <span className="text-lg font-bold text-white">{formatPercent(totalStakedNum, totalSupplyNum)}</span>
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
+                    <FaChartLine className="text-[#D4A017] text-xl mb-1" />
+                    <span className="text-xs text-gray-400">Annual APY</span>
+                    <span className="text-lg font-bold text-white">{FIXED_APY}%</span>
                   </div>
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
                     <FaWallet className="text-[#D4A017] text-xl mb-1" />
                     <span className="text-xs text-gray-400">Your Address</span>
                     <span className="text-lg font-bold text-white">{userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : '-'}</span>
                   </div>
-                  {/* Katılımcı sayısı kontrat fonksiyonu ile alınabiliyorsa ekle, yoksa gizli bırak */}
                 </div>
 
                 {/* Enhanced Stats Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                  {[
-                    { label: "Your Balance", value: walletBalance, icon: "fas fa-wallet", color: "blue", noShort: true },
-                    { label: "Your Staked", value: stakedBalance, icon: "fas fa-lock", color: "green" },
-                    { label: "Pending Rewards", value: rewards, icon: "fas fa-gift", color: "purple" },
-                    { label: "Your Total", value: (parseFloat(walletBalance) + parseFloat(stakedBalance) + parseFloat(rewards)).toFixed(4), icon: "fas fa-coins", color: "yellow", noShort: true },
-                  ].map((stat) => (
-                    <motion.div 
-                      key={stat.label} 
-                      whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
-                      className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-${stat.color}-400/20 hover:border-${stat.color}-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
-                    >
-                      {/* Parıltı efekti */}
-                      <motion.div
-                        className="absolute inset-0 pointer-events-none rounded-lg"
-                        initial={{ opacity: 0 }}
-                        whileHover={{ opacity: 0.18 }}
-                        style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
-                        transition={{ duration: 0.4 }}
-                      />
-                      <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
-                        <i className={`${stat.icon} text-${stat.color}-400 text-base`}></i>
-                        <p className={`text-${stat.color}-300 text-xs font-medium`}>{stat.label}</p>
-                      </div>
-                      <p className="text-white font-bold text-base z-10 relative">
-                        {stat.value}
-                      </p>
-                    </motion.div>
-                  ))}
+                  {/* Your Balance */}
+                  <motion.div 
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
+                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-blue-400/20 hover:border-blue-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                  >
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none rounded-lg"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.18 }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
+                      <i className="fas fa-wallet text-blue-400 text-base"></i>
+                      <p className="text-blue-300 text-xs font-medium">Your Balance</p>
+                    </div>
+                    <p className="text-white font-bold text-base z-10 relative">
+                      {Number(walletBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </p>
+                  </motion.div>
+                  {/* Your Staked */}
+                  <motion.div 
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
+                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-green-400/20 hover:border-green-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                  >
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none rounded-lg"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.18 }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
+                      <i className="fas fa-lock text-green-400 text-base"></i>
+                      <p className="text-green-300 text-xs font-medium">Your Staked</p>
+                    </div>
+                    <p className="text-white font-bold text-base z-10 relative">
+                      {Number(stakedBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </p>
+                    {/* Stake başlangıç zamanı küçük yazı */}
+                    {stakeData && stakeData[1] ? (
+                      <span className="text-[10px] text-gray-400 mt-1">Start: {new Date(Number(stakeData[1]) * 1000).toLocaleString()}</span>
+                    ) : null}
+                  </motion.div>
+                  {/* Pending Rewards */}
+                  <motion.div 
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
+                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-purple-400/20 hover:border-purple-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                  >
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none rounded-lg"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.18 }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
+                      <i className="fas fa-gift text-purple-400 text-base"></i>
+                      <p className="text-purple-300 text-xs font-medium">Pending Rewards</p>
+                    </div>
+                    <p className="text-white font-bold text-base z-10 relative">
+                      {Number(rewards).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </p>
+                  </motion.div>
+                  {/* Your Total */}
+                  <motion.div 
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
+                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-yellow-400/20 hover:border-yellow-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                  >
+                    <motion.div
+                      className="absolute inset-0 pointer-events-none rounded-lg"
+                      initial={{ opacity: 0 }}
+                      whileHover={{ opacity: 0.18 }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
+                      <i className="fas fa-coins text-yellow-400 text-base"></i>
+                      <p className="text-yellow-300 text-xs font-medium">Your Total</p>
+                    </div>
+                    <p className="text-white font-bold text-base z-10 relative">
+                      {(parseFloat(walletBalance) + parseFloat(stakedBalance) + parseFloat(rewards)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    </p>
+                  </motion.div>
                 </div>
 
                 {/* Lock Period Warning */}

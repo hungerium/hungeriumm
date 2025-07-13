@@ -40,7 +40,7 @@ class Web3Handler {
         if (window.ethereum) {
             this.web3 = new Web3(window.ethereum);
             console.log("Web3 detected in browser");
-            
+
             // Listen for account changes
             window.ethereum.on('accountsChanged', async (accounts) => {
                 console.log("Accounts changed:", accounts);
@@ -55,7 +55,7 @@ class Web3Handler {
                     this.notifyBalanceUpdate();
                 }
             });
-            
+
             window.ethereum.on('chainChanged', async (chainId) => {
                 console.log("Chain changed:", chainId);
                 if (this.currentAccount) {
@@ -63,24 +63,24 @@ class Web3Handler {
                     this.notifyBalanceUpdate();
                 }
             });
-            
-            // Check if already connected
-            window.ethereum.request({ method: 'eth_accounts' })
-                .then(accounts => {
-                    if (accounts.length > 0) {
-                        this.currentAccount = accounts[0];
-                        this.connectionStatus = 'connected';
-                        this.fetchTokenBalance();
-                    }
-                })
-                .catch(error => console.error("Error checking accounts:", error));
+
+            // KALDIRILDI: Otomatik hesap kontrolü ve bağlantı
+            // window.ethereum.request({ method: 'eth_accounts' })
+            //     .then(accounts => {
+            //         if (accounts.length > 0) {
+            //             this.currentAccount = accounts[0];
+            //             this.connectionStatus = 'connected';
+            //             this.fetchTokenBalance();
+            //         }
+            //     })
+            //     .catch(error => console.error("Error checking accounts:", error));
         } else if (window.web3) {
             this.web3 = new Web3(window.web3.currentProvider);
             console.log("Legacy Web3 detected");
         } else {
             console.log("No Web3 detected. Please install MetaMask or another Web3 provider.");
         }
-        
+
         // Create contract instance if Web3 is available
         if (this.web3) {
             try {
