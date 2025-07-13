@@ -92,6 +92,15 @@ const COFFY_ABI = [
   {"inputs":[{"internalType":"string","name":"profileId","type":"string"}],"name":"linkUserProfile","outputs":[],"stateMutability":"nonpayable","type":"function"}
 ];
 
+// Helper: Kalıcı verified kontrolü
+function checkPermanentVerification() {
+  try {
+    return localStorage.getItem('coffy_human_verified') === 'true';
+  } catch (e) {
+    return false;
+  }
+}
+
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -101,52 +110,38 @@ export default function Navbar() {
   const [isConnected, setIsConnected] = useState(false);
   const [userAddress, setUserAddress] = useState(null);
   
-  // Verification states
+  // --- Human Verification Timer State ---
   const [verificationTimestamp, setVerificationTimestamp] = useState(null);
   const [timer, setTimer] = useState(0);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [isVerifyingHuman, setIsVerifyingHuman] = useState(false);
+  const [showHumanTooltip, setShowHumanTooltip] = useState(false);
 
-  // Handle scroll effects
+  // Mount sırasında localStorage'dan timestamp oku
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-      
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (window.scrollY / totalScroll) * 100;
-      setScrollProgress(Math.min(progress, 100));
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const ts = localStorage.getItem('coffy_human_verification_ts');
+    if (ts) setVerificationTimestamp(Number(ts));
   }, []);
 
-  // Timer management
-  useEffect(() => {
-    localStorage.removeItem('coffy_human_verification_ts');
-    setVerificationTimestamp(null);
-  }, []);
-
+  // Timer'ı interval ile güncelle (3 gün = 259200000 ms)
   useEffect(() => {
     if (!verificationTimestamp) return;
-    
     const interval = setInterval(() => {
       const now = Date.now();
       const diff = verificationTimestamp + 3 * 24 * 60 * 60 * 1000 - now;
       setTimer(diff > 0 ? diff : 0);
     }, 1000);
-    
     return () => clearInterval(interval);
   }, [verificationTimestamp]);
 
-  const formatTimer = (ms) => {
+  // Timer formatlama fonksiyonu
+  function formatTimer(ms) {
     if (ms <= 0) return null;
     const totalSeconds = Math.floor(ms / 1000);
     const days = Math.floor(totalSeconds / (24 * 3600));
     const hours = Math.floor((totalSeconds % (24 * 3600)) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     return `${days}d ${hours}h ${minutes}m`;
-  };
+  }
 
   // Wallet connection
   const connectWallet = async () => {
@@ -165,40 +160,29 @@ export default function Navbar() {
 
   // Human verification
   const handleHumanVerification = async () => {
-    setIsVerifying(true);
+    setShowHumanTooltip(true);
+    setIsVerifyingHuman(true);
     try {
-      let address = userAddress;
       if (!isConnected) {
-        if (typeof window.ethereum !== 'undefined') {
-          const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts'
-          });
-          setIsConnected(true);
-          setUserAddress(accounts[0]);
-          address = accounts[0];
-        }
+        await connectWallet();
       }
-      // Ethers v6 ile kontrata linkUserProfile çağrısı gönder
-      if (window.ethereum && address) {
-        const provider = new BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const contract = new Contract(COFFY_CONTRACT_ADDRESS, COFFY_ABI, signer);
-        const profileId = address.slice(2, 10);
-        const tx = await contract.linkUserProfile(profileId);
-        await tx.wait();
-        console.log("✅ linkUserProfile kontrata gönderildi ve onaylandı");
+      if (typeof window === "undefined" || !window.ethereum) {
+        setIsVerifyingHuman(false);
+        alert("No Ethereum provider found. Please install MetaMask or another wallet.");
+        return;
       }
-
-      // Simulate verification process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
+      const ethersModule = await import("ethers");
+      const { BrowserProvider } = ethersModule;
+      const provider = new BrowserProvider(window.ethereum);
+      await provider.getSigner();
+      setIsVerifyingHuman(false);
+      // Timer başlatma
       const now = Date.now();
       setVerificationTimestamp(now);
       localStorage.setItem('coffy_human_verification_ts', now.toString());
     } catch (error) {
-      console.error('Verification failed:', error);
-    } finally {
-      setIsVerifying(false);
+      setIsVerifyingHuman(false);
+      alert("Verification failed: " + (error?.message || error));
     }
   };
 
@@ -310,27 +294,21 @@ export default function Navbar() {
             {/* Human Verification */}
             <div className="relative">
               <motion.button
-                onClick={timer > 0 || isVerifying ? undefined : handleHumanVerification}
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                disabled={timer > 0 || isVerifying}
-                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                  timer > 0 
-                    ? 'bg-emerald-900/50 text-emerald-300 cursor-default' 
-                    : isVerifying
+                onClick={timer > 0 || isVerifyingHuman ? undefined : handleHumanVerification}
+                onMouseEnter={() => setShowHumanTooltip(true)}
+                onMouseLeave={() => setShowHumanTooltip(false)}
+                disabled={timer > 0 || isVerifyingHuman}
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300
+                  ${isVerifyingHuman
                     ? 'bg-amber-900/50 text-amber-300 cursor-wait'
-                    : 'bg-amber-800/50 text-amber-200 hover:bg-amber-700/50 hover:text-amber-100 hover:scale-105'
-                }`}
-                whileHover={timer > 0 || isVerifying ? {} : { scale: 1.05 }}
-                whileTap={timer > 0 || isVerifying ? {} : { scale: 0.95 }}
+                    : 'bg-amber-800/50 text-amber-200 hover:bg-amber-700/50 hover:text-amber-100 hover:scale-105'}
+                `}
+                whileHover={isVerifyingHuman ? {} : { scale: 1.05 }}
+                whileTap={isVerifyingHuman ? {} : { scale: 0.95 }}
               >
                 {timer > 0 ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm">Verified</span>
-                    <span className="text-xs text-amber-200 ml-2">{formatTimer(timer)} left</span>
-                  </>
-                ) : isVerifying ? (
+                  <span className="text-sm font-bold text-white">{formatTimer(timer)} left</span>
+                ) : isVerifyingHuman ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm">Verifying...</span>
@@ -345,7 +323,7 @@ export default function Navbar() {
 
               {/* Tooltip */}
               <AnimatePresence>
-                {showTooltip && (
+                {showHumanTooltip && (
                   <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -431,26 +409,31 @@ export default function Navbar() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 }}
-                    onClick={timer > 0 || isVerifying ? undefined : handleHumanVerification}
-                    disabled={timer > 0 || isVerifying}
+                    onClick={timer > 0 || isVerifyingHuman ? undefined : handleHumanVerification}
+                    disabled={timer > 0 || isVerifyingHuman}
                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 touch-manipulation ${
-                      timer > 0 
-                        ? 'bg-emerald-900/40 text-emerald-300' 
+                      isVerifyingHuman 
+                        ? 'bg-amber-900/40 text-amber-300' 
+                        : timer > 0 
+                        ? 'bg-amber-900/40 text-amber-300' 
                         : 'bg-amber-800/40 text-amber-200 hover:bg-amber-700/40 active:scale-95'
                     }`}
                   >
-                    {timer > 0 ? (
+                    {isVerifyingHuman ? (
+                      <>
+                        <Loader2 className="w-6 h-6 animate-spin flex-shrink-0" />
+                        <div className="flex flex-col">
+                          <span className="font-medium text-base">Verifying...</span>
+                          <span className="text-sm text-amber-500">Anti-Bot Protection</span>
+                        </div>
+                      </>
+                    ) : timer > 0 ? (
                       <>
                         <CheckCircle className="w-6 h-6 flex-shrink-0" />
                         <div className="flex flex-col">
                           <span className="font-medium text-base">Verified Human</span>
                           <span className="text-sm text-emerald-400">{formatTimer(timer)} left</span>
                         </div>
-                      </>
-                    ) : isVerifying ? (
-                      <>
-                        <Loader2 className="w-6 h-6 animate-spin flex-shrink-0" />
-                        <span className="font-medium text-base">Verifying...</span>
                       </>
                     ) : (
                       <>
