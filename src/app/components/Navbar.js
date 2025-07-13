@@ -333,7 +333,7 @@ export default function Navbar() {
     <motion.nav
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className={`fixed w-full z-50 transition-all duration-500 ${
         isScrolled 
           ? 'bg-amber-950/95 backdrop-blur-xl shadow-2xl border-b border-amber-800/20' 
@@ -346,18 +346,14 @@ export default function Navbar() {
         style={{ width: `${scrollProgress}%` }}
         initial={{ width: 0 }}
         animate={{ width: `${scrollProgress}%` }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       />
 
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <motion.div 
-            className="flex items-center cursor-pointer" 
-            whileHover={{ scale: 1.08, rotate: 2 }} 
-            whileTap={{ scale: 0.95 }}
-            onClick={handleLogoClick}
-          >
+          <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
             <Image 
               src="/images/coffy-logo.png" 
               alt="Coffy Logo" 
@@ -369,7 +365,7 @@ export default function Navbar() {
             <span className="ml-2 text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
               COFFY
             </span>
-          </motion.div>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">

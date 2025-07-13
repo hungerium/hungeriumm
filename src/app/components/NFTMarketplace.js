@@ -917,22 +917,22 @@ export default function NFTMarketplace() {
 
 	return (
 		<>
-			<section id="coffy-marketplace" className="py-16 bg-gradient-to-b from-[#1A0F0A] to-[#2A1B13]">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="text-center mb-12">
-						<h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017] mb-4">
-							Coffy Character Collection
-						</h2>
-						<p className="text-lg text-[#E8D5B5] max-w-3xl mx-auto mb-6">
-							Discover and purchase unique Coffy characters. Each character boosts your in-game rewards.<br/>
-							More NFT items and in-game assets <span className="text-[#D4A017] font-semibold">coming soon</span>.
-						</p>
+		<section id="coffy-marketplace" className="py-16 bg-gradient-to-b from-[#1A0F0A] to-[#2A1B13]">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="text-center mb-12">
+					<h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017] mb-4">
+						Coffy Character Collection
+					</h2>
+					<p className="text-lg text-[#E8D5B5] max-w-3xl mx-auto mb-6">
+						Discover and purchase unique Coffy characters. Each character boosts your in-game rewards.<br/>
+						More NFT items and in-game assets <span className="text-[#D4A017] font-semibold">coming soon</span>.
+					</p>
+								</div>
+				<KeenSliderCarousel characterNFTs={characterNFTs} handleBuy={handleBuy} userAddress={userAddress} buyingId={buyingId} walletLoading={walletLoading} />
+				<div className="mt-10 text-[#E8D5B5]/60 text-sm text-center">
+					<span className="inline-block bg-[#D4A017]/10 text-[#D4A017] px-4 py-2 rounded-lg font-semibold">More NFT items and in-game assets coming in Q4!</span>
+								</div>
 					</div>
-					<KeenSliderCarousel characterNFTs={characterNFTs} handleBuy={handleBuy} userAddress={userAddress} buyingId={buyingId} walletLoading={walletLoading} />
-					<div className="mt-10 text-[#E8D5B5]/60 text-sm text-center">
-						<span className="inline-block bg-[#D4A017]/10 text-[#D4A017] px-4 py-2 rounded-lg font-semibold">More NFT items and in-game assets coming in Q4!</span>
-					</div>
-				</div>
 			</section>
 		</>
 	);

@@ -34,18 +34,7 @@ export default function Partners() {
 
   return (
     <section className="py-24 bg-gradient-to-b from-[#3A2A1E] to-[#1A0F0A] relative overflow-hidden" id="partners">
-      {/* Background Effects */}
-      <motion.div 
-        className="absolute inset-0 opacity-5"
-        animate={{
-          background: [
-            'radial-gradient(circle at 0% 0%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 100% 100%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 0% 0%, #D4A017 0%, transparent 50%)'
-          ]
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-      />
+      {/* Background Effects removed for performance */}
 
       <motion.div style={{ opacity }} className="container mx-auto px-6 relative z-10">
         <motion.div
@@ -67,40 +56,21 @@ export default function Partners() {
             { name: "Cafénest", logo: "/images/partners/cafenest-logo.png" },
             { name: "PerkCafé", logo: "/images/partners/perkcafe-logo.png" }
           ].map((partner, i) => (
-            <motion.div
+            <div
               key={partner.name}
-              variants={cardVariants}
-              initial="hidden"
-              whileInView="visible"
-              whileHover="hover"
-              viewport={{ once: true, margin: "-50px" }}
-              custom={i}
               className="bg-[#2C1B12]/80 backdrop-blur-sm p-6 rounded-xl border border-[#D4A017]/20 hover:border-[#D4A017] shadow-lg hover:shadow-[#D4A017]/20 transition-all duration-300"
             >
-              <motion.div
-                variants={partnerMotion}
-                className="relative group aspect-video flex items-center justify-center"
-              >
+              <div className="relative group aspect-video flex items-center justify-center">
                 <Image 
                   src={partner.logo} 
                   alt={partner.name} 
                   width={200} 
                   height={100} 
                   className="w-full h-full object-contain filter brightness-90 group-hover:brightness-110 transition-all duration-300"
+                  loading="lazy"
                 />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-[#D4A017]/0 via-[#D4A017]/10 to-[#D4A017]/0"
-                  animate={{
-                    x: ['100%', '-100%']
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           ))}
         </div>
 

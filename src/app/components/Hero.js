@@ -74,6 +74,7 @@ export default function Hero() {
     }
   }, []);
   
+  // Reduce particle count
   const particlesOptions = {
     fullScreen: false,
     background: { 
@@ -81,13 +82,7 @@ export default function Hero() {
     },
     fpsLimit: 60,
     particles: {
-      number: { 
-        value: 50, 
-        density: { 
-          enable: true, 
-          area: 1000 
-        } 
-      },
+      number: { value: 20, density: { enable: true, area: 1000 } },
       color: { 
         value: ["#D4A017", "#F4C430", "#A77B06", "#6F4E37"] 
       },
@@ -174,6 +169,9 @@ export default function Hero() {
     }
   };
 
+  // Only run heavy animations if inView
+  const shouldAnimate = inView;
+
   return (
     <section 
       ref={ref}
@@ -181,24 +179,28 @@ export default function Hero() {
       id="hero"
     >
       {/* Gradient Glow (arka plan) */}
-      <motion.div
-        className="absolute inset-0 z-0 pointer-events-none"
-        animate={{
-          background: [
-            'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)',
-            'radial-gradient(circle at 80% 70%, #F4C43033 0%, transparent 70%)',
-            'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)'
-          ]
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-        style={{ zIndex: 0 }}
-      />
+      {shouldAnimate && (
+        <motion.div
+          className="absolute inset-0 z-0 pointer-events-none"
+          animate={{
+            background: [
+              'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)',
+              'radial-gradient(circle at 80% 70%, #F4C43033 0%, transparent 70%)',
+              'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)'
+            ]
+          }}
+          transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
+          style={{ zIndex: 0 }}
+        />
+      )}
       {/* Kahve çekirdeği partikülleri */}
       <div className="absolute inset-0 z-10 pointer-events-none">
-        <Particles id="coffee-particles" init={particlesInit} options={particlesOptions} style={{ width: '100%', height: '100%' }} />
+        {shouldAnimate && (
+          <Particles id="coffee-particles" init={particlesInit} options={particlesOptions} style={{ width: '100%', height: '100%' }} />
+        )}
       </div>
       {/* Main content with modern animations */}
-      <div className="container relative z-20 mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-20">
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center"
           variants={heroVariants}

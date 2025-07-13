@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 const About = ({ id }) => {
@@ -43,38 +42,24 @@ const About = ({ id }) => {
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
         <div className="text-center mb-16 reveal-on-scroll">
-          <motion.h2 
+          <h2 
             className="text-4xl md:text-5xl font-bold text-gradient mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
           >
             About Coffy Coin
-          </motion.h2>
+          </h2>
           
-          <motion.p 
+          <p 
             className="text-lg text-[#E8D5B5]/80 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
           >
             Coffy Coin V2 introduces a revolutionary modular ecosystem combining gaming, DeFi, and community governance. 
             Our advanced smart contract architecture provides sustainable rewards through character-based gameplay and enhanced staking mechanisms.
-          </motion.p>
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
           {/* Left side - Coffy mascot - Improved mask and rounded edges */}
           <div className="reveal-on-scroll flex justify-center items-center">
-            <motion.div 
-              className="relative w-full max-w-xs"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-            >
+            <div className="relative w-full max-w-xs">
               <div className="w-full aspect-square relative">
                 {/* Image path: /public/images/coffy-mascot.png */}
                 <div className="w-full h-full relative overflow-hidden flex items-center justify-center">
@@ -93,9 +78,9 @@ const About = ({ id }) => {
                       height={280}
                       className="object-contain animate-float"
                       priority={true}
+                      loading="eager"
                       style={{ 
                         objectFit: 'contain',
-                        // Improved mask with smoother edges
                         WebkitMaskImage: 'radial-gradient(circle, black 60%, transparent 85%)',
                         maskImage: 'radial-gradient(circle, black 60%, transparent 85%)'
                       }}
@@ -105,17 +90,13 @@ const About = ({ id }) => {
               </div>
               {/* Bottom light effect */}
               <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-[#D4A017]/20 blur-3xl rounded-full -z-10"></div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Right side - Information */}
           <div className="flex flex-col justify-center reveal-on-scroll">
-            <motion.div 
+            <div 
               className="space-y-6"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
             >
               <h3 className="text-2xl md:text-3xl font-semibold text-[#E8D5B5]">Our Mission</h3>
               <p className="text-[#E8D5B5]/80">
@@ -131,17 +112,13 @@ const About = ({ id }) => {
               <div className="pt-4">
                 <a href="#tokenomics" className="btn-primary">Explore Tokenomics</a>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
 
         {/* Features Section - More minimal */}
-        <motion.div 
+        <div 
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-16"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
         >
           <div className="card-coffee hover-lift reveal-on-scroll p-4 text-center">
             {/* SVG icon inline for better performance - Path: /public/icons/blockchain-icon.svg */}
@@ -209,7 +186,7 @@ const About = ({ id }) => {
               5 unique characters with 1.5x-5x multipliers and advanced sybil protection.
             </p>
           </div>
-        </motion.div>
+        </div>
         
         {/* Minimal Call to Action */}
         <div className="mt-12 text-center reveal-on-scroll">

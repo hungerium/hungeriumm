@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 // Constants
@@ -51,11 +51,6 @@ const cardVariants = {
 
 const GamesSection = ({ id }) => {
   const [isLoading, setIsLoading] = useState({});
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Game data - could be moved to external config or API
   const games = useMemo(() => [
@@ -130,9 +125,9 @@ const GamesSection = ({ id }) => {
     {
       icon: 'fas fa-hourglass-half',
       label: 'Min. Play Time',
-      value: '1 min',
+      value: '2 min',
       color: 'text-[#6F4E37] border-[#6F4E37]/30',
-      description: 'Minimum session duration'
+      description: 'Minimum session duration (2 minutes)'
     },
     {
       icon: 'fas fa-user-check',
@@ -162,6 +157,16 @@ const GamesSection = ({ id }) => {
   const handleImageError = useCallback((event) => {
     event.target.src = FALLBACK_IMAGE;
   }, []);
+
+  // Helper: Son satırdaki kart(lar)ı ortalamak için
+  function getGridItemClass(idx, total) {
+    // 3'lü gridde, son satırda 1 veya 2 kart varsa ortala
+    if (total % 3 !== 0 && idx >= total - (total % 3)) {
+      if (total % 3 === 1) return 'col-span-3 justify-self-center';
+      if (total % 3 === 2) return idx === total - 2 ? 'col-span-1 justify-self-end' : 'col-span-1 justify-self-start';
+    }
+    return '';
+  }
 
   return (
     <section id={id || "games"} className="py-20 bg-gradient-to-b from-[#1A0F0A] via-[#2A1810] to-[#1A0F0A] scroll-mt-24" aria-label="Play to Earn Games Section">
@@ -214,7 +219,7 @@ const GamesSection = ({ id }) => {
                   {/* Particle Effect on Hover (like game cards) */}
                   <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     <div className="w-6 h-6 relative overflow-hidden rounded-full">
-                      {isClient && [...Array(5)].map((_, i) => (
+                      {[...Array(5)].map((_, i) => (
                         <div
                           key={i}
                           className="absolute w-0.5 h-0.5 bg-gradient-to-br from-[#D4A017] to-[#A77B06] rounded-full animate-bounce"
@@ -252,18 +257,18 @@ const GamesSection = ({ id }) => {
 
         {/* Game Cards Grid */}
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 mb-16"
+          className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 mb-16"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {filteredGames.map((game) => (
+          {filteredGames.map((game, idx) => (
             <motion.article
               key={game.id}
               variants={cardVariants}
               whileHover="hover"
-              className="group relative bg-gradient-to-br from-[#3A2A1E] to-[#2A1F15] border border-[#BFA181]/20 rounded-2xl overflow-hidden cursor-pointer shadow-xl backdrop-blur-sm min-h-[480px] flex flex-col"
+              className={`group relative bg-gradient-to-br from-[#3A2A1E] to-[#2A1F15] border border-[#BFA181]/20 rounded-2xl overflow-hidden cursor-pointer shadow-xl backdrop-blur-sm min-h-[480px] flex flex-col ${getGridItemClass(idx, filteredGames.length)}`}
               onClick={() => handleGameClick(game.id, game.path)}
               role="button"
               tabIndex={0}
@@ -283,31 +288,29 @@ const GamesSection = ({ id }) => {
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   onError={handleImageError}
                   loading="lazy"
+                  width={400}
+                  height={300}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-                
                 {/* Image Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                
-                {/* Particle Effect on Hover */}
+                {/* Sadeleştirilmiş Partikül Efekti */}
                 <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-10 h-10 relative overflow-hidden rounded-full">
-                    {/* Simple CSS coffee particles */}
-                    {isClient && [...Array(8)].map((_, i) => (
+                  <div className="w-8 h-8 relative overflow-hidden rounded-full">
+                    {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
                         className="absolute w-1 h-1 bg-gradient-to-br from-[#D4A017] to-[#A77B06] rounded-full animate-bounce"
                         style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          animationDuration: `${1 + Math.random() * 2}s`,
+                          left: `${30 + i * 20}%`,
+                          top: `${30 + i * 20}%`,
+                          animationDelay: `${i * 0.2}s`,
+                          animationDuration: `1.5s`,
                         }}
                       />
                     ))}
                   </div>
                 </div>
-                
                 {/* Play Button */}
                 <div className="absolute top-4 left-4">
                   <motion.button 
@@ -324,7 +327,6 @@ const GamesSection = ({ id }) => {
                     {isLoading[game.id] ? 'Loading...' : 'Play Now'}
                   </motion.button>
                 </div>
-                
                 {/* NEW Badge for new games */}
                 {game.isNew && (
                   <div className="absolute top-4 right-4">
@@ -349,25 +351,21 @@ const GamesSection = ({ id }) => {
                   </div>
                 )}
               </div>
-
               {/* Card Content */}
               <div className="p-3 flex-1 flex flex-col min-h-[140px]">
                 <div className="flex-1">
                   <h3 className="text-base font-bold text-white mb-1 group-hover:text-[#F4C430] transition-colors line-clamp-1">
                     {game.title}
                   </h3>
-                  
                   {game.category && (
                     <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium text-[#BFA181] bg-[#BFA181]/10 rounded mb-2">
                       {game.category}
                     </span>
                   )}
-                  
                   <p className="text-xs text-[#E8D5B5]/90 leading-snug line-clamp-4 mb-1 min-h-[3.5em]">
                     {game.purpose}
                   </p>
                 </div>
-                
                 {/* Rewards Section */}
                 <div className="bg-gradient-to-r from-black/20 to-black/10 rounded-lg p-2 border border-[#A77B06]/20">
                   <div className="flex items-center justify-between">
@@ -379,7 +377,6 @@ const GamesSection = ({ id }) => {
                   </div>
                 </div>
               </div>
-
               {/* Hover Glow Effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#D4A017]/5 to-[#A77B06]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </motion.article>

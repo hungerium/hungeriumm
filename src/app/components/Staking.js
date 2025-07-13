@@ -759,9 +759,9 @@ export default function Staking({ id }) {
 
                   {/* Unstake/Emergency Unstake butonu */}
                   {(!canUnstake) ? (
-                    <motion.button
-                      whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
-                      whileTap={{ scale: 0.97 }}
+                  <motion.button
+                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                    whileTap={{ scale: 0.97 }}
                       onClick={async () => {
                         setIsLoading(true);
                         setError(null);
@@ -807,11 +807,11 @@ export default function Staking({ id }) {
                         setIsLoading(false);
                       }}
                       disabled={isLoading}
-                      className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-                    >
-                      <i className="fas fa-unlock"></i>
-                      <span>Unstake</span>
-                    </motion.button>
+                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <i className="fas fa-unlock"></i>
+                    <span>Unstake</span>
+                  </motion.button>
                   )}
                 </div>
 
