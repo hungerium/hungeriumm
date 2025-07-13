@@ -62,7 +62,7 @@ export default function Navbar() {
     
     const interval = setInterval(() => {
       const now = Date.now();
-      const diff = verificationTimestamp + 7 * 24 * 60 * 60 * 1000 - now;
+      const diff = verificationTimestamp + 3 * 24 * 60 * 60 * 1000 - now;
       setTimer(diff > 0 ? diff : 0);
     }, 1000);
     

@@ -307,9 +307,9 @@ class Web3Handler {
         // Doğrulama kontrolü (1 hafta bekleme)
         const verificationTs = localStorage.getItem('coffy_human_verification_ts');
         const now = Date.now();
-        const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+        const oneWeekMs = 3 * 24 * 60 * 60 * 1000;
         if (!verificationTs || now - Number(verificationTs) < oneWeekMs) {
-            this.showNotification('Please verify your wallet first to claim rewards!', 'warning', 4000);
+            this.showNotification('Please verify your wallet first to claim rewards! 3 days waiting period required.', 'warning', 4000);
             return;
         }
 

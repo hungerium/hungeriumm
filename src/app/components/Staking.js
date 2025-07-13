@@ -208,7 +208,7 @@ export default function Staking({ id }) {
           const stakeInfo = await contract.getStakeInfo(userAddress);
           const stakeStartTime = Number(stakeInfo.startTime || stakeInfo[1] || 0);
           const currentTimeForUnstake = Math.floor(Date.now() / 1000);
-          const lockPeriod = 3 * 24 * 60 * 60; // 3 gün
+          const lockPeriod = 7 * 24 * 60 * 60; // 7 days
           const isEarlyUnstake = currentTimeForUnstake < (stakeStartTime + lockPeriod);
           
           if (isEarlyUnstake) {

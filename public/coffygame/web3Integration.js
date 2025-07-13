@@ -417,9 +417,9 @@ export async function claimTotalReward(gameState, uiElements) {
     // Doğrulama kontrolü (7 gün bekleme)
     const verificationTs = localStorage.getItem('coffy_human_verification_ts');
     const now = Date.now();
-    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+    const oneWeekMs = 3 * 24 * 60 * 60 * 1000;
     if (!verificationTs || now - Number(verificationTs) < oneWeekMs) {
-        showNotification('Please verify your wallet first by playing the game, then wait 7 days to claim rewards!', 'warning', 4000);
+        showNotification('Please verify your wallet first by playing the game, then wait 3 days to claim rewards!', 'warning', 4000);
         return;
     }
 
