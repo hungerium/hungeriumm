@@ -671,16 +671,16 @@ class Web3Manager {
             );
 
             // Eski token kontratı (migration için)
-            this.oldTokenContract = new ethers.Contract(
-                OLD_TOKEN_ADDRESS,
-                OLD_TOKEN_ABI,
-                this.provider
-            );
+            // this.oldTokenContract = new ethers.Contract(
+            //     OLD_TOKEN_ADDRESS,
+            //     OLD_TOKEN_ABI,
+            //     this.provider
+            // );
 
             console.log("Kontratlar başarıyla başlatıldı");
             
             // Migration bilgilerini kontrol et
-            await this.checkMigrationStatus();
+            // await this.checkMigrationStatus();
             
         } catch (error) {
             console.error("Kontrat başlatma hatası:", error);
@@ -774,8 +774,14 @@ class Web3Manager {
                 console.error("Web3 bağlantısı yok veya token sözleşmesi oluşturulmadı");
                 return false;
             }
-            // Miktar ondalık basamak için formatla
+            if (!amount || isNaN(amount) || Number(amount) <= 0) {
+                showNotification("No rewards to claim or invalid amount.", "warning");
+                console.warn("claimGameRewards: Invalid amount:", amount);
+                return false;
+            }
+            console.log("claimGameRewards: amount=", amount, typeof amount);
             const formattedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+            console.log("claimGameRewards: formattedAmount=", formattedAmount.toString());
             // Ödülleri talep et
             const tx = await this.tokenContract.claimGameRewards(formattedAmount);
             const receipt = await tx.wait();
@@ -1086,5 +1092,13 @@ window.checkGameSessionDuration = checkGameSessionDuration;
 
 // --- EKLENDİ: Web3Manager'ı globalde oluştur ---
 window.web3Manager = new Web3Manager();
+
+// Web3Manager'ı globalde erişilebilir yap (her zaman güncel olsun)
+if (!window.web3Manager || !(window.web3Manager instanceof Web3Manager)) {
+    window.web3Manager = new Web3Manager();
+    console.log('window.web3Manager initialized');
+} else {
+    console.log('window.web3Manager already exists');
+}
 
 export default Web3Manager;

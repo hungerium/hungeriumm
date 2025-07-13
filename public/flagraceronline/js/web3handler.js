@@ -230,15 +230,15 @@ class Web3Handler {
     }
     
     async claimRewards(tokensToClaimFromGame = null) {
-        // Doğrulama kontrolü (1 hafta bekleme)
+        // 3 gün zorunlu bekleme kontrolü (human verification)
         const verificationTs = localStorage.getItem('coffy_human_verification_ts');
         const now = Date.now();
-        const oneWeekMs = 3 * 24 * 60 * 60 * 1000;
-        if (!verificationTs || now - Number(verificationTs) < oneWeekMs) {
-            this.showNotification('Please verify your wallet first to claim rewards!', 'warning', 4000);
+        const minWaitMs = 3 * 24 * 60 * 60 * 1000; // 3 gün ms
+        if (!verificationTs || now - Number(verificationTs) < minWaitMs) {
+            this.showNotification('Please verify your wallet first to claim rewards! 3 days waiting period required.', 'warning', 4000);
             return;
         }
-
+        // Günlük limit ve cooldown kontrolleri mevcut, claimAmount ve decimals zaten doğru hesaplanıyor.
         try {
             console.log("Attempting to claim rewards...");
             
@@ -373,18 +373,14 @@ class Web3Handler {
             let errorMsg = "Failed to claim rewards";
             
             if (error.message) {
-                if (error.message.includes("Daily reward limit exceeded")) {
-                    errorMsg = "Günlük ödül limiti aşıldı. Yarın tekrar deneyin.";
-                } else if (error.message.includes("Sybil protection")) {
-                    errorMsg = "Anti-Sybil koruması: Minimum 50,000 COFFY balance gerekli.";
+                if (error.message.includes("Sybil protection") || error.message.includes("Wallet too young")) {
+                    errorMsg = "You must wait 3 days after verifying your wallet before claiming rewards.";
+                } else if (error.message.includes("Daily reward limit exceeded")) {
+                    errorMsg = "Daily reward limit exceeded. Try again tomorrow.";
                 } else if (error.message.includes("Claim cooldown")) {
-                    errorMsg = "Claim cooldown aktif. Biraz bekleyin.";
-                } else if (error.message.includes("toBigInt")) {
-                    errorMsg = "Web3 version compatibility issue. Please try again.";
-                } else if (error.message.includes("User denied")) {
-                    errorMsg = "Transaction rejected by user";
+                    errorMsg = "Claim cooldown active. Please wait a bit.";
                 } else if (error.message.includes("insufficient funds")) {
-                    errorMsg = "Insufficient funds for transaction";
+                    errorMsg = "Insufficient funds for transaction.";
                 } else {
                     errorMsg = this.getErrorMessage(error);
                 }

@@ -460,19 +460,25 @@ class Web3Handler {
     }
     
     async claimRewards(amount) {
-        // 2 dakika zorunlu bekleme kontrolü
-        const lastClaim = parseInt(localStorage.getItem('lastCoffyClaimTs') || '0', 10);
+        // 3 gün zorunlu bekleme kontrolü (human verification)
+        const verificationTs = localStorage.getItem('coffy_human_verification_ts');
         const now = Date.now();
-        const minWait = 2 * 60 * 1000; // 2 dakika ms
-        if (lastClaim && now - lastClaim < minWait) {
-            const secondsLeft = Math.ceil((minWait - (now - lastClaim)) / 1000);
+        const minWaitMs = 3 * 24 * 60 * 60 * 1000; // 3 gün ms
+        if (!verificationTs || now - Number(verificationTs) < minWaitMs) {
+            this.showNotification('Please verify your wallet first to claim rewards! 3 days waiting period required.', 'warning', 4000);
+            return;
+        }
+        // 2 dakika claim cooldown kontrolü
+        const lastClaim = parseInt(localStorage.getItem('lastCoffyClaimTs') || '0', 10);
+        const minCooldown = 2 * 60 * 1000; // 2 dakika ms
+        if (lastClaim && now - lastClaim < minCooldown) {
+            const secondsLeft = Math.ceil((minCooldown - (now - lastClaim)) / 1000);
             this.showNotification(`You must wait ${secondsLeft} seconds before claiming again!`, 'warning', 3000);
             return;
         }
-        // Eğer miktar parametresi verilmişse, onu kullan
+        // Miktar parametresi yoksa localStorage'dan oku
         let claimAmount = amount;
         if (typeof claimAmount !== 'number' || isNaN(claimAmount)) {
-            // Eski davranış: localStorage veya state'den oku
             claimAmount = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
         }
         if (!claimAmount || claimAmount <= 0) {
@@ -485,7 +491,11 @@ class Web3Handler {
             return;
         }
         try {
-            await this.tokenContract.methods.claimGameRewards(claimAmount).send({from: this.currentAccount});
+            // Token decimals'ı çek
+            const decimals = await this.tokenContract.methods.decimals().call();
+            // Miktarı en küçük birime çevir
+            const amountToSend = (BigInt(claimAmount) * (10n ** BigInt(decimals))).toString();
+            await this.tokenContract.methods.claimGameRewards(amountToSend).send({from: this.currentAccount});
             this.showNotification(`Successfully claimed ${claimAmount} Coffy!`, 'success');
             // Local coffy sıfırla
             localStorage.setItem('coffyEarned', '0');
@@ -493,7 +503,23 @@ class Web3Handler {
             this.totalEarnedTokens += claimAmount;
             this.notifyBalanceUpdate();
         } catch (e) {
-            this.showNotification('Claim failed: ' + (e && e.message ? e.message : e), 'error');
+            let errorMsg = 'Claim failed: ';
+            if (e && e.message) {
+                if (e.message.includes('Sybil protection') || e.message.includes('Wallet too young')) {
+                    errorMsg = 'You must wait 3 days after verifying your wallet before claiming rewards.';
+                } else if (e.message.includes('Daily reward limit exceeded')) {
+                    errorMsg = 'Daily reward limit exceeded. Try again tomorrow.';
+                } else if (e.message.includes('Claim cooldown')) {
+                    errorMsg = 'Claim cooldown active. Please wait a bit.';
+                } else if (e.message.includes('insufficient funds')) {
+                    errorMsg = 'Insufficient funds for transaction.';
+                } else {
+                    errorMsg += e.message;
+                }
+            } else {
+                errorMsg += e;
+            }
+            this.showNotification(errorMsg, 'error');
         }
     }
     
@@ -757,3 +783,20 @@ class Web3Handler {
 
 // Web3Handler'ı globalde erişilebilir yap
 window.Web3Handler = Web3Handler;
+
+// Claim Rewards butonuna tıklama fonksiyonu
+function onClaimRewardsClick() {
+  if (window.web3Handler && typeof window.web3Handler.claimRewards === 'function') {
+    window.web3Handler.claimRewards().catch(error => {
+      alert(error?.reason || error?.data?.message || error?.message || 'Claim failed');
+      console.error('Claim error:', error);
+    });
+  } else {
+    alert('Web3 connection not found!');
+  }
+}
+// Buton bağlama
+const claimButton = document.getElementById('claim-total-reward');
+if (claimButton) {
+  claimButton.onclick = onClaimRewardsClick;
+}

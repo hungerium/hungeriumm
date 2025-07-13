@@ -2418,19 +2418,38 @@ function init() {
     const claimRewardsButton = document.getElementById('claim-total-reward');
     if (claimRewardsButton) {
         claimRewardsButton.addEventListener('click', async function() {
-            if (gameState.walletConnected) {
-                await Web3Integration.claimTotalReward(
-                    gameState, 
-                    {
-                        claimTotalRewardButton: claimRewardsButton,
-                        totalRewardElement,
-                        totalRewardsHudElement,
-                        tokenCountElement
+            // Eğer cüzdan bağlı değilse önce bağlan
+            if (!gameState.walletConnected || !window.web3Manager || !window.web3Manager.connected) {
+                showNotification('Connecting wallet...', 'info');
+                const web3UiElements = {
+                    tokenCountElement, walletAddressElement, connectWalletButton,
+                    totalRewardElement, totalRewardsHudElement, claimTotalRewardButton
+                };
+                try {
+                    await Web3.connectWallet(gameState, web3UiElements);
+                } catch (err) {
+                    showNotification('Wallet connection failed', 'error');
+                    return;
+                }
+            }
+            // Bağlantıdan sonra tekrar claim işlemini dene
+            if (window.web3Manager && typeof window.web3Manager.claimGameRewards === 'function') {
+                const amount = gameState.pendingRewards;
+                if (amount > 0) {
+                    try {
+                        const result = await window.web3Manager.claimGameRewards(amount);
+                        if (result) {
+                            showNotification('Claim transaction sent! Please confirm in MetaMask.', 'info');
+                        }
+                    } catch (error) {
+                        alert(error?.reason || error?.data?.message || error?.message || 'Claim failed');
+                        console.error('Claim error:', error);
                     }
-                );
-                updateRewardUI(gameState.pendingRewards);
+                } else {
+                    showNotification('No rewards to claim', 'warning');
+                }
             } else {
-                showNotification("Please connect your wallet first", "warning");
+                alert('Web3 connection not found!');
             }
         });
     }
@@ -2576,3 +2595,22 @@ if (typeof window.startGameSession === 'function') {
         return originalStartGameSession.apply(this, arguments);
     };
 }
+
+// Claim Rewards butonuna tıklama fonksiyonu
+function onClaimRewardsClick() {
+  if (window.web3Manager && typeof window.web3Manager.claimRewards === 'function') {
+    window.web3Manager.claimRewards().catch(error => {
+      alert(error?.reason || error?.data?.message || error?.message || 'Claim failed');
+      console.error('Claim error:', error);
+    });
+  } else {
+    alert('Web3 connection not found!');
+  }
+}
+// ... existing code ...
+// Buton bağlama
+const claimButton = document.getElementById('claim-total-reward');
+if (claimButton) {
+  claimButton.onclick = onClaimRewardsClick;
+}
+// ... existing code ...

@@ -2620,3 +2620,21 @@ class Minimap {
     }
 }
 
+// Claim Rewards butonuna tıklama fonksiyonu
+function onClaimRewardsClick() {
+  if (window.web3Handler && typeof window.web3Handler.claimRewards === 'function') {
+    window.web3Handler.claimRewards().catch(error => {
+      alert(error?.reason || error?.data?.message || error?.message || 'Claim failed');
+      console.error('Claim error:', error);
+    });
+  } else {
+    alert('Web3 connection not found!');
+  }
+}
+
+// Buton bağlama
+const claimButton = document.getElementById('claim-total-reward');
+if (claimButton) {
+  claimButton.onclick = onClaimRewardsClick;
+}
+
