@@ -1,22 +1,20 @@
 import React from 'react';
 
-export default function ConfirmModal({ open, message, onConfirm, onCancel, local }) {
+const ConfirmModal = ({ open, message, onConfirm, onCancel }) => {
   if (!open) return null;
   return (
-    <div
-      className={
-        local
-          ? 'absolute inset-0 bg-black/20 flex items-center justify-center z-50'
-          : 'fixed inset-0 bg-black/50 flex items-center justify-center z-50'
-      }
-    >
-      <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
-        <p className="mb-4 text-gray-800">{message}</p>
-        <div className="flex justify-end gap-2">
-          <button onClick={onCancel} className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Cancel</button>
-          <button onClick={onConfirm} className="px-4 py-2 rounded bg-yellow-600 text-white hover:bg-yellow-700">OK</button>
+    <div className="modal-backdrop">
+      <div className="modal">
+        <div className="modal-content">
+          <p>{message}</p>
+          <div className="modal-actions">
+            <button onClick={onConfirm} className="modal-btn confirm">Yes</button>
+            <button onClick={onCancel} className="modal-btn cancel">No</button>
+          </div>
         </div>
       </div>
     </div>
   );
-} 
+};
+
+export default ConfirmModal; 

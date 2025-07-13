@@ -8,6 +8,7 @@ import { FaWallet, FaLock, FaGift, FaChartLine, FaClock, FaCoins, FaPlus, FaMinu
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ConfirmModal from './ConfirmModal';
+import AlertModal from './AlertModal';
 
 console.log('Ethers library loaded in Staking:', typeof ethers !== 'undefined');
 
@@ -101,6 +102,16 @@ export default function Staking({ id }) {
   const [stakeData, setStakeData] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, message: '', onConfirm: null });
   const [apy, setApy] = useState('0');
+
+  // Add state for alert and confirm modals
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [onConfirmAction, setOnConfirmAction] = useState(null);
+
+  // TODO: Replace window.confirm logic with ConfirmModal
+  // TODO: Replace alert logic with AlertModal
 
   useEffect(() => {
     if (tokenContract && userAddress) {
@@ -486,6 +497,8 @@ export default function Staking({ id }) {
             onCancel={() => setConfirmModal({ open: false, message: '', onConfirm: null })}
             local={true}
           />
+          <AlertModal open={alertOpen} message={alertMessage} onClose={() => setAlertOpen(false)} />
+          <ConfirmModal open={confirmOpen} message={confirmMessage} onConfirm={() => { if (onConfirmAction) onConfirmAction(); setConfirmOpen(false); }} onCancel={() => setConfirmOpen(false)} />
           {!userAddress ? (
             // Wallet bağlı değilse Connect Wallet göster
             <motion.div
@@ -743,21 +756,63 @@ export default function Staking({ id }) {
                     <i className="fas fa-plus"></i>
                     <span>Stake {stakeAmount ? `${parseFloat(stakeAmount).toFixed(2)}` : ''} COFFY</span>
                   </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={unstakeTokens}
-                    disabled={isLoading || (!stakeAmount && !canUnstake) || (stakeAmount && parseFloat(stakeAmount) <= 0)}
-                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-                  >
-                    <i className="fas fa-unlock"></i>
-                    <span>Unstake</span>
-                    {rewards && parseFloat(rewards) > 0 && (
-                      <span className="text-xs bg-[#A77B06]/80 px-2 py-1 rounded">
-                        {parseFloat(rewards).toFixed(4)}
-                      </span>
-                    )}
-                  </motion.button>
+
+                  {/* Unstake/Emergency Unstake butonu */}
+                  {(!canUnstake) ? (
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={async () => {
+                        setIsLoading(true);
+                        setError(null);
+                        try {
+                          const contract = await getStakingContract();
+                          if (!contract) throw new Error('Staking contract not available');
+                          await contract.emergencyUnstake();
+                          await updateStakeInfo();
+                          setStakeAmount('');
+                        } catch (error) {
+                          setError(error.message || 'emergencyUnstake failed');
+                        }
+                        setIsLoading(false);
+                      }}
+                      disabled={isLoading}
+                      className="py-3 px-4 rounded-lg bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <i className="fas fa-exclamation-triangle"></i>
+                      <span>Emergency Unstake (Penalty)</span>
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={async () => {
+                        setIsLoading(true);
+                        setError(null);
+                        try {
+                          const contract = await getStakingContract();
+                          if (!contract) throw new Error('Staking contract not available');
+                          if (!stakeAmount || isNaN(stakeAmount) || parseFloat(stakeAmount) === 0) {
+                            // input boşsa tümünü unstake
+                            await contract.unstake();
+                          } else {
+                            // input doluysa kısmi unstake
+                            await contract.partialUnstake(ethers.parseUnits(stakeAmount, 18));
+                          }
+                          await updateStakeInfo();
+                          setStakeAmount('');
+                        } catch (error) {
+                          setError(error.message || 'unstake failed');
+                        }
+                        setIsLoading(false);
+                      }}
+                      disabled={isLoading}
+                      className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                      <i className="fas fa-unlock"></i>
+                      <span>Unstake</span>
+                    </motion.button>
+                  )}
                 </div>
 
                 {/* Additional Info */}

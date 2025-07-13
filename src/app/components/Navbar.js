@@ -270,14 +270,14 @@ export default function Navbar() {
       // ---
       const ethersModule = await import("ethers");
       const { BrowserProvider, Contract } = ethersModule;
-      const provider = new BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new Contract(COFFY_CONTRACT_ADDRESS, COFFY_ABI, signer);
+        const provider = new BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new Contract(COFFY_CONTRACT_ADDRESS, COFFY_ABI, signer);
       // Generate random profileId
       const profileId = generateUUID();
       // On-chain transaction: linkUserProfile
-      const tx = await contract.linkUserProfile(profileId);
-      await tx.wait();
+        const tx = await contract.linkUserProfile(profileId);
+        await tx.wait();
       // Success: set localStorage and timer (only new values)
       const now = Date.now();
       setVerificationTimestamp(now);
