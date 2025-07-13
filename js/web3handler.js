@@ -1,7 +1,7 @@
 class Web3Handler {
     constructor() {
         // YENİ KONTRAT ADRESİ
-        this.tokenAddress = '0x86C6B01372C00efD29B32CE87a0BF69dd5043F6c';
+        this.tokenAddress = '0x827793aa741a48889749d666122B2DA3a2ab93B5';
         
         // YENİ ABI - Sadece gerekli fonksiyonlar
         this.tokenABI = [

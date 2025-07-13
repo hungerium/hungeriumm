@@ -80,7 +80,7 @@ const STAKING_ABI = [
   "function claimStakingReward()",
   "function getStakeInfo(address) view returns (uint128 amount, uint64 startTime, uint128 pendingReward)"
 ];
-const STAKING_ADDRESS = "0x86C6B01372C00efD29B32CE87a0BF69dd5043F6c";
+const STAKING_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
 
 // Sabit APY
 const FIXED_APY = 5.00;

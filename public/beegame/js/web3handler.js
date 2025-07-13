@@ -1,7 +1,7 @@
 // import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js"; // KALDIRILDI
 
 // COFFY_ABI'yi global scope'a taşı
-const COFFY_TOKEN_ADDRESS = "0x86C6B01372C00efD29B32CE87a0BF69dd5043F6c";
+const COFFY_TOKEN_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
 const COFFY_TOKEN_ABI = [
   {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},

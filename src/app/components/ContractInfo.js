@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 export default function ContractInfo() {
   const [copyStatus, setCopyStatus] = useState('');
-  const contractAddress = '0x86C6B01372C00efD29B32CE87a0BF69dd5043F6c';
+  const contractAddress = '0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88';
 
   const copyToClipboard = async (text) => {
     try {
