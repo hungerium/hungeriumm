@@ -61,9 +61,18 @@ export const viewport = {
 
 // Yeni ABI (kısa, sadece staking ve balance için)
 const STAKING_ABI = [
+  {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
+  {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},
+  {"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bytes32","name":"neededRole","type":"bytes32"}],"name":"AccessControlUnauthorizedAccount","type":"error"},
+  {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},
+  {"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},
+  {"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},
+  {"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},
+  {"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},
+  {"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},
+  {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
   "function balanceOf(address) view returns (uint256)",
   "function stake(uint256)",
-  "function unstake(uint256)",
   "function totalStaked() view returns (uint256)",
   "function totalSupply() view returns (uint256)",
   "function stakes(address) view returns (uint128 amount, uint64 startTime, uint64 lastClaim)",
@@ -71,7 +80,7 @@ const STAKING_ABI = [
   "function claimStakingReward()",
   "function getStakeInfo(address) view returns (uint128 amount, uint64 startTime, uint128 pendingReward)"
 ];
-const STAKING_ADDRESS = "0x54e3ffFD370E936323EC75551297b3bA5Fa63330";
+const STAKING_ADDRESS = "0x86C6B01372C00efD29B32CE87a0BF69dd5043F6c";
 
 // Sabit APY
 const FIXED_APY = 5.00;
@@ -323,7 +332,68 @@ export default function Staking({ id }) {
 
   // ✅ Unstake tokens
   const unstakeTokens = async () => {
-    return await handleTransaction('unstake', stakeAmount);
+    if (!tokenContract || !userAddress) {
+      toast.error('❌ Please connect your wallet first', { autoClose: 4000 });
+      return false;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const contract = await getStakingContract();
+      console.log('DEBUG: contract instance:', contract);
+      console.log('DEBUG: typeof contract.unstake:', typeof contract?.unstake);
+      console.log('DEBUG: typeof contract.partialUnstake:', typeof contract?.partialUnstake);
+      console.log('DEBUG: contract fonksiyonları:', Object.keys(contract || {}));
+      if (!contract) throw new Error('Staking contract not available');
+      let tx;
+      // 7 gün dolmadan çekilirse emergencyUnstake
+      if (!canUnstake) {
+        setConfirmModal({
+          open: true,
+          message: `⚠️ Early Unstake Warning\n\nYou are withdrawing before the 7-day lock period. A 5% penalty will be applied.\n\nDo you want to continue?`,
+          onConfirm: async () => {
+            setConfirmModal({ open: false, message: '', onConfirm: null });
+            toast.info('You are withdrawing before the 7-day lock period. A 5% penalty will be applied (Emergency Unstake).', { autoClose: 6000 });
+            console.log('DEBUG: Calling contract.emergencyUnstake()');
+            try {
+              tx = await contract.emergencyUnstake();
+              const receipt = await tx.wait();
+              showTransactionStatus(tx.hash);
+              await updateStakeInfo();
+              setStakeAmount('');
+              setIsLoading(false);
+              return true;
+            } catch (error) {
+              setError(error.message || 'unstake failed');
+              setIsLoading(false);
+              console.error('DEBUG: unstakeTokens error:', error);
+              return false;
+            }
+          }
+        });
+        setIsLoading(false);
+        return;
+      } else if (!stakeAmount || isNaN(stakeAmount) || parseFloat(stakeAmount) === 0) {
+        // 7 gün dolduysa ve input boşsa: tümünü çek
+        console.log('DEBUG: Calling contract.unstake()');
+        tx = await contract.unstake();
+      } else {
+        // 7 gün dolduysa ve miktar girildiyse: kısmi çek
+        console.log('DEBUG: Calling contract.partialUnstake with', stakeAmount);
+        tx = await contract.partialUnstake(ethers.parseUnits(stakeAmount, 18));
+      }
+      const receipt = await tx.wait();
+      showTransactionStatus(tx.hash);
+      await updateStakeInfo();
+      setStakeAmount('');
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      setError(error.message || 'unstake failed');
+      setIsLoading(false);
+      console.error('DEBUG: unstakeTokens error:', error);
+      return false;
+    }
   };
 
   // ✅ Claim rewards
@@ -598,25 +668,25 @@ export default function Staking({ id }) {
                     </p>
                   </motion.div>
                   {/* Your Total */}
-                  <motion.div 
-                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
+                    <motion.div 
+                      whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
                     className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-yellow-400/20 hover:border-yellow-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
-                  >
-                    <motion.div
-                      className="absolute inset-0 pointer-events-none rounded-lg"
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 0.18 }}
-                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
-                      transition={{ duration: 0.4 }}
-                    />
-                    <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
+                    >
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none rounded-lg"
+                        initial={{ opacity: 0 }}
+                        whileHover={{ opacity: 0.18 }}
+                        style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                        transition={{ duration: 0.4 }}
+                      />
+                      <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
                       <i className="fas fa-coins text-yellow-400 text-base"></i>
                       <p className="text-yellow-300 text-xs font-medium">Your Total</p>
-                    </div>
-                    <p className="text-white font-bold text-base z-10 relative">
+                      </div>
+                      <p className="text-white font-bold text-base z-10 relative">
                       {(parseFloat(walletBalance) + parseFloat(stakedBalance) + parseFloat(rewards)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    </p>
-                  </motion.div>
+                      </p>
+                    </motion.div>
                 </div>
 
                 {/* Lock Period Warning */}
@@ -633,7 +703,7 @@ export default function Staking({ id }) {
                         Lock Period: {formatTimeRemaining()} remaining
                       </span>
                     </div>
-                    <p className="text-xs text-gray-300">7-day security lock prevents immediate unstaking</p>
+                    <p className="text-xs text-gray-300">7-day security lock prevents unstaking without penalty.</p>
                   </motion.div>
                 )}
 
@@ -656,6 +726,9 @@ export default function Staking({ id }) {
                   <div className="flex justify-between text-xs text-gray-400 mb-2">
                     <span>Available: {formatNumberShort(walletBalance)}</span>
                   </div>
+                  <div className="text-xs text-yellow-400 mb-2">
+                    Leave the input empty or enter 0 to withdraw all staked tokens.
+                  </div>
                 </div>
 
                 {/* Enhanced Action Buttons */}
@@ -674,7 +747,7 @@ export default function Staking({ id }) {
                     whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
                     whileTap={{ scale: 0.97 }}
                     onClick={unstakeTokens}
-                    disabled={isLoading || !stakeAmount || parseFloat(stakeAmount) <= 0}
+                    disabled={isLoading || (!stakeAmount && !canUnstake) || (stakeAmount && parseFloat(stakeAmount) <= 0)}
                     className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <i className="fas fa-unlock"></i>

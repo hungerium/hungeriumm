@@ -150,9 +150,9 @@ const CoffyAdventure = () => {
   const startGame = async () => {
     if (walletConnected && tokenContract) {
       try {
-        await tokenContract.startGameSession();
+        await tokenContract.startGame();
       } catch (err) {
-        alert('startGameSession kontrata gönderilemedi: ' + (err.reason || err.message));
+        alert('startGame kontrata gönderilemedi: ' + (err.reason || err.message));
         return;
       }
     }
