@@ -25,12 +25,12 @@ async function batchCall(promises, batchSize = 10) {
 // Admin adresini belirle (gerekirse dışarıdan al veya sabit tanımla)
 const ADMIN_ADDRESS = "0xD45024E3fC67DFAA456e111204950D510Bd44B9B"; // örnek admin/owner adresi
 
-// 5 karakterin örnek bilgileri (ID, isim, açıklama, multiplier, fiyat)
+// Karakter bilgilerini yeni kontrata göre güncelle
 const characterNFTs = [
   {
     id: 1,
     name: 'Genesis',
-    description: 'The base character. 2x claim multiplier.',
+    description: '2x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '2x',
     price: 1000000,
     priceLabel: '1,000,000 COFFY',
@@ -40,7 +40,7 @@ const characterNFTs = [
   {
     id: 2,
     name: 'Mocha Knight',
-    description: 'Earn 3x more rewards with Mocha Knight.',
+    description: '3x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '3x',
     price: 3000000,
     priceLabel: '3,000,000 COFFY',
@@ -50,7 +50,7 @@ const characterNFTs = [
   {
     id: 3,
     name: 'Arabica Archmage',
-    description: 'Earn 5x more rewards with Arabica Archmage.',
+    description: '5x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '5x',
     price: 5000000,
     priceLabel: '5,000,000 COFFY',
@@ -60,17 +60,17 @@ const characterNFTs = [
   {
     id: 4,
     name: 'Robusta Shadowblade',
-    description: 'Earn 7x more rewards with Robusta Shadowblade.',
+    description: '7x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '7x',
-    price: 7000000,
-    priceLabel: '7,000,000 COFFY',
+    price: 8000000,
+    priceLabel: '8,000,000 COFFY',
     image: '/coffygame/assets/player_robusta.png',
     gradient: 'from-[#8B6F4E] to-[#3A2A1E]',
   },
   {
     id: 5,
     name: 'Legendary Dragon',
-    description: 'Earn 10x more rewards and DAO membership with Legendary Dragon.',
+    description: '10x claim & staking multiplier. DAO membership. 20% of price is burned, 80% goes to treasury.',
     multiplier: '10x',
     price: 10000000,
     priceLabel: '10,000,000 COFFY',
@@ -787,22 +787,13 @@ export default function NFTMarketplace() {
 		console.log('🔄 Setting buying state for character:', char.id);
 		
 		try {
-			console.log('🔗 Creating provider...');
 			const provider = new ethers.BrowserProvider(window.ethereum);
-			
-			console.log('✍️ Getting signer...');
 			const signer = await provider.getSigner();
-			console.log('✅ Signer obtained:', await signer.getAddress());
-			
-			console.log('📄 Creating contract...');
 			const contract = new ethers.Contract(
-				'0xeA44dc95f799D160B1F75cCBfAb34adF0Ef0F25B',
-				["function purchaseCharacter(uint256,uint256) payable"],
+				COFFY_CONTRACT_ADDRESS,
+				COFFY_ABI,
 				signer
 			);
-			console.log('✅ Contract created');
-			
-			console.log('💰 Calling purchaseCharacter with params:', char.id, 1);
 			const tx = await contract.purchaseCharacter(char.id, 1);
 			console.log('📝 Transaction sent:', tx.hash);
 			

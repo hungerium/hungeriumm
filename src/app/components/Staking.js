@@ -59,6 +59,18 @@ export const viewport = {
   maximumScale: 1,
 }
 
+// Yeni ABI (kısa, sadece staking ve balance için)
+const STAKING_ABI = [
+  "function balanceOf(address) view returns (uint256)",
+  "function stake(uint256)",
+  "function unstake(uint256)",
+  "function totalStaked() view returns (uint256)",
+  "function totalSupply() view returns (uint256)",
+  "function stakes(address) view returns (uint128 amount, uint64 startTime, uint64 lastClaim)",
+  "function getStakingAPY(address) view returns (uint256)"
+];
+const STAKING_ADDRESS = "0x54e3ffFD370E936323EC75551297b3bA5Fa63330";
+
 export default function Staking({ id }) {
   const { connectWallet, userAddress, tokenContract, isConnecting, connectionError } = useWeb3Wallet();
   const [stakeAmount, setStakeAmount] = useState('');
@@ -74,6 +86,7 @@ export default function Staking({ id }) {
   const [totalSupply, setTotalSupply] = useState('0 COFFY');
   const [stakeData, setStakeData] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, message: '', onConfirm: null });
+  const [apy, setApy] = useState('0');
 
   useEffect(() => {
     if (tokenContract && userAddress) {
@@ -93,14 +106,27 @@ export default function Staking({ id }) {
     return () => clearInterval(interval);
   }, [tokenContract, userAddress]);
 
+  // Token contract fallback (her zaman güncel ABI ile oluştur)
+  async function getStakingContract() {
+    if (tokenContract && tokenContract.stake && tokenContract.balanceOf) return tokenContract;
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      return new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
+    }
+    return null;
+  }
+
   const updateStakeInfo = async () => {
     try {
-      const balance = await tokenContract.balanceOf(userAddress);
+      const contract = await getStakingContract();
+      if (!contract) throw new Error('Staking contract not available');
+      const balance = await contract.balanceOf(userAddress);
       
       // ✅ DÜZELTME: stakes mapping kullan (gerçek staking data)
-      const stakeData = await tokenContract.stakes(userAddress); // [amount, startTime, lastClaim]
-      const totalStakedAmount = await tokenContract.totalStaked ? await tokenContract.totalStaked() : 0;
-      const totalSupplyAmount = await tokenContract.totalSupply ? await tokenContract.totalSupply() : 0;
+      const stakeData = await contract.stakes(userAddress); // [amount, startTime, lastClaim]
+      const totalStakedAmount = await contract.totalStaked ? await contract.totalStaked() : 0;
+      const totalSupplyAmount = await contract.totalSupply ? await contract.totalSupply() : 0;
 
       setWalletBalance(ethers.formatUnits(balance, 18));
       setTotalSupply(`${ethers.formatUnits(totalSupplyAmount, 18)} COFFY`);
@@ -113,12 +139,20 @@ export default function Staking({ id }) {
       
       setStakedBalance(stakedAmount);
 
+      // Dinamik APY'yi çek
+      let apyValue = '0';
+      try {
+        const apyRaw = await contract.getStakingAPY(userAddress);
+        apyValue = (Number(apyRaw) / 100).toFixed(2); // örn. 500 = 5.00
+      } catch {}
+      setApy(apyValue);
+
       // ✅ Staking rewards hesaplama (APY based on time since lastClaim)
       let calculatedRewards = '0.00';
       if (parseFloat(stakedAmount) > 0 && startTime > 0) {
         const currentTime = Math.floor(Date.now() / 1000);
         const timeStaked = currentTime - (lastClaim || startTime);
-        const annualRate = 0.05; // 5% APY
+        const annualRate = Number(apyValue) / 100; // dinamik APY
         const secondsInYear = 365 * 24 * 60 * 60;
         const rewards = (parseFloat(stakedAmount) * annualRate * timeStaked) / secondsInYear;
         calculatedRewards = Math.max(0, rewards).toFixed(6);
@@ -180,16 +214,18 @@ export default function Staking({ id }) {
 
     try {
       let tx;
+      const contract = await getStakingContract();
+      if (!contract) throw new Error('Staking contract not available');
       switch (action) {
         case 'stake':
-          tx = await tokenContract.stake(ethers.parseUnits(amount, 18));
+          tx = await contract.stake(ethers.parseUnits(amount, 18));
           break;
         case 'unstake':
           // ✅ YENİ: Early unstake penalty kontrolü
-          const stakeInfo = await tokenContract.getStakeInfo(userAddress);
+          const stakeInfo = await contract.getStakeInfo(userAddress);
           const stakeStartTime = Number(stakeInfo.startTime || stakeInfo[1] || 0);
           const currentTimeForUnstake = Math.floor(Date.now() / 1000);
-          const lockPeriod = 7 * 24 * 60 * 60; // 7 gün
+          const lockPeriod = 3 * 24 * 60 * 60; // 3 gün
           const isEarlyUnstake = currentTimeForUnstake < (stakeStartTime + lockPeriod);
           
           if (isEarlyUnstake) {
@@ -208,7 +244,7 @@ export default function Staking({ id }) {
                   console.log(`Early unstake with ${penaltyPercent}% penalty`);
                   try {
                     // inputtaki miktar kadar unstake
-                    tx = await tokenContract.unstake(ethers.parseUnits(amount, 18));
+                    tx = await contract.unstake(ethers.parseUnits(amount, 18));
                     await updateStakeInfo();
                     setStakeAmount('');
                     setIsLoading(false);
@@ -224,12 +260,12 @@ export default function Staking({ id }) {
             });
           }
           // DEĞİŞTİ: inputtaki miktar kadar unstake
-          tx = await tokenContract.unstake(ethers.parseUnits(amount, 18));
+          tx = await contract.unstake(ethers.parseUnits(amount, 18));
           break;
         case 'emergency_unstake':
           console.log('Emergency unstaking all tokens...');
           // Emergency unstake - tüm stake'i çek (penalty ile)
-          const allStakedAmount = await tokenContract.stakes(userAddress);
+          const allStakedAmount = await contract.stakes(userAddress);
           const totalStaked = allStakedAmount[0] || 0;
           
           if (!totalStaked || totalStaked.toString() === '0') {
@@ -245,7 +281,7 @@ export default function Staking({ id }) {
           toast.info(`Emergency Unstake: %${penaltyPercent} penalty uygulanacak.\nÇekilecek net miktar: ${netAmountFormatted} COFFY`, { autoClose: 6000 });
           // Kontrata raw BigNumber olarak gönder
           console.log('Unstaking amount (wei):', totalStaked.toString());
-          tx = await tokenContract.unstake(totalStaked);
+          tx = await contract.unstake(totalStaked);
           break;
         case 'claim':
           // window.confirm yerine modal
@@ -257,7 +293,7 @@ export default function Staking({ id }) {
                 setConfirmModal({ open: false, message: '', onConfirm: null });
                 try {
                   // DEĞİŞTİ: inputtaki miktar kadar unstake
-                  tx = await tokenContract.unstake(ethers.parseUnits(stakeAmount, 18));
+                  tx = await contract.unstake(ethers.parseUnits(stakeAmount, 18));
                   console.log('✅ Emergency unstake called - all stake + rewards claimed');
                   await updateStakeInfo();
                   setStakeAmount('');
@@ -363,7 +399,7 @@ export default function Staking({ id }) {
             Stake COFFY
           </h2>
           <p className="text-lg text-[#E8D5B5] max-w-2xl mx-auto">
-            Stake your COFFY tokens and earn rewards. 5% APY with enhanced security features.
+            Stake your COFFY tokens and earn rewards. <b>Dynamic APY (based on character multiplier)</b> with enhanced security features.
           </p>
           <div className="w-20 h-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] mx-auto mt-4"></div>
         </motion.div>
@@ -402,7 +438,7 @@ export default function Staking({ id }) {
                 <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
                   <FaChartLine className="text-[#D4A017] text-xl mx-auto mb-2" />
                   <p className="text-xs text-gray-400 mb-1">APY</p>
-                  <p className="text-lg font-bold text-white">5%</p>
+                  <p className="text-lg font-bold text-white">{apy}%</p>
                 </div>
                 <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
                   <FaClock className="text-[#D4A017] text-xl mx-auto mb-2" />
@@ -411,8 +447,8 @@ export default function Staking({ id }) {
                 </div>
                 <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
                   <FaCoins className="text-[#D4A017] text-xl mx-auto mb-2" />
-                  <p className="text-xs text-gray-400 mb-1">Min Stake</p>
-                  <p className="text-lg font-bold text-white">1 COFFY</p>
+                  <p className="text-xs text-gray-400 mb-1">No Min Stake</p>
+                  <p className="text-lg font-bold text-white">-</p>
                 </div>
               </div>
 
@@ -472,6 +508,26 @@ export default function Staking({ id }) {
                   </div>
                   <div className="text-xl font-bold text-white mb-0.5 relative z-10">{formatNumberShort(totalStaked)} COFFY</div>
                   <div className="text-xs text-gray-400 relative z-10">Locked in V2 staking</div>
+                </div>
+
+                {/* Yeni: Toplam Arz, Staking Oranı, Katılımcı Sayısı, Wallet Adresi */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
+                    <FaCoins className="text-[#D4A017] text-xl mb-1" />
+                    <span className="text-xs text-gray-400">Total Supply</span>
+                    <span className="text-lg font-bold text-white">{totalSupply}</span>
+                  </div>
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
+                    <FaLock className="text-[#D4A017] text-xl mb-1" />
+                    <span className="text-xs text-gray-400">Staking Ratio</span>
+                    <span className="text-lg font-bold text-white">{formatPercent(totalStakedNum, totalSupplyNum)}</span>
+                  </div>
+                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center">
+                    <FaWallet className="text-[#D4A017] text-xl mb-1" />
+                    <span className="text-xs text-gray-400">Your Address</span>
+                    <span className="text-lg font-bold text-white">{userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : '-'}</span>
+                  </div>
+                  {/* Katılımcı sayısı kontrat fonksiyonu ile alınabiliyorsa ekle, yoksa gizli bırak */}
                 </div>
 
                 {/* Enhanced Stats Grid */}
@@ -541,7 +597,6 @@ export default function Staking({ id }) {
                   />
 
                   <div className="flex justify-between text-xs text-gray-400 mb-2">
-                    <span>Min: 1 COFFY</span>
                     <span>Available: {formatNumberShort(walletBalance)}</span>
                   </div>
                 </div>
@@ -579,7 +634,7 @@ export default function Staking({ id }) {
                 <div className="mt-3 text-center">
                   <p className="text-xs text-gray-400">
                     <i className="fas fa-shield-alt mr-1"></i>
-                    5% APY • 7-Day Lock Period • V2 Smart Contract
+                    Dynamic APY (character multiplier) • 7-Day Lock Period • V2 Smart Contract
                   </p>
                 </div>
               </motion.div>

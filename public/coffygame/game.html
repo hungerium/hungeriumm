@@ -69,7 +69,7 @@
    <script src="module-check.js"></script>
    
    <!-- Preload Game Script -->
-   <link rel="preload" href="game.js" as="script" crossorigin="anonymous">
+   <!-- <link rel="preload" href="game.js" as="script" crossorigin="anonymous"> -->
 </head>
 <body class="no-select optimize-gpu">
     <div id="game-container" class="optimize-gpu">
@@ -100,39 +100,38 @@
             <h3 class="section-title">Characters</h3>
             <div class="characters-container">
                 <div class="character-item">
-                    <i class="fas fa-mug-hot"></i>
-                    <span class="character-name">Basic Barista</span>
-                    <span class="character-price">Free</span>
-                    <button id="character-0" class="buy-button">Select</button>
+                    <i class="fas fa-coffee"></i>
+                    <span class="character-name">Genesis</span>
+                    <span class="character-price">1M COFFY</span>
+                    <span class="character-multiplier">1.5x rewards</span>
+                    <button id="character-1" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-chess-knight"></i>
                     <span class="character-name">Mocha Knight</span>
-                    <span class="character-price">20,000 COFFY</span>
-                    <button id="character-1" class="buy-button">Buy</button>
+                    <span class="character-price">3M COFFY</span>
+                    <span class="character-multiplier">2x rewards</span>
+                    <button id="character-2" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-hat-wizard"></i>
                     <span class="character-name">Arabica Archmage</span>
-                    <span class="character-price">40,000 COFFY</span>
-                    <button id="character-2" class="buy-button">Buy</button>
+                    <span class="character-price">5M COFFY</span>
+                    <span class="character-multiplier">3x rewards</span>
+                    <button id="character-3" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-user-ninja"></i>
                     <span class="character-name">Robusta Shadowblade</span>
-                    <span class="character-price">70,000 COFFY</span>
-                    <button id="character-3" class="buy-button">Buy</button>
-                </div>
-                <div class="character-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span class="character-name">Cappuccino Templar</span>
-                    <span class="character-price">100,000 COFFY</span>
+                    <span class="character-price">8M COFFY</span>
+                    <span class="character-multiplier">4x rewards</span>
                     <button id="character-4" class="buy-button">Buy</button>
                 </div>
-                <div class="character-item">
+                <div class="character-item legendary">
                     <i class="fas fa-dragon"></i>
-                    <span class="character-name">Espresso Dragonlord</span>
-                    <span class="character-price">400,000 COFFY</span>
+                    <span class="character-name">Legendary Dragon</span>
+                    <span class="character-price">10M COFFY</span>
+                    <span class="character-multiplier">5x rewards + DAO</span>
                     <button id="character-5" class="buy-button">Buy</button>
                 </div>
             </div>
@@ -181,6 +180,50 @@
             <div>WASD/Arrow Keys: Move</div>
             <div>P: Pause</div>
             <div>SPACE: Superpower</div>
+        </div>
+
+        <!-- Top HUD -->
+        <div class="top-hud">
+            <div class="left-section">
+                <div class="balance-container">
+                    <div class="token-info">
+                        <span id="tokenCount">0</span> COFFY
+                    </div>
+                    <button id="claimTotalRewardButton" class="claim-button">
+                        CLAIM <span id="totalRewardsHud">0</span> COFFY
+                    </button>
+                </div>
+            </div>
+            
+            <div class="center-section">
+                <div class="score-display">
+                    <span>Score: </span><span id="currentScore">0</span>
+                </div>
+            </div>
+            
+            <div class="right-section">
+                <div class="wallet-info">
+                    <button id="connectButton" class="connect-btn">
+                        <i class="fas fa-wallet"></i> Connect Wallet
+                    </button>
+                    <div id="walletInfo" class="wallet-connected" style="display: none;">
+                        <span id="walletAddress">0x...</span>
+                        <button id="disconnectButton" class="disconnect-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Migration Section -->
+                <div id="migration-section" class="migration-section" style="display: none;">
+                    <div id="migration-info" class="migration-info">
+                        Eski kontratınızda COFFY token var. Migrate edebilirsiniz.
+                    </div>
+                    <button id="migration-button" class="migration-button">
+                        🚀 Migrate to V2
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

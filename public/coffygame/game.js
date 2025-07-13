@@ -1948,8 +1948,24 @@ function gameLoop(timestamp) {
 
 // --- Game State Management (Keep startGame, hideAllScreens, showScreen here) ---
 function startGame() {
-    // Kontrata startGame fonksiyonunu çağır (cüzdan bağlıysa)
-    Web3.startGameOnContract(gameState);
+    console.log('startGame fonksiyonu ÇAĞRILDI');
+    if (gameState.tokenContract && gameState.walletAddress && window.web3Manager && window.web3Manager.isConnected()) {
+        console.log("startGame: Zincir işlemi çağrılıyor...");
+        window.web3Manager.startGameOnContract()
+            .then(() => {
+                // Başarılı zincir işlemi, local fonksiyon çağrılmaz
+            })
+            .catch(err => {
+                // Sadece hata logla, local fallback çağrılmasın
+                console.warn("Kontrat startGame çağrısı başarısız, oyun devam edecek:", err);
+            });
+    } else {
+        // Cüzdan bağlı değilse sadece local session başlatılır
+        if (typeof window.startGameSession === 'function') {
+            window.startGameSession();
+        }
+    }
+    // ... (diğer oyun başlatma kodları)
     // Reset Game State
     gameState.isStarted = true;
     gameState.isOver = false;
@@ -1975,23 +1991,22 @@ function startGame() {
     gameState.rewardMultiplier = 1; // Reset base multiplier
     gameState.shootingActive = false;        // Reset shooting state
     gameState.shootingTimer = 0;           // Reset shooting timer
-    gameState.lastShotTime = 0;            // Reset last shot time
+    gameState.lastShotTime = 0;
     gameState.aimingActive = false;        // Reset manual shooting state
-     gameState.aimX = 0;
-     gameState.aimY = 0;
-     gameState.dragStartX = 0;
-     gameState.dragStartY = 0;
-     // Add missing state resets
-     gameState.teaRepelActive = false; // Reset Tea Repel state
-     gameState.teaRepelTimer = 0;
-     gameState.playerSlowed = false;
+    gameState.aimX = 0;
+    gameState.aimY = 0;
+    gameState.dragStartX = 0;
+    gameState.dragStartY = 0;
+    // Add missing state resets
+    gameState.teaRepelActive = false; // Reset Tea Repel state
+    gameState.teaRepelTimer = 0;
+    gameState.playerSlowed = false;
     gameState.coffeeStormActive = false;
     gameState.timeStopActive = false;
     gameState.shadowClonesActive = false;
     gameState.divineConversionActive = false;
     gameState.dragonFormActive = false;
     gameState.lastObstacleTime = performance.now(); // Reset obstacle timer
-
 
     // Reset Game Objects
     gameObjects.player.x = gameState.width / 2;
@@ -2015,11 +2030,10 @@ function startGame() {
     gameObjects.obstacles = []; // Empty the obstacles array completely
     gameObjects.playerBullets = gameObjects.playerBullets.filter(b => b.active);
 
-
     // Update UI
     scoreElement.textContent = gameState.score;
     levelElement.textContent = gameState.level;
-    comboCountElement.textContent = gameState.comboCount; // Reset combo UI
+    comboCountElement.textContent = gameState.comboCount;
     coffeeCountElement.textContent = gameState.coffeeCount;
     totalRewardsHudElement.textContent = gameState.pendingRewards.toFixed(2);
     hudElement.classList.add('visible');
@@ -2541,3 +2555,24 @@ document.addEventListener('DOMContentLoaded', function() {
         helpContainer.style.display = 'none';
     });
 });
+
+
+
+// Start Game butonunu dinamik olarak aktif/pasif yap
+function updateStartButtonState() {
+    if (gameState.tokenContract && gameState.walletAddress && window.web3Manager && window.web3Manager.isConnected()) {
+        startButton.disabled = false;
+    } else {
+        startButton.disabled = true;
+    }
+}
+// Cüzdan bağlantısı tamamlandığında ve kontrat yüklendiğinde updateStartButtonState() çağrılmalı
+
+// startGameSession fonksiyonuna log ekle
+if (typeof window.startGameSession === 'function') {
+    const originalStartGameSession = window.startGameSession;
+    window.startGameSession = function() {
+        console.log('startGameSession fonksiyonu ÇAĞRILDI');
+        return originalStartGameSession.apply(this, arguments);
+    };
+}

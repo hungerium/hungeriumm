@@ -66,7 +66,7 @@ const GamesSection = ({ id }) => {
       purpose: 'Experience an immersive open-world adventure as a brave bee! Explore vast environments, battle enemies, collect nectar, and survive in this action-packed 3D world. Use flight mechanics, combat skills, and strategic thinking to overcome challenges while earning COFFY rewards.',
       path: '/beegame/index.html',
       gradient: 'from-[#FFD700] to-[#FFA500]',
-      rewards: 'Max 5,000 COFFY/day',
+      rewards: 'Max 35,000 COFFY/week (base)',
       category: 'Adventure',
       isNew: true
     },
@@ -74,10 +74,10 @@ const GamesSection = ({ id }) => {
       id: 'flagracer-online',
       title: 'FlagRacer Online',
       image: '/images/game-previews/flagracer-preview.jpg',
-      purpose: 'Experience high-speed multiplayer racing across dynamically generated tracks. Compete in real-time tournaments, master precision driving, and customize your vehicles. Earn COFFY tokens by winning races, completing daily challenges, and participating in seasonal events. Climb the ranks and unlock exclusive rewards.',
+      purpose: 'Experience high-speed multiplayer racing across dynamically generated tracks. Compete in real-time tournaments, master precision driving, and customize your vehicles. Earn COFFY tokens by winning races, completing weekly challenges, and participating in seasonal events. Climb the ranks and unlock exclusive rewards.',
       path: '/flagraceronline/index.html',
       gradient: 'from-[#A77B06] to-[#3A2A1E]',
-      rewards: 'Max 5,000 COFFY/day',
+      rewards: 'Max 35,000 COFFY/week (base)',
       category: 'Racing'
     },
     {
@@ -87,7 +87,7 @@ const GamesSection = ({ id }) => {
       purpose: 'Navigate through complex 3D mazes filled with challenging puzzles, hidden traps, and collectible rewards. Use strategic thinking and quick reflexes to unlock new areas, discover shortcuts, and maximize your COFFY earnings. Each maze offers unique layouts and increasing difficulty for endless replayability.',
       path: '/coffyinmaze/index.html',
       gradient: 'from-[#8B6F4E] to-[#3A2A1E]',
-      rewards: 'Max 5,000 COFFY/day',
+      rewards: 'Max 35,000 COFFY/week (base)',
       category: 'Puzzle'
     },
     {
@@ -97,7 +97,7 @@ const GamesSection = ({ id }) => {
       purpose: 'Lead tactical rescue missions in a futuristic city under siege. Deploy advanced strategies to save hostages, defend against the robot invasion, and restore peace. Upgrade your equipment, unlock new characters, and collaborate with other players in co-op missions for greater rewards.',
       path: '/hungeriumgame/index.html',
       gradient: 'from-[#D4A017] to-[#A77B06]',
-      rewards: 'Max 5,000 COFFY/day',
+      rewards: 'Max 35,000 COFFY/week (base)',
       category: 'Strategy'
     },
     {
@@ -107,7 +107,7 @@ const GamesSection = ({ id }) => {
       purpose: 'Embark on an epic journey collecting coffee beans while battling tea enemies in this action-packed adventure. Master combat mechanics, unlock new abilities, and compete for global leaderboard dominance. Discover hidden secrets, power-ups, and face unique bosses as you progress through increasingly challenging levels.',
       path: '/coffygame/game.html',
       gradient: 'from-[#BFA181] to-[#6F4E37]',
-      rewards: 'Max 5,000 COFFY/day',
+      rewards: 'Max 35,000 COFFY/week (base)',
       category: 'Action'
     }
   ], []);
@@ -116,37 +116,30 @@ const GamesSection = ({ id }) => {
     {
       icon: 'fas fa-wallet',
       label: 'Min Balance',
-      value: '50K COFFY',
+      value: '100K COFFY',
       color: 'text-[#A77B06] border-[#A77B06]/30',
-      description: 'Minimum wallet balance required'
+      description: 'Required for instant claim'
     },
     {
       icon: 'fas fa-coins',
       label: 'Max Claim',
-      value: '5K/day',
+      value: '35K COFFY/week (base)',
       color: 'text-[#BFA181] border-[#BFA181]/30',
-      description: 'Daily earning limit per game'
-    },
-    {
-      icon: 'fas fa-clock',
-      label: 'Cooldown',
-      value: '30 Min',
-      color: 'text-[#D4A017] border-[#D4A017]/30',
-      description: 'Time between reward claims'
+      description: 'Weekly limit (increases with character)'
     },
     {
       icon: 'fas fa-hourglass-half',
       label: 'Min. Play Time',
-      value: '2 minutes',
+      value: '1 min',
       color: 'text-[#6F4E37] border-[#6F4E37]/30',
       description: 'Minimum session duration'
     },
     {
       icon: 'fas fa-user-check',
       label: 'Wallet Age',
-      value: '7 days',
+      value: '3 days',
       color: 'text-[#F4C430] border-[#F4C430]/30',
-      description: 'Wallet must be at least 7 days old (human proof required)'
+      description: 'Wallet must be 3 days old'
     }
   ], []);
 
@@ -206,7 +199,7 @@ const GamesSection = ({ id }) => {
               <h3 className="text-base font-bold text-[#A77B06] whitespace-nowrap">Anti-Sybil Protection</h3>
               <span className="text-xs text-[#E8D5B5]/80 ml-2 whitespace-nowrap">Advanced security measures ensure fair play</span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 place-items-center">
               {securityMetrics.map((metric, index) => (
                 <motion.article
                   key={metric.label + '-' + index}
@@ -235,18 +228,13 @@ const GamesSection = ({ id }) => {
                       ))}
                     </div>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="p-1 bg-current/10 rounded-lg mb-1">
-                      <i className={`${metric.icon} text-base`} />
+                  <div className="flex flex-col items-center gap-0.5 p-1">
+                    <div className="p-0.5 bg-current/10 rounded-lg mb-0.5">
+                      <i className={`${metric.icon} text-sm`} />
                     </div>
-                    <p className="font-semibold text-xs mb-0.5 opacity-80">{metric.label}</p>
-                    {/* Make Min. Play Time value gold like others */}
-                    {metric.label === 'Min. Play Time' ? (
-                      <p className="text-[#F4C430] text-sm font-bold mb-0.5">{metric.value}</p>
-                    ) : (
-                      <p className="text-white text-sm font-bold mb-0.5">{metric.value}</p>
-                    )}
-                    <p className="text-[10px] text-gray-400 leading-tight text-center">{metric.description}</p>
+                    <p className="font-semibold text-[11px] mb-0.5 opacity-80 leading-tight">{metric.label}</p>
+                    <p className="text-white text-[12px] font-bold mb-0.5 leading-tight">{metric.value}</p>
+                    <p className="text-[9px] text-gray-400 leading-tight text-center">{metric.description}</p>
                   </div>
                 </motion.article>
               ))}
@@ -255,7 +243,7 @@ const GamesSection = ({ id }) => {
               <div className="inline-flex items-center gap-1 bg-black/20 rounded-full px-2 py-1 border border-[#D4A017]/20">
                 <i className="fas fa-info-circle text-[#D4A017] text-xs" />
                 <span className="text-xs text-gray-300">
-                  V2 modular smart contract with advanced sybil protection & 7-day wallet age verification
+                  V2 modular smart contract with advanced sybil protection & 3-day wallet age verification
                 </span>
               </div>
             </div>

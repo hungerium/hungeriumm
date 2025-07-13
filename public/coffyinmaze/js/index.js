@@ -760,28 +760,20 @@ function initializeStartEvents() {
     }
     
     // Start Game button
-    if (startButton) {
-        startButton.addEventListener('click', function(e) {
-            // Olayın yayılmasını önle
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log("Start game button clicked");
-            
-            // Kullanıcı etkileşimi gerçekleşti
-            if (gameContainer) {
-                gameContainer.classList.add('user-interacted');
-            }
-            
-            // Ekranı gizle ve oyunu başlat
-            hideAllScreens();
-            document.body.classList.add('game-started');
-            gameManager.startGame();
-            
-            // Direkt return false ekleyerek olayın daha fazla işlenmesini engelle
-            return false;
-        });
-    }
+    // if (startButton) {
+    //     startButton.addEventListener('click', function(e) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //         console.log("Start game button clicked");
+    //         if (gameContainer) {
+    //             gameContainer.classList.add('user-interacted');
+    //         }
+    //         hideAllScreens();
+    //         document.body.classList.add('game-started');
+    //         gameManager.startGame();
+    //         return false;
+    //     });
+    // }
     
     // Keyboard event for starting game with SPACE
     document.addEventListener('keydown', function(e) {

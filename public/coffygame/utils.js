@@ -314,37 +314,25 @@ export async function checkOwnedCharactersOnChain(gameState, uiUpdateCallback) {
             console.warn("Wallet not connected or contract not initialized for checking owned characters.");
             return;
         }
-
-        const filter = gameState.tokenContract.filters.CharacterBought(gameState.walletAddress);
-        const events = await gameState.tokenContract.queryFilter(filter);
-
         let updated = false;
-        events.forEach(event => {
+        for (const character of Const.characters) {
+            if (character.key === 'basic-barista') continue; // Free character
             try {
-                if (event.args && event.args.characterId !== undefined) {
-                    const characterId = event.args.characterId.toNumber();
-                    const character = Const.characters.find(c => c.id === characterId); // Use Const
-
-                    if (character && !gameState.ownedCharacters.includes(character.key)) {
-                        if (character.key !== 'basic-barista') {
-                            gameState.ownedCharacters.push(character.key);
-                            updated = true;
-                        }
+                const balance = await gameState.tokenContract.getUserCharacterBalance(gameState.walletAddress, character.id);
+                if (balance && balance.toNumber() > 0) {
+                    if (!gameState.ownedCharacters.includes(character.key)) {
+                        gameState.ownedCharacters.push(character.key);
+                        updated = true;
                     }
-                } else {
-                    console.warn("CharacterBought event missing args or characterId:", event);
                 }
-            } catch (parseError) {
-                console.error("Error processing CharacterBought event:", parseError, event);
+            } catch (err) {
+                console.warn(`Error checking character ${character.id} ownership:`, err);
             }
-        });
-
+        }
         if (updated) {
-            saveOwnedCharacters(gameState); // gameState'i geçir
+            saveOwnedCharacters(gameState);
             if (uiUpdateCallback) {
-                // Pass gameState to the callback if needed, or just update relevant parts
-                 updateCharacterButtons(gameState); // Example: Update buttons directly
-                 // uiUpdateCallback(gameState); // Or use a more generic callback
+                updateCharacterButtons(gameState);
             }
         }
     } catch (error) {

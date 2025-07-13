@@ -1299,6 +1299,10 @@ class BeeGame {
     
     // Gelişmiş oyun yeniden başlatma
     restartGame() {
+        // Eğer cüzdan bağlıysa ve web3Handler varsa, zincire startGameSession gönder
+        if (this.web3Handler && this.web3Handler.connected) {
+            this.web3Handler.startGameOnContract();
+        }
         console.log('🔄 Restarting game with enhanced recovery...');
         
         try {

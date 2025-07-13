@@ -1058,10 +1058,13 @@ class Game {
     }
 
     startGame() {
-        // Kontrata startGame fonksiyonunu çağır (cüzdan bağlıysa)
-        if (window.web3Handler && typeof window.web3Handler.startGameOnContract === 'function') {
-            window.web3Handler.startGameOnContract();
+        // ✅ YENİ: Kontrat üzerinde startGame fonksiyonunu çağır
+        if (this.web3Handler && this.web3Handler.currentAccount) {
+            this.web3Handler.startGameOnContract().catch(err => {
+                console.warn("Kontrat startGame çağrısı başarısız, oyun devam edecek:", err);
+            });
         }
+
         // Set global game reference for other classes
         window.game = this;
         

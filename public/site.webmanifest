@@ -1,26 +1,20 @@
 {
-  "name": "Coffy Coin - Play to Earn Gaming Platform",
+  "name": "Coffy Coin",
   "short_name": "Coffy",
-  "description": "The first Drink-to-Earn, Play-to-Earn, and SocialFi platform on Binance Smart Chain",
   "icons": [
     {
-      "src": "/images/coffy-logo.png",
+      "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/images/coffy-logo.png",
+      "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ],
   "theme_color": "#D4A017",
   "background_color": "#1A0F0A",
   "display": "standalone",
-  "orientation": "portrait",
-  "start_url": "/",
-  "scope": "/",
-  "lang": "en"
+  "start_url": "/"
 }
