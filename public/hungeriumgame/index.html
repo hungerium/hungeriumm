@@ -419,7 +419,7 @@
                     forceRefreshBtn.addEventListener('click', function() {
                         if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
                             window.mobileHud.forceRefresh();
-                            window.showNotification("Mobile UI reset complete", 2000);
+                            window.showNotification("Mobile UI has been reset", 2000);
                         } else {
                             window.showNotification("Mobile HUD not available", 2000);
                         }
@@ -620,7 +620,7 @@
         fixMobileUiBtn.addEventListener('click', function() {
             if (window.mobileHud && typeof window.mobileHud.forceRefresh === 'function') {
                 window.mobileHud.forceRefresh();
-                window.showNotification("Mobil UI sıfırlandı", 2000);
+                window.showNotification("Mobile UI has been reset", 2000);
             }
             settingsMenu.style.display = 'none';
         });

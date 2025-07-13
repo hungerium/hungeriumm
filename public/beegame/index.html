@@ -111,13 +111,13 @@
     </style>
 </head>
 <body>
-    <!-- Ayar Butonu ve Menü -->
+    <!-- Settings Button and Menu -->
     <button id="settings-btn">
       <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#ffd700" stroke-width="2" fill="none"/><path d="M10 3V0M10 20v-3M3 10H0M20 10h-3M15.5 4.5l2-2M2.5 17.5l2-2M15.5 15.5l2 2M2.5 2.5l2 2" stroke="#ffd700" stroke-width="1.2"/></svg>
     </button>
     <div id="settings-menu">
-      <button id="toggle-mobile-mode">Mobil Modu Aç/Kapat</button>
-      <button id="fix-mobile-ui">Mobil UI'yi Düzelt</button>
+      <button id="toggle-mobile-mode">Toggle Mobile Mode</button>
+      <button id="fix-mobile-ui">Fix Mobile UI</button>
     </div>
 
     <!-- Game UI -->
@@ -562,7 +562,7 @@
         fixMobileUiBtn.addEventListener('click', function() {
             if (window.game && window.game.mobileControls && typeof window.game.mobileControls.forceRefresh === 'function') {
                 window.game.mobileControls.forceRefresh();
-                if (window.showNotification) window.showNotification("Mobil UI sıfırlandı", 'info', 2000);
+                if (window.showNotification) window.showNotification("Mobile UI has been reset", 'info', 2000);
             }
             settingsMenu.style.display = 'none';
         });
