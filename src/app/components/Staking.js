@@ -673,8 +673,8 @@ export default function Staking({ id }) {
                   <motion.button
                     whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={claimRewards}
-                    disabled={isLoading || !rewards || parseFloat(rewards) <= 0}
+                    onClick={unstakeTokens}
+                    disabled={isLoading || !stakeAmount || parseFloat(stakeAmount) <= 0}
                     className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <i className="fas fa-unlock"></i>
