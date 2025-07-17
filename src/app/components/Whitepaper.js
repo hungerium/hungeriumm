@@ -22,7 +22,7 @@ export default function Whitepaper() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.a
-              href="/whitepaper/hungerium-whitepaper.pdf"
+              href="/whitepaper/coffy-whitepaper.pdf"
               target="_blank"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
