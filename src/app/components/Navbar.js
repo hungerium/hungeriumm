@@ -15,7 +15,8 @@ import {
   Shield,
   Clock,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  Gift
 } from 'lucide-react';
 import { BrowserProvider, Contract } from "ethers";
 
@@ -313,6 +314,55 @@ export default function Navbar() {
     }
   };
 
+  // Airdrop claim fonksiyonu
+  const handleClaimAirdrop = async () => {
+    try {
+      if (!isConnected) {
+        await connectWallet();
+      }
+      if (typeof window === "undefined" || !window.ethereum) {
+        alert("No Ethereum provider found. Please install MetaMask or another wallet.");
+        return;
+      }
+      // Base ağı kontrolü
+      const BASE_CHAIN_ID = '0x2105';
+      let currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (currentChainId !== BASE_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }],
+          });
+          currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+          if (currentChainId !== BASE_CHAIN_ID) {
+            alert('Please switch to Base network to claim your airdrop.');
+            return;
+          }
+        } catch (switchError) {
+          alert('Failed to switch to Base network. Please switch manually and try again.');
+          return;
+        }
+      }
+      // ETH bakiyesi kontrolü
+      const ethersModule = await import("ethers");
+      const { BrowserProvider, Contract, parseEther } = ethersModule;
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const balance = await provider.getBalance(signer.address);
+      if (Number(balance) < Number(parseEther("0.01"))) {
+        alert("You need at least 0.01 ETH to claim the airdrop.");
+        return;
+      }
+      // Kontrat ve claim işlemi
+      const contract = new Contract(HUNGERIUM_CONTRACT_ADDRESS, HUNGERIUM_ABI, signer);
+      const tx = await contract.claimAirdrop();
+      await tx.wait();
+      alert("Airdrop claimed successfully!");
+    } catch (error) {
+      alert("Airdrop claim failed: " + (error?.message || error));
+    }
+  };
+
   const handleNavigation = (sectionId) => {
     setTimeout(() => {
       const element = document.getElementById(sectionId);
@@ -347,8 +397,7 @@ export default function Navbar() {
   const navItems = [
     { id: 'games', label: 'Games', icon: Gamepad2, subtitle: 'Earn HUNGX' },
     { id: 'about', label: 'About Hungerium', icon: Info, subtitle: 'Learn More' },
-    { id: 'staking', label: 'Staking', icon: Coins, subtitle: 'Earn Rewards' },
-    { id: 'hungerium-marketplace', label: 'Hungerium Marketplace', icon: Store, subtitle: 'Trade Assets' }
+    { id: 'staking', label: 'Staking', icon: Coins, subtitle: 'Earn Rewards' }
   ];
 
   return (
@@ -388,7 +437,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
             
-            {/* Main Navigation */}
+            {/* Main Navigation + Claim Airdrop */}
             <div className="flex items-center gap-6">
               {navItems.map((item) => (
                 <motion.button
@@ -408,6 +457,20 @@ export default function Navbar() {
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1e90ff]/0 via-[#00bfff]/10 to-[#1e90ff]/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.button>
               ))}
+              {/* Claim Airdrop kompakt buton */}
+              <div className="flex flex-col items-center">
+                <motion.button
+                  onClick={handleClaimAirdrop}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 bg-gradient-to-r from-[#FFD700] to-[#FFB300] text-[#1e2233] hover:from-[#FFB300] hover:to-[#FFD700] hover:scale-105 shadow-lg"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{ minHeight: '40px' }}
+                >
+                  <Gift className="w-4 h-4" />
+                  <span className="text-sm font-bold">Claim Airdrop</span>
+                </motion.button>
+                <span className="text-[11px] text-yellow-200 mt-0.5">Min 0.01 ETH needed</span>
+              </div>
             </div>
 
             {/* Human Verification */}
@@ -522,6 +585,20 @@ export default function Navbar() {
                     </div>
                   </motion.button>
                 ))}
+                {/* Mobilde Claim Airdrop butonu */}
+                <motion.button
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.1 }}
+                  onClick={handleClaimAirdrop}
+                  className="w-full flex items-center gap-4 px-6 py-4 bg-gradient-to-r from-[#FFD700] to-[#FFB300] text-[#1e2233] font-bold rounded-xl hover:from-[#FFB300] hover:to-[#FFD700] transition-all duration-300 active:scale-95 touch-manipulation shadow-lg mt-2"
+                >
+                  <Gift className="w-6 h-6 flex-shrink-0" />
+                  <div className="flex flex-col items-start">
+                    <span className="text-base">Claim Airdrop</span>
+                    <span className="text-[11px] text-yellow-600">Min 0.01 ETH needed</span>
+                  </div>
+                </motion.button>
                 
                 <div className="pt-4 border-t border-blue-800/30 space-y-3">
                   <motion.button
