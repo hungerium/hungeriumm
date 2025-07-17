@@ -2,16 +2,16 @@ import { ethers } from 'ethers';
 
 // Network config
 export const NETWORK_CONFIG = {
-  BSC_MAINNET: {
-    chainId: '0x38',
-    chainName: 'BNB Smart Chain',
-    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+  BASE_MAINNET: {
+    chainId: '0x2105',
+    chainName: 'Base Mainnet',
+    rpcUrls: ['https://mainnet.base.org/'],
     nativeCurrency: {
-      name: 'BNB',
-      symbol: 'BNB',
+      name: 'Ether',
+      symbol: 'ETH',
       decimals: 18,
     },
-    blockExplorerUrls: ['https://bscscan.com/'],
+    blockExplorerUrls: ['https://basescan.org/'],
   }
 };
 
@@ -19,17 +19,17 @@ export const NETWORK_CONFIG = {
 export const detectAndSwitchNetwork = async () => {
   try {
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== '0x38') {
+    if (chainId !== '0x2105') {
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x38' }],
+          params: [{ chainId: '0x2105' }],
         });
       } catch (switchError) {
         if (switchError.code === 4902) {
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
-            params: [NETWORK_CONFIG.BSC_MAINNET],
+            params: [NETWORK_CONFIG.BASE_MAINNET],
           });
         } else {
           throw switchError;

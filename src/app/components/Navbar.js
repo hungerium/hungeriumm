@@ -264,6 +264,28 @@ export default function Navbar() {
         alert("No Ethereum provider found. Please install MetaMask or another wallet.");
         return;
       }
+      // --- Ağ kontrolü: Base ağına geçiş ---
+      const BASE_CHAIN_ID = '0x2105'; // Base Mainnet
+      let currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      if (currentChainId !== BASE_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: BASE_CHAIN_ID }],
+          });
+          // Ağ başarıyla değiştiyse tekrar kontrol et
+          currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+          if (currentChainId !== BASE_CHAIN_ID) {
+            setIsVerifyingHuman(false);
+            alert('Lütfen işlemi gerçekleştirmek için Base ağına geçin.');
+            return;
+          }
+        } catch (switchError) {
+          setIsVerifyingHuman(false);
+          alert('Base ağına geçiş başarısız oldu. Lütfen manuel olarak Base ağına geçin ve tekrar deneyin.');
+          return;
+        }
+      }
       // --- Reset any old verification state before new verification ---
       localStorage.removeItem('hungerium_human_verification_ts');
       localStorage.removeItem('hungerium_human_verified');

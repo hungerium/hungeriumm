@@ -10,7 +10,7 @@ export default function NetworkBanner() {
     const checkNetwork = async () => {
       if (window.ethereum) {
         const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        setWrongNetwork(chainId !== '0x38'); // BSC chainId
+        setWrongNetwork(chainId !== '0x2105'); // Base chainId
       }
     };
 
@@ -22,11 +22,11 @@ export default function NetworkBanner() {
     };
   }, []);
 
-  const switchToBSC = async () => {
+  const switchToBase = async () => {
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x38' }],
+        params: [{ chainId: '0x2105' }],
       });
     } catch (error) {
       console.error(error);
@@ -40,14 +40,14 @@ export default function NetworkBanner() {
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           exit={{ y: -100 }}
-          className="fixed top-0 left-0 right-0 bg-[#D4A017] text-white py-2 px-4 text-center z-50"
+          className="fixed top-0 left-0 right-0 bg-[#1e90ff] text-white py-2 px-4 text-center z-50"
         >
-          <p className="inline-block mr-4">Please switch to Binance Smart Chain</p>
+          <p className="inline-block mr-4">Please switch to Base Network</p>
           <button
-            onClick={switchToBSC}
-            className="bg-white text-[#D4A017] px-4 py-1 rounded-full text-sm hover:bg-opacity-90"
+            onClick={switchToBase}
+            className="bg-white text-[#1e90ff] px-4 py-1 rounded-full text-sm hover:bg-opacity-90"
           >
-            Switch Network
+            Switch to Base
           </button>
         </motion.div>
       )}
