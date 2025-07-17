@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Card from './Card.jsx';
+import Image from 'next/image';
 
 // Constants
 const COFFEE_BEAN_IMAGE = '/images/coffee-beans-pattern.png';
@@ -283,15 +284,13 @@ const GamesSection = ({ id }) => {
             >
               {/* Game Image Container */}
               <div className="relative" style={{ aspectRatio: '16/12' }}>
-                <img
+                <Image
                   src={game.image}
                   alt={`${game.title} game preview`}
+                  fill
+                  sizes="(max-width: 768px) 90vw, 400px"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   onError={handleImageError}
-                  loading="lazy"
-                  width={400}
-                  height={300}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 {/* Image Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

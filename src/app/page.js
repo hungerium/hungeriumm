@@ -13,6 +13,7 @@ import Tokenomics from './components/Tokenomics';
 import ContractInfo from './components/ContractInfo';
 import Partners from './components/Partners';
 import About from './components/About';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function Home() {
   return (
@@ -60,6 +61,7 @@ export default function Home() {
           <Whitepaper />
           <Community />
           <Footer />
+          <ScrollToTop />
         </main>
       </div>
     </>

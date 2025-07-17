@@ -624,21 +624,43 @@ iframe {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom scrollbar */
+/* Custom Scrollbar Styles - Ekstra kalın ve mavi arka plan, büyük oklar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 56px;
+  background: #1e90ff;
 }
-
 ::-webkit-scrollbar-track {
-  @apply bg-[#1A0F0A];
+  background: #1e90ff;
+  border-radius: 28px;
 }
-
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#D4A017]/30 rounded-full;
+  background: linear-gradient(135deg, #FFD700 0%, #1e90ff 100%);
+  border-radius: 32px;
+  border: 12px solid #1e90ff;
+  min-height: 48px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1e90ff 0%, #FFD700 100%);
+}
+/* Büyük yukarı ve aşağı oklar (destekleyen tarayıcılarda) */
+::-webkit-scrollbar-button {
+  height: 56px;
+  background: #1e90ff;
+  display: block;
+}
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background: #1e90ff url("data:image/svg+xml;utf8,<svg fill='white' height='32' width='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M16 10l-8 8h16z'/></svg>") no-repeat center center;
+  background-size: 32px 32px;
+}
+::-webkit-scrollbar-button:single-button:vertical:increment {
+  background: #1e90ff url("data:image/svg+xml;utf8,<svg fill='white' height='32' width='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'><path d='M16 22l8-8H8z'/></svg>") no-repeat center center;
+  background-size: 32px 32px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-[#D4A017]/50;
+/* Firefox */
+* {
+  scrollbar-width: auto;
+  scrollbar-color: #FFD700 #1e90ff;
 }
 
 /* Button animations */

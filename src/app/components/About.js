@@ -96,11 +96,9 @@ const About = ({ id }) => {
                     <Image
                       src="/images/coffy-mascot.png"
                       alt="Coffy Mascot"
-                      width={280}
-                      height={280}
+                      fill
+                      sizes="(max-width: 768px) 80vw, 280px"
                       className="object-contain animate-float"
-                      priority={true}
-                      loading="eager"
                       style={{ 
                         objectFit: 'contain',
                         WebkitMaskImage: 'radial-gradient(circle, black 60%, transparent 85%)',

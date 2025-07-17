@@ -2,12 +2,13 @@
 
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense, lazy } from 'react';
 import { useInView } from 'react-intersection-observer';
 import useAppStore from '../stores/useAppStore';
-import Particles from "react-tsparticles";
+// OPTIMIZATION: Animasyonları dinamik import ile yükle
+const LazyParticles = lazy(() => import('react-tsparticles'));
+const LazyLottiePlayer = lazy(() => import('lottie-react').then(mod => ({ default: mod.Player })));
 import { loadSlim } from "tsparticles-slim";
-import { Player as LottiePlayer } from "lottie-react";
 
 export default function Hero() {
   const { scrollY } = useScroll();
@@ -166,6 +167,7 @@ export default function Hero() {
     }
   };
 
+  // OPTIMIZATION: Sadece inView olduğunda animasyonları yükle
   // Only run heavy animations if inView
   const shouldAnimate = inView;
 
@@ -175,6 +177,17 @@ export default function Hero() {
       className="relative w-full min-h-[80vh] flex flex-col justify-center items-center bg-gradient-to-br from-[#0a1833] via-[#0e2247] to-[#1e90ff] text-white overflow-hidden px-4" 
       id="hero"
     >
+      {/* OPTIMIZATION: Dinamik animasyonlar sadece görünürken yüklenir */}
+      {shouldAnimate && (
+        <Suspense fallback={null}>
+          <LazyParticles
+            id="tsparticles"
+            init={particlesInit}
+            options={particlesOptions}
+            className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+          />
+        </Suspense>
+      )}
       {/* Gradient Glow (arka plan) */}
       {/* Removed: animated background and particles */}
       {/* Main content with modern animations */}
@@ -271,11 +284,10 @@ export default function Hero() {
                 <Image
                   src="/images/coffy-hero.png"
                   alt="Hungerium Coin Hero"
-                  width={320}
-                  height={320}
-                  className="w-full h-full object-contain drop-shadow-2xl filter brightness-110 rounded-[2.5rem]"
-                  style={{ width: 'auto', height: 'auto' }}
-                  priority
+                  fill
+                  sizes="(max-width: 768px) 80vw, 320px"
+                  className="object-contain drop-shadow-2xl filter brightness-110 rounded-[2.5rem]"
+                  style={{ width: '100%', height: '100%' }}
                 />
               </motion.div>
               
