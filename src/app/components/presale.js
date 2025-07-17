@@ -644,17 +644,17 @@ const PRESALE_ABI = [
 	}
 ];
 
-// Fix COFFY_TOTAL_SUPPLY to 1.5 billion (not 15 billion)
-const COFFY_TOTAL_SUPPLY = ethers.parseUnits('1500000000', 18);
+// Fix HUNGX_TOTAL_SUPPLY to 15 billion
+const HUNGX_TOTAL_SUPPLY = ethers.parseUnits('15000000000', 18);
 // Presale başlangıç ve bitiş tarihleri
 const PRESALE_END = new Date('2025-06-07T13:30:00Z'); // 7 Haziran 2025, 16:30 Türkiye saati (UTC+3)
 
 // HYPE/FOMO BANNER MESSAGES
 const FOMO_MESSAGES = [
-	"🔥 180K COFFY bought in the last 10 minutes!",
-	"🚀 COFFY is trending now!",
+	"🐝 180K HUNGX bought in the last 10 minutes!",
+	"🚀 HUNGX is trending now!",
 	"💰 Don't miss the best price phase!",
-	"☕ Top buyers get exclusive rewards!",
+	"🐝 Top buyers get exclusive rewards!",
 	"🎉 Over 1,000 participants!",
 ];
 // Mocked social proof data
@@ -685,7 +685,7 @@ export default function Presale() {
 	const [presaleStats, setPresaleStats] = useState({
 		totalSold: 0,
 		participantCount: 0,
-		remainingSupply: COFFY_TOTAL_SUPPLY,
+		remainingSupply: HUNGX_TOTAL_SUPPLY,
 		currentPhase: 1,
 		isActive: true,
 	});
@@ -1739,7 +1739,7 @@ export default function Presale() {
 	// Satılan token sayısını gösterirken +100 milyon COFFY ekle
 	const displayedSold = totalSold + BigInt("100000000000000000000000000"); // 100,000,000 * 10^18
 	const soldFormatted = formatShortNumber(Number(ethers.formatUnits(displayedSold, 18)));
-	const remaining = COFFY_TOTAL_SUPPLY - totalSold;
+	const remaining = HUNGX_TOTAL_SUPPLY - totalSold;
 	const remainingFormatted = formatShortNumber(Number(ethers.formatUnits(remaining, 18)));
 
 	// Calculate full marketcap for each phase (total supply × phase price)
@@ -1759,11 +1759,11 @@ export default function Presale() {
 		<section id="presale-section" className="max-w-3xl mx-auto mt-10 mb-10 p-6 rounded-xl shadow-lg bg-[#1A0F0A] border border-[#D4A017]/40 relative" aria-labelledby="presale-title">
 			{/* Header */}
 			<div className="mb-6 text-center">
-				<h2 id="presale-title" className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
+				<h2 id="presale-title" className="text-3xl font-bold text-[#FFD700]">
 					COFFY PRESALE
 				</h2>
 				{/* Fiyat Bilgisi ve Açıklama */}
-				<div className="mt-2 text-[#E8D5B5] text-sm flex flex-col items-center text-center">
+				<div className="mt-2 text-white text-sm flex flex-col items-center text-center">
 					<span className="text-lg font-bold text-[#FFD700]">
 						1 COFFY = ${PHASE_PRICES[phase].toFixed(8)} USD (Phase {phase})
 					</span>
@@ -1776,26 +1776,26 @@ export default function Presale() {
 			{/* Stats Bar */}
 			<div className="grid grid-cols-3 gap-3 mb-6">
 				<div className="bg-[#2B1A0F] p-3 rounded-lg text-center border border-[#D4A017]/20">
-					<div className="text-xs text-[#E8D5B5] mb-1">Time Left</div>
+					<div className="text-xs text-white mb-1">Time Left</div>
 					<motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} className="text-[#FFD700] font-bold">
 						{formatTime(left)}
 					</motion.div>
 				</div>
 				<div className="bg-[#2B1A0F] p-3 rounded-lg text-center border border-[#D4A017]/20">
-					<div className="text-xs text-[#E8D5B5] mb-1">Participants</div>
+					<div className="text-xs text-white mb-1">Participants</div>
 					<motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 0.6 }} className="text-[#FFD700] font-bold">
 						{displayedParticipantCount}
 					</motion.div>
 				</div>
 				<div className="bg-[#2B1A0F] p-3 rounded-lg text-center border border-[#D4A017]/20">
-					<div className="text-xs text-[#E8D5B5] mb-1">Potential Profit</div>
+					<div className="text-xs text-white mb-1">Potential Profit</div>
 					<div className="text-green-400 font-bold">{getXGain(phase)}X</div>
 				</div>
 			</div>
 
 			{/* Progress Bar */}
 			<div className="mb-6 relative">
-				<div className="flex justify-between text-xs text-[#E8D5B5] mb-2">
+				<div className="flex justify-between text-xs text-white mb-2">
 					<span>
 						Sold: <span className="font-bold text-[#FFD700]">{soldFormatted} COFFY</span>
 					</span>
@@ -1854,7 +1854,7 @@ export default function Presale() {
 					`}</style>
 				</div>
 				{/* Mobil için kompakt faz bilgileri */}
-				<div className="flex justify-between text-xs text-[#E8D5B5]/70 mt-2">
+				<div className="flex justify-between text-xs text-white/70 mt-2">
 					{[1, 2, 3].map((phaseNum, i) => (
 						<div key={phaseNum} className="relative group">
 							<span className="hidden md:inline">Phase {phaseNum} (total marketcap: {formatUsdK(phaseFullMarketcaps[i])})</span>
@@ -1871,7 +1871,7 @@ export default function Presale() {
 			<div className="w-full flex flex-col items-center justify-center mb-2">
 				<div className="text-lg font-bold text-[#FFD700] text-center" style={{letterSpacing: '0.5px'}}>
 					Launch Market Cap = 500k USD
-					<span className="mx-3 text-[#E8D5B5] text-base font-normal">|</span>
+					<span className="mx-3 text-white text-base font-normal">|</span>
 					<span className="text-base font-semibold text-[#FFD700]">1 COFFY = $0.00003333</span>
 				</div>
 			</div>
@@ -1921,7 +1921,7 @@ export default function Presale() {
 			<div className="bg-[#2B1A0F] p-4 rounded-lg border border-[#D4A017]/20 mb-6">
 				<form className="space-y-4" onSubmit={handleBuyWithConfetti} aria-labelledby="buy-form-title">
 					<div>
-						<label htmlFor="bnb-input" className="block text-[#E8D5B5] text-sm font-medium mb-2" id="buy-form-title">
+						<label htmlFor="bnb-input" className="block text-white text-sm font-medium mb-2" id="buy-form-title">
 							BNB Amount (max 0.5)
 						</label>
 						<input
@@ -1938,7 +1938,7 @@ export default function Presale() {
 							aria-describedby="bnb-input-desc"
 						/>
 						<div id="bnb-input-desc" className="mt-2 flex items-center justify-between text-sm">
-							<span className="text-[#E8D5B5]">You will receive:</span>
+							<span className="text-white">You will receive:</span>
 							<span className="text-[#FFD700] font-bold">{coffyToBuy.toLocaleString()} COFFY</span>
 						</div>
 					</div>
@@ -1968,7 +1968,7 @@ export default function Presale() {
 						
 						<button
 							type="button"
-							className={`w-full md:w-1/2 py-3 px-4 rounded-lg bg-[#3A2A1E] text-[#E8D5B5] border border-[#D4A017]/30 font-medium hover:bg-[#2B1A0F] hover:border-[#D4A017] transition-all duration-200 disabled:opacity-50 text-base relative overflow-hidden ${canClaim ? 'animate-bounce' : ''}`}
+							className={`w-full md:w-1/2 py-3 px-4 rounded-lg bg-[#3A2A1E] text-white border border-[#D4A017]/30 font-medium hover:bg-[#2B1A0F] hover:border-[#D4A017] transition-all duration-200 disabled:opacity-50 text-base relative overflow-hidden ${canClaim ? 'animate-bounce' : ''}`}
 							disabled={loading || !canClaim || !account || claimable === 0}
 							onClick={handleClaim}
 							aria-busy={loading}
@@ -2031,7 +2031,7 @@ export default function Presale() {
 			)}
 
 			{/* Contract Info */}
-			<div className="text-center text-xs text-[#E8D5B5]/60 mt-6">
+			<div className="text-center text-xs text-white/60 mt-6">
 				<div>Contract Address</div>
 				<div className="font-mono break-all bg-[#2B1A0F] p-2 rounded mt-1 border border-[#D4A017]/20" aria-label="Contract address">
 					{PRESALE_ADDRESS}

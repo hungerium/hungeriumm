@@ -5,15 +5,15 @@ import { motion } from 'framer-motion';
 
 export default function Footer() {
   return (
-    <footer className="py-12 bg-gradient-to-r from-[#1A0F0A] via-[#3A2A1E] to-[#1A0F0A] relative overflow-hidden">
+    <footer className="py-12 bg-gradient-to-r from-[#0a1833] via-[#0e2247] to-[#1e90ff] relative overflow-hidden">
       {/* Background Animation */}
       <motion.div 
         className="absolute inset-0 opacity-5"
         animate={{
           background: [
-            'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 80% 80%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)'
+            'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)',
+            'radial-gradient(circle at 80% 80%, #1e90ff 0%, transparent 50%)',
+            'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)'
           ]
         }}
         transition={{ duration: 10, repeat: Infinity }}
@@ -33,17 +33,17 @@ export default function Footer() {
               <div className="flex-shrink-0">
                 <Image 
                   src="/images/coffy-logo.png" 
-                  alt="Coffy Logo" 
+                  alt="Hungerium Logo" 
                   width={48} 
                   height={48} 
                   className="rounded-full animate-float"
                 />
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
-                COFFY
+              <span className="text-2xl font-bold text-[#FFD700]">
+                HUNGERIUM
               </span>
             </div>
-            <p className="text-[#E8D5B5]/70">Brewing the Future of Coffee with Blockchain!</p>
+            <p className="text-white">Empowering the food economy with blockchain!</p>
             <div className="flex space-x-4">
               {[
                 { icon: "telegram-plane", url: "https://t.me/+DVdNX9nar99hN2Rk" },
@@ -54,8 +54,8 @@ export default function Footer() {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, color: "#D4A017" }}
-                  className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition-colors duration-300"
+                  whileHover={{ scale: 1.1, color: "#1e90ff" }}
+                  className="text-[#1e90ff]/70 hover:text-[#1e90ff] transition-colors duration-300"
                 >
                   <i className={`fab fa-${social.icon} text-xl`}></i>
                 </motion.a>
@@ -70,12 +70,12 @@ export default function Footer() {
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-bold text-[#D4A017] mb-4">Quick Links</h3>
+            <h3 className="text-xl font-bold text-[#FFD700] mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li><a href="#about" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">About</a></li>
-              <li><a href="#tokenomics" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Tokenomics</a></li>
-              <li><a href="#roadmap" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Roadmap</a></li>
-              <li><a href="#partners" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Partners</a></li>
+              <li><a href="#about" className="text-white hover:text-[#FFD700] transition duration-200">About</a></li>
+              <li><a href="#tokenomics" className="text-white hover:text-[#FFD700] transition duration-200">Tokenomics</a></li>
+              <li><a href="#roadmap" className="text-white hover:text-[#FFD700] transition duration-200">Roadmap</a></li>
+              <li><a href="#partners" className="text-white hover:text-[#FFD700] transition duration-200">Partners</a></li>
             </ul>
           </motion.div>
 
@@ -86,10 +86,10 @@ export default function Footer() {
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-bold text-[#D4A017] mb-4">Resources</h3>
+            <h3 className="text-xl font-bold text-[#FFD700] mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><a href="/whitepaper/coffy-whitepaper.pdf" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Whitepaper</a></li>
-              <li><a href="https://bscscan.com/address/0x04CD0E3b1009E8ffd9527d0591C7952D92988D0f" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">BSCScan</a></li>
+              <li><a href="/whitepaper/coffy-whitepaper.pdf" className="text-white hover:text-[#FFD700] transition duration-200">Whitepaper</a></li>
+              <li><a href="https://bscscan.com/address/0xF87A2A0ADcBE4591d8d013171E6f1552D2349004" className="text-white hover:text-[#FFD700] transition duration-200">BSCScan</a></li>
             </ul>
           </motion.div>
 
@@ -100,10 +100,10 @@ export default function Footer() {
             transition={{ duration: 0.8, delay: 0.6 }}
             viewport={{ once: true }}
           >
-            <h3 className="text-xl font-bold text-[#D4A017] mb-4">Legal</h3>
+            <h3 className="text-xl font-bold text-[#FFD700] mb-4">Legal</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Terms of Use</a></li>
-              <li><a href="#" className="text-[#E8D5B5]/70 hover:text-[#D4A017] transition duration-200">Privacy Policy</a></li>
+              <li><a href="#" className="text-white hover:text-[#FFD700] transition duration-200">Terms of Use</a></li>
+              <li><a href="#" className="text-white hover:text-[#FFD700] transition duration-200">Privacy Policy</a></li>
             </ul>
           </motion.div>
         </div>
@@ -116,9 +116,9 @@ export default function Footer() {
           viewport={{ once: true }}
           className="relative pt-8 mt-8 text-center"
         >
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4A017]/30 to-transparent" />
-          <p className="text-[#E8D5B5]/50 text-sm">
-            © {new Date().getFullYear()} Coffy Coin. All rights reserved.
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#1e90ff]/30 to-transparent" />
+          <p className="text-white text-sm">
+            © {new Date().getFullYear()} HUNGX. All rights reserved.
           </p>
         </motion.div>
       </div>

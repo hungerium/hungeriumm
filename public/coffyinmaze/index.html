@@ -16,7 +16,11 @@
     <link rel="stylesheet" href="css/mobile.css">
     <link rel="stylesheet" href="css/game.css">
     
-    <!-- Ethers.js CDN with optimized loading -->
+    <!-- Import Ethers.js for contract calls -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
     <script>
       window.ethersLoaded = false;
       
@@ -121,7 +125,7 @@
         <!-- Game UI Elements -->
         <div id="ui">
             <div>Level: <span id="level">Loading...</span></div>
-            <div>COFFY: <span id="coffyCounter">0</span> 💰</div>
+            <div>HUNGX: <span id="hungxCounter">0</span> 💰</div>
         </div>
         
         <div id="minimap"></div>
@@ -191,13 +195,13 @@
                             <button id="disconnectWalletButton" class="mini-button">Disconnect</button>
                         </div>
                         <div id="walletBalance" class="stat-item wallet-balance">
-                            <span id="wallet-coffy-balance">0</span> COFFY
+                            <span id="wallet-hungx-balance">0</span> HUNGX
                         </div>
                     </div>
                     
                     <div id="pendingRewards" class="stat-item">
-                        <div class="reward-header">COFFY Rewards</div>
-                        <div class="reward-amount"><span id="totalCoffyTokens">0</span> <span class="token-status">💰</span></div>
+                        <div class="reward-header">HUNGX Rewards</div>
+                        <div class="reward-amount"><span id="totalHungxTokens">0</span> <span class="token-status">💰</span></div>
                     </div>
                 </div>
                 
@@ -219,7 +223,7 @@
                 <h2 class="screen-title">GAME OVER</h2>
                 <div class="stats-container">
                     <div class="stat-item">Final Score: <span id="finalScore">0</span></div>
-                    <div class="stat-item">COFFY: <span id="rewardsEarned">0</span></div>
+                    <div class="stat-item">HUNGX: <span id="rewardsEarned">0</span></div>
                     <div class="stat-item">Time Survived: <span id="timeAlive">0:00</span></div>
                 </div>
                 <div class="button-container">
@@ -362,7 +366,7 @@
             font-size: 0.9em;
         }
         
-        #wallet-coffy-balance {
+        #wallet-hungx-balance {
             color: #ffcc00;
             font-weight: bold;
         }

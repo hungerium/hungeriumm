@@ -139,10 +139,10 @@
                     </div>
                 </div>
 
-                <!-- Coffy Counter -->
+                <!-- HUNGX Counter -->
                 <div class="ui-panel top-right">
-                    <div class="coffy-container">
-                        <span id="coffy-count">0</span>
+                    <div class="hungx-container">
+                        <span id="hungx-count">0</span>
                     </div>
                 </div>
             </div>
@@ -231,50 +231,29 @@
     </script>
     <script>
     // Ana Menü ve Web3 entegrasyonu
-    const mainMenuOverlay = document.getElementById('mainMenuOverlay');
-    const mainMenuConnectWallet = document.getElementById('mainMenuConnectWallet');
-    const mainMenuClaimReward = document.getElementById('mainMenuClaimReward');
-    const mainMenuStartGame = document.getElementById('mainMenuStartGame');
-    const walletStatus = document.getElementById('walletStatus');
-    const scoreSection = document.getElementById('scoreSection');
-    const totalScore = document.getElementById('totalScore');
-    const claimableCoffy = document.getElementById('claimableCoffy');
-    let web3Handler = null;
-    let walletConnected = false;
-    let gameStarted = false;
     function updateWalletStatus() {
       if (!walletStatus || !mainMenuClaimReward || !scoreSection || !totalScore || !claimableCoffy) return;
-      if (web3Handler && web3Handler.currentAccount) {
-        walletStatus.textContent = 'Wallet Connected: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
+      if (window.web3Handler && window.web3Handler.currentAccount) {
+        walletStatus.textContent = 'Wallet Connected: ' + window.web3Handler.currentAccount.slice(0,6) + '...' + window.web3Handler.currentAccount.slice(-4);
         mainMenuClaimReward.disabled = false;
         scoreSection.style.display = 'flex';
-        walletConnected = true;
-        if (typeof web3Handler.totalEarnedTokens !== 'undefined') {
-          totalScore.textContent = web3Handler.totalEarnedTokens;
+        if (typeof window.web3Handler.totalEarnedTokens !== 'undefined') {
+          totalScore.textContent = window.web3Handler.totalEarnedTokens;
         }
-        // TUTARLI COFFY GÖSTERME
-        let coffy = 0;
-        
-        // Önce localStorage'dan al
-        const localCoffy = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
-        
-        // Sonra oyuncu nesnesinden al
+        let hungx = 0;
+        const localHungx = parseInt(localStorage.getItem('hungxEarned') || '0', 10);
         if (window.game && window.game.player) {
-          const playerCoffy = window.game.player.coffy || 0;
-          const playerLocalCoffy = typeof window.game.player.getLocalCoffy === 'function' ? window.game.player.getLocalCoffy() : 0;
-          
-          // En yüksek değeri kullan (tutarlılık için)
-          coffy = Math.max(localCoffy, playerCoffy, playerLocalCoffy);
+          const playerHungx = window.game.player.hungx || 0;
+          const playerLocalHungx = typeof window.game.player.getLocalHungx === 'function' ? window.game.player.getLocalHungx() : 0;
+          hungx = Math.max(localHungx, playerHungx, playerLocalHungx);
         } else {
-          coffy = localCoffy;
+          hungx = localHungx;
         }
-        
-        claimableCoffy.textContent = coffy;
+        claimableCoffy.textContent = hungx;
       } else {
         walletStatus.textContent = 'Wallet Not Connected';
         mainMenuClaimReward.disabled = true;
         scoreSection.style.display = 'none';
-        walletConnected = false;
       }
     }
     // Canvas inputlarını yönetmek için yardımcı fonksiyon
@@ -304,32 +283,32 @@
       let gameStarted = false;
       function updateWalletStatus() {
         if (!walletStatus || !mainMenuClaimReward || !scoreSection || !totalScore || !claimableCoffy) return;
-        if (web3Handler && web3Handler.currentAccount) {
-          walletStatus.textContent = 'Wallet Connected: ' + web3Handler.currentAccount.slice(0,6) + '...' + web3Handler.currentAccount.slice(-4);
+        if (window.web3Handler && window.web3Handler.currentAccount) {
+          walletStatus.textContent = 'Wallet Connected: ' + window.web3Handler.currentAccount.slice(0,6) + '...' + window.web3Handler.currentAccount.slice(-4);
           mainMenuClaimReward.disabled = false;
           scoreSection.style.display = 'flex';
           walletConnected = true;
-          if (typeof web3Handler.totalEarnedTokens !== 'undefined') {
-            totalScore.textContent = web3Handler.totalEarnedTokens;
+          if (typeof window.web3Handler.totalEarnedTokens !== 'undefined') {
+            totalScore.textContent = window.web3Handler.totalEarnedTokens;
           }
                   // TUTARLI COFFY GÖSTERME (2. KOPYA)
-          let coffy = 0;
+          let hungx = 0;
         
         // Önce localStorage'dan al
-        const localCoffy = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
+        const localHungx = parseInt(localStorage.getItem('hungxEarned') || '0', 10);
         
         // Sonra oyuncu nesnesinden al
         if (window.game && window.game.player) {
-          const playerCoffy = window.game.player.coffy || 0;
-          const playerLocalCoffy = typeof window.game.player.getLocalCoffy === 'function' ? window.game.player.getLocalCoffy() : 0;
+          const playerHungx = window.game.player.hungx || 0;
+          const playerLocalHungx = typeof window.game.player.getLocalHungx === 'function' ? window.game.player.getLocalHungx() : 0;
           
           // En yüksek değeri kullan (tutarlılık için)
-          coffy = Math.max(localCoffy, playerCoffy, playerLocalCoffy);
+          hungx = Math.max(localHungx, playerHungx, playerLocalHungx);
           } else {
-          coffy = localCoffy;
+          hungx = localHungx;
           }
         
-          claimableCoffy.textContent = coffy;
+          claimableCoffy.textContent = hungx;
         } else {
           walletStatus.textContent = 'Wallet Not Connected';
           mainMenuClaimReward.disabled = true;
@@ -345,17 +324,17 @@
       }
       setCanvasInputEnabled(false);
       if (window.Web3Handler) {
-        web3Handler = new window.Web3Handler();
+        window.web3Handler = new window.Web3Handler();
         document.addEventListener('wallet-update', function() {
           updateWalletStatus();
         });
         updateWalletStatus();
       }
       if (mainMenuConnectWallet) mainMenuConnectWallet.onclick = async function() {
-        if (web3Handler && typeof web3Handler.connectWallet === 'function') {
+        if (window.web3Handler && typeof window.web3Handler.connectWallet === 'function') {
           showNotification('Connecting wallet...', 'info');
           try {
-            await web3Handler.connectWallet();
+            await window.web3Handler.connectWallet();
             showNotification('Wallet connected!', 'success');
             updateWalletStatus();
           } catch (e) {
@@ -365,50 +344,50 @@
       };
       if (mainMenuClaimReward) mainMenuClaimReward.onclick = async function() {
         // GÜÇLE DÜZELTME - Coffy miktarını tutarlı şekilde al
-        let coffy = 0;
+        let hungx = 0;
         
         // Önce oyuncu nesnesinden al
-        if (window.game && window.game.player && typeof window.game.player.getLocalCoffy === 'function') {
-          coffy = window.game.player.getLocalCoffy();
-          console.log('📊 Coffy from player:', coffy);
+        if (window.game && window.game.player && typeof window.game.player.getLocalHungx === 'function') {
+          hungx = window.game.player.getLocalHungx();
+          console.log('📊 Hungx from player:', hungx);
         }
         
         // Eğer oyuncu yoksa localStorage'dan al
-        if (coffy <= 0) {
-          coffy = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
-          console.log('📊 Coffy from localStorage:', coffy);
+        if (hungx <= 0) {
+          hungx = parseInt(localStorage.getItem('hungxEarned') || '0', 10);
+          console.log('📊 Hungx from localStorage:', hungx);
         }
         
         // Son kontrol - hem oyuncu hem localStorage'u senkronize et
         if (window.game && window.game.player) {
-          const playerCoffy = window.game.player.coffy || 0;
-          const localCoffy = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
-          coffy = Math.max(playerCoffy, localCoffy);
-          console.log('📊 Final coffy amount (max of both):', coffy, 'Player:', playerCoffy, 'Local:', localCoffy);
+          const playerHungx = window.game.player.hungx || 0;
+          const localHungx = parseInt(localStorage.getItem('hungxEarned') || '0', 10);
+          hungx = Math.max(playerHungx, localHungx);
+          console.log('📊 Final hungx amount (max of both):', hungx, 'Player:', playerHungx, 'Local:', localHungx);
         }
         
-        if (coffy <= 0) {
-          showNotification('No Coffy to claim!', 'info');
+        if (hungx <= 0) {
+          showNotification('No Hungx to claim!', 'info');
           return;
         }
         
-        if (web3Handler && typeof web3Handler.claimRewards === 'function') {
-          showNotification(`${coffy} Coffy is being claimed...`, 'info');
+        if (window.web3Handler && typeof window.web3Handler.claimRewards === 'function') {
+          showNotification(`${hungx} Hungx is being claimed...`, 'info');
           try {
             // DOĞRU ÇAĞRI - claimGameRewards kontrata gönderilecek
-            console.log('🌐 Calling claimRewards with amount:', coffy);
-            await web3Handler.claimRewards(coffy);
-            showNotification(`Successfully claimed ${coffy} Coffy!`, 'success');
+            console.log('🌐 Calling claimRewards with amount:', hungx);
+            await window.web3Handler.claimRewards(hungx);
+            showNotification(`Successfully claimed ${hungx} Hungx!`, 'success');
             
             // Hem player hem localStorage'u sıfırla
-            if (window.game && window.game.player && typeof window.game.player.resetLocalCoffy === 'function') {
-              window.game.player.resetLocalCoffy();
-              window.game.player.coffy = 0; // Player coffy'sini de sıfırla
+            if (window.game && window.game.player && typeof window.game.player.resetLocalHungx === 'function') {
+              window.game.player.resetLocalHungx();
+              window.game.player.hungx = 0; // Player hungx'ini de sıfırla
             }
-            localStorage.setItem('coffyEarned', '0');
+            localStorage.setItem('hungxEarned', '0');
             
             updateWalletStatus();
-            console.log('✅ Claim successful, all coffy reset to 0');
+            console.log('✅ Claim successful, all hungx reset to 0');
           } catch (e) {
             console.error('❌ Claim failed:', e);
             showNotification('Failed to claim reward: ' + (e.message || e), 'error');
@@ -582,7 +561,7 @@
         <button id="mainMenuConnectWallet" class="web3-button connect-wallet bee-btn" style="width:220px;margin-bottom:12px;">Connect Wallet</button>
         <div id="scoreSection" style="display:none;flex-direction:column;align-items:center;margin-bottom:12px;">
           <div style="color:#ffd700;font-size:1.1em;margin-bottom:4px;">Total Score: <span id="totalScore">0</span></div>
-          <div style="color:#fffbe8;font-size:0.98em;">Claimable Coffy: <span id="claimableCoffy">0</span></div>
+          <div style="color:#fffbe8;font-size:0.98em;">Claimable HUNGX: <span id="claimableHungx">0</span></div>
         </div>
         <button id="mainMenuClaimReward" class="web3-button claim-reward bee-btn" style="width:220px;margin-bottom:12px;" disabled>Claim Reward</button>
         <button id="mainMenuStartGame" class="bee-btn" style="width:220px;padding:12px 0;border:none;border-radius:8px;background:#4CAF50;color:white;font-size:1.15em;font-weight:bold;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px #0002;">Start Game</button>

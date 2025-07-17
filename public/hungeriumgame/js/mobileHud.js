@@ -134,7 +134,7 @@
         hud.innerHTML = `
             <div class="hud-row" style="width:100vw;display:flex;align-items:center;justify-content:center;gap:3px;padding:1px 2px;background:rgba(30,30,40,0.3);">
                 <span class="hud-item" id="mobile-level" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Lv. 1</span>
-                <span class="hud-item" id="mobile-coffy" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">☕ 0</span>
+                <span class="hud-item" id="mobile-coffy" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">HUNGX 0</span>
                 <span class="hud-item" id="mobile-rescuees" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">👤 0/0</span>
                 <span class="hud-item" id="mobile-hostage-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#ffd700;">Hostage: 0m</span>
                 <span class="hud-item" id="mobile-police-dir" style="font-size:11px;padding:1px 4px;min-width:unset;background:none;color:#aaddff;">Police: 0m</span>
@@ -474,11 +474,11 @@
             
             // Safely update coffy count
             let coffy = 0;
-            if (window.game.coinManager && typeof window.game.coinManager.getTotalCoffyValue === 'function') {
-                coffy = window.game.coinManager.getTotalCoffyValue();
+            if (window.game.coinManager && typeof window.game.coinManager.getTotalHungxValue === 'function') {
+                coffy = window.game.coinManager.getTotalHungxValue();
             }
             const coffyElement = document.getElementById('mobile-coffy');
-            if (coffyElement) coffyElement.textContent = '☕ ' + coffy;
+            if (coffyElement) coffyElement.textContent = 'HUNGX ' + coffy;
             
             // Safely update rescued count
             let rescued = 0, total = 0;

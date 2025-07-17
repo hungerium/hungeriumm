@@ -33,7 +33,7 @@ export default function Partners() {
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#3A2A1E] to-[#1A0F0A] relative overflow-hidden" id="partners">
+    <section className="py-24 bg-gradient-to-br from-[#101c3a] via-[#0e2247] to-[#1e90ff]" id="partners">
       {/* Background Effects removed for performance */}
 
       <motion.div style={{ opacity }} className="container mx-auto px-6 relative z-10">
@@ -44,9 +44,9 @@ export default function Partners() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">Strategic Partners</h2>
-          <div className="w-24 h-1 bg-[#D4A017] mx-auto rounded-full"></div>
-          <p className="text-xl text-[#E8D5B5] mt-4">Proud to collaborate with the finest coffee brands</p>
+          <h2 className="text-5xl font-bold mb-6 text-[#FFD700]">Strategic Partners</h2>
+          <div className="w-24 h-1 bg-[#1e90ff] mx-auto rounded-full"></div>
+          <p className="text-xl text-white mt-4">Proud to collaborate with the finest blockchain and DeFi partners</p>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -58,7 +58,7 @@ export default function Partners() {
           ].map((partner, i) => (
             <div
               key={partner.name}
-              className="bg-[#2C1B12]/80 backdrop-blur-sm p-6 rounded-xl border border-[#D4A017]/20 hover:border-[#D4A017] shadow-lg hover:shadow-[#D4A017]/20 transition-all duration-300"
+              className="bg-[#e6f7ff]/80 backdrop-blur-sm p-6 rounded-xl border border-[#1e90ff]/20 hover:border-[#1e90ff] shadow-lg hover:shadow-[#1e90ff]/20 transition-all duration-300"
             >
               <div className="relative group aspect-video flex items-center justify-center">
                 <Image 
@@ -74,29 +74,10 @@ export default function Partners() {
           ))}
         </div>
 
-        {/* Partnership CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="mt-16 text-center"
-        >
-          <a 
-            href="https://forms.gle/CQyCEYMGt6t2WGVN7" // Güncellenmiş çalışan Google Form linki
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-3 px-8 rounded-xl hover:shadow-lg hover:shadow-[#D4A017]/30 transition-all duration-300 group"
-          >
-            <span>Become a Partner</span>
-            <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-          </a>
-        </motion.div>
-
         {/* --- KAYAN WEB3 ECOSYSTEM LOGOLARI --- */}
         <div className="relative w-full mt-12 overflow-x-hidden">
           <div className="text-center mb-2">
-            <span className="text-sm md:text-base font-semibold text-[#E8D5B5]/80 tracking-wide uppercase">Web3 Ecosystem</span>
+            <span className="text-sm md:text-base font-semibold text-white tracking-wide uppercase">Web3 Ecosystem</span>
           </div>
           <div className="marquee flex items-center gap-16 py-3 bg-[#1A0F0A]/70 rounded-xl shadow-inner px-4">
             {(() => {

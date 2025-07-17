@@ -43,7 +43,7 @@ export const MANUAL_SHOOTING = {
 };
 
 // Web3 Constants
-export const TOKEN_ADDRESS = '0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88';
+export const TOKEN_ADDRESS = '0xF87A2A0ADcBE4591d8d013171E6f1552D2349004';
 export const SUPPORTED_WALLETS = ['MetaMask', 'Trust Wallet', 'Binance Wallet'];
 export const BSC_CHAIN_ID = '0x38';
 
@@ -1717,3 +1717,13 @@ export const SVG_URLS = {
     teaCup: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="30" y="40" width="40" height="40" fill="#DAA520" rx="5" stroke="#AA8500" stroke-width="1" /><ellipse cx="50" cy="40" rx="20" ry="5" fill="#8B4513" /><path d="M70 50 C80 50 85 60 80 70" stroke="#000" stroke-width="2" fill="none" /><path d="M45 50 Q50 65 55 50" stroke="#8B4513" stroke-width="3" fill="none" /></svg>'),
 
 }
+
+// Ağ kontrolü ve chainId güncellemesi
+const BASE_CHAIN_ID = '0x2105';
+const BASE_NETWORK_PARAMS = {
+  chainId: BASE_CHAIN_ID,
+  chainName: 'Base Mainnet',
+  rpcUrls: ['https://mainnet.base.org'],
+  blockExplorerUrls: ['https://basescan.org'],
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }
+};

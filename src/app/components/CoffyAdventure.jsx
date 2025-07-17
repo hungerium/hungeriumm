@@ -46,13 +46,13 @@ const CoffyAdventure = () => {
         if (gameState === 'playing') {
           // Kahve fincanlarını oluştur
           if (Math.random() < 0.02) {
-            const coffee = new THREE.Mesh(
+            const honey = new THREE.Mesh(
               new THREE.SphereGeometry(0.3, 32, 32),
-              new THREE.MeshBasicMaterial({ color: 0x4a2c2a })
+              new THREE.MeshBasicMaterial({ color: 0xffd700 }) // Sarı bal rengi
             );
-            coffee.position.set(THREE.MathUtils.randFloatSpread(10), 5, 0);
-            coffeeCups.push(coffee);
-            scene.add(coffee);
+            honey.position.set(THREE.MathUtils.randFloatSpread(10), 5, 0);
+            coffeeCups.push(honey);
+            scene.add(honey);
           }
 
           // Çay fincanlarını oluştur
@@ -169,9 +169,9 @@ const CoffyAdventure = () => {
       {/* Başlangıç Ekranı */}
       {gameState === 'start' && (
         <div className="screen">
-          <h1 className="text-4xl font-bold text-white mb-4">Coffy Adventure</h1>
-          <p className="text-lg mb-2">Collect coffee cups, avoid tea cups!</p>
-          <p className="mb-2">Total Reward: {pendingRewards} COFFY</p>
+          <h1 className="text-4xl font-bold text-[#1e90ff] mb-4">Hungerium Adventure</h1>
+          <p className="text-lg mb-2">Collect honey drops, avoid tea cups!</p>
+          <p className="mb-2">Total Reward: {pendingRewards} HUNGX</p>
           <button className="game-button" onClick={claimRewards}>Claim Rewards</button>
           <button className="game-button" onClick={connectWallet}>Connect Wallet</button>
           <button className="game-button" onClick={startGame}>Start Game</button>
@@ -183,8 +183,8 @@ const CoffyAdventure = () => {
         <div id="hud" className="text-sm">
           <div>Score: {score}</div>
           <div>Level: {level}</div>
-          <div>Coffee: {coffeeCount}</div>
-          <div>Rewards: {pendingRewards}</div>
+          <div>Honey: {coffeeCount}</div>
+          <div>Rewards: {pendingRewards} HUNGX</div>
           <div>Wallet: {walletAddress ? `${walletAddress.slice(0, 6)}...` : 'Not Connected'}</div>
           <button className="game-button" onClick={pauseGame}>Pause</button>
         </div>

@@ -8,7 +8,6 @@ const useAppStore = create(
       portfolio: {
         balance: 0,
         stakedAmount: 0,
-        ownedCharacters: [],
         nftCount: 0,
         totalValue: 0,
         rewards: 0
@@ -36,7 +35,6 @@ const useAppStore = create(
         gamesPlayed: 0,
         highScore: 0,
         totalRewards: 0,
-        charactersUnlocked: 0
       },
 
       // Actions
@@ -46,14 +44,6 @@ const useAppStore = create(
 
       updateWalletConnection: (walletData) => set((state) => ({
         wallet: { ...state.wallet, ...walletData }
-      })),
-
-      updateOwnedCharacters: (characters) => set((state) => ({
-        portfolio: { 
-          ...state.portfolio, 
-          ownedCharacters: characters,
-          nftCount: characters.length 
-        }
       })),
 
       updateGameStats: (stats) => set((state) => ({
@@ -118,7 +108,6 @@ const useAppStore = create(
         portfolio: {
           balance: 0,
           stakedAmount: 0,
-          ownedCharacters: [],
           nftCount: 0,
           totalValue: 0,
           rewards: 0
@@ -130,7 +119,6 @@ const useAppStore = create(
           gamesPlayed: 0,
           highScore: 0,
           totalRewards: 0,
-          charactersUnlocked: 0
         }
       })),
 
@@ -143,11 +131,6 @@ const useAppStore = create(
       getNotificationCount: () => {
         const state = get();
         return state.ui.notifications.length;
-      },
-
-      getOwnedCharacterCount: () => {
-        const state = get();
-        return state.portfolio.ownedCharacters.length;
       },
 
       // Utility functions
@@ -171,29 +154,6 @@ const useAppStore = create(
         wallet: { ...state.wallet, ...userData.wallet },
         gameStats: { ...state.gameStats, ...userData.gameStats }
       })),
-
-      // Character management
-      addCharacter: (characterId) => set((state) => {
-        const newCharacters = [...state.portfolio.ownedCharacters, characterId];
-        return {
-          portfolio: {
-            ...state.portfolio,
-            ownedCharacters: newCharacters,
-            nftCount: newCharacters.length
-          }
-        };
-      }),
-
-      removeCharacter: (characterId) => set((state) => {
-        const newCharacters = state.portfolio.ownedCharacters.filter(id => id !== characterId);
-        return {
-          portfolio: {
-            ...state.portfolio,
-            ownedCharacters: newCharacters,
-            nftCount: newCharacters.length
-          }
-        };
-      }),
 
       // Staking functions
       stake: (amount) => set((state) => ({

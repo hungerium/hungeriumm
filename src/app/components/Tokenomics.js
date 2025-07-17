@@ -38,11 +38,11 @@ const Tokenomics = () => {
 
   // Tokenomics data - V2 Contract Distribution
   const tokenDistribution = [
-    { name: 'Community', percentage: 35, color: '#D4A017', description: 'Community rewards & ecosystem growth' },
-    { name: 'Treasury', percentage: 25, color: '#E8D5B5', description: 'Game & Staking Rewards Pool' },
-    { name: 'Liquidity Pool', percentage: 20, color: '#A77B06', description: 'DEX Liquidity & Trading' },
-    { name: 'Marketing', percentage: 10, color: '#8B6914', description: 'Marketing & Partnerships' },
-    { name: 'Team & Dev', percentage: 10, color: '#5F4B32', description: 'Team allocation & development' }
+    { name: 'Community', percentage: 35, color: '#1e90ff', description: 'Community rewards & ecosystem growth' },
+    { name: 'Treasury', percentage: 25, color: '#00bfff', description: 'Game & Staking Rewards Pool' },
+    { name: 'Liquidity Pool', percentage: 20, color: '#1e90ff', description: 'DEX Liquidity & Trading' },
+    { name: 'Marketing', percentage: 10, color: '#00bfff', description: 'Marketing & Partnerships' },
+    { name: 'Team & Dev', percentage: 10, color: '#1e90ff', description: 'Team allocation & development' }
   ];
 
   // V2 Contract tokenomics data
@@ -50,7 +50,7 @@ const Tokenomics = () => {
     {
       title: "V2 Token Supply",
       items: [
-        "Total Supply: 15 Billion COFFY",
+        "Total Supply: 15 Billion HUNGX",
         "Network: Binance Smart Chain (BSC)",
         "Contract: Audited & Verified",
         "Decimals: 18"
@@ -59,11 +59,11 @@ const Tokenomics = () => {
     {
       title: "Enhanced Distribution",
       items: [
-        "Community: 5.25B COFFY (35%) - Long-term ecosystem rewards",
-        "Treasury: 3.75B COFFY (25%) - Game rewards, staking, development",
-        "Liquidity: 3B COFFY (20%) - DEX liquidity pools & trading",
-        "Marketing: 1.5B COFFY (10%) - Partnerships & growth campaigns",
-        "Team: 1.5B COFFY (10%) - Development & operations"
+        "Community: 5.25B HUNGX (35%) - Long-term ecosystem rewards",
+        "Treasury: 3.75B HUNGX (25%) - Game rewards, staking, development",
+        "Liquidity: 3B HUNGX (20%) - DEX liquidity pools & trading",
+        "Marketing: 1.5B HUNGX (10%) - Partnerships & growth campaigns",
+        "Team: 1.5B HUNGX (10%) - Development & operations"
       ]
     },
     {
@@ -81,22 +81,23 @@ const Tokenomics = () => {
     <section 
       id="tokenomics" 
       ref={sectionRef}
-      className="py-8 bg-gradient-to-b from-[#3A2A1E] to-[#1A0F0A] relative overflow-hidden"
+      className="tokenomics py-8 bg-gradient-to-b from-[#0a1833] via-[#0e2247] to-[#1e90ff] text-white relative overflow-hidden"
     >
+      <style>{`.tokenomics .card-coffee { background: #101c3a !important; }`}</style>
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-[#D4A017]/5 blur-3xl"></div>
-        <div className="absolute bottom-40 right-20 w-80 h-80 rounded-full bg-[#D4A017]/5 blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-[#1e90ff]/5 blur-3xl"></div>
+        <div className="absolute bottom-40 right-20 w-80 h-80 rounded-full bg-[#00bfff]/5 blur-3xl"></div>
         
         {/* Coffee bean decorations */}
         <div className="absolute top-[20%] right-[5%] w-16 h-24 opacity-20">
-          <svg viewBox="0 0 100 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-bean-spin">
-            <path d="M50 0C22.4 0 0 38.2 0 85s22.4 85 50 85 50-38.2 50-85S77.6 0 50 0zm0 10c16.6 0 30 33.7 30 75s-13.4 75-30 75-30-33.7-30-75 13.4-75 30-75z" fill="#D4A017"/>
+          <svg viewBox="0 0 100 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-bee-spin">
+            <ellipse cx="50" cy="85" rx="50" ry="85" fill="#1e90ff"/>
           </svg>
         </div>
         <div className="absolute bottom-[15%] left-[8%] w-12 h-20 opacity-20 rotate-45">
-          <svg viewBox="0 0 100 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-bean-spin" style={{ animationDirection: 'reverse', animationDuration: '15s' }}>
-            <path d="M50 0C22.4 0 0 38.2 0 85s22.4 85 50 85 50-38.2 50-85S77.6 0 50 0zm0 10c16.6 0 30 33.7 30 75s-13.4 75-30 75-30-33.7-30-75 13.4-75 30-75z" fill="#D4A017"/>
+          <svg viewBox="0 0 100 170" fill="none" xmlns="http://www.w3.org/2000/svg" className="animate-bee-spin" style={{ animationDirection: 'reverse', animationDuration: '15s' }}>
+            <ellipse cx="50" cy="85" rx="50" ry="85" fill="#00bfff"/>
           </svg>
         </div>
       </div>
@@ -114,13 +115,13 @@ const Tokenomics = () => {
           </motion.h2>
           
           <motion.p 
-            className="text-sm md:text-base text-[#E8D5B5] max-w-2xl mx-auto"
+            className="text-sm md:text-base text-[#b3e0ff] max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Coffy Coin is designed with a balanced tokenomics model for long-term sustainability and value.
+            HUNGX Coin is designed with a balanced tokenomics model for long-term sustainability and value.
           </motion.p>
         </div>
 
@@ -129,21 +130,22 @@ const Tokenomics = () => {
           <div className="reveal-on-scroll">
             <motion.div 
               className="card-coffee p-4 h-full"
+              style={{ backgroundColor: '#101c3a' }}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
             >
-              <h3 className="text-lg font-semibold text-[#E8D5B5] mb-3 text-center">Token Distribution</h3>
+              <h3 className="text-lg font-semibold text-white mb-3 text-center">Token Distribution</h3>
               
               {/* Larger circular chart */}
               <div className="relative w-full aspect-square max-w-[300px] mx-auto">
                 {/* Max supply in center */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <div className="w-[40%] h-[40%] rounded-full bg-[#1A0F0A]/80 border-2 border-[#D4A017]/30 flex items-center justify-center">
+                  <div className="w-[40%] h-[40%] rounded-full bg-[#182848]/80 border-2 border-[#1e90ff]/30 flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-xl font-bold text-[#D4A017]">15B</p>
-                      <p className="text-xs text-[#E8D5B5] mt-0.5">Max Supply</p>
+                      <p className="text-xl font-bold text-white">15B</p>
+                      <p className="text-xs text-[#b3e0ff] mt-0.5">Max Supply</p>
                     </div>
                   </div>
                 </div>
@@ -221,7 +223,7 @@ const Tokenomics = () => {
                     <div className="w-3 h-3 rounded-sm shadow-sm" style={{ backgroundColor: item.color }}></div>
                     <div className="text-xs">
                       <div className="text-white font-medium">{item.name}</div>
-                      <div className="text-[#E8D5B5]/80 text-[10px] flex justify-between">
+                      <div className="text-white/80 text-[10px] flex justify-between">
                         <span>{item.percentage === 50 ? '7.5B' : item.percentage === 20 ? '3B' : '2.25B'}</span>
                         <span className="ml-1">({item.percentage}%)</span>
                       </div>
@@ -236,33 +238,34 @@ const Tokenomics = () => {
           <div className="reveal-on-scroll">
             <motion.div 
               className="card-coffee p-4 h-full"
+              style={{ backgroundColor: '#101c3a' }}
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
             >
-              <h3 className="text-lg font-semibold text-[#E8D5B5] mb-3">Token Details</h3>
+              <h3 className="text-lg font-semibold text-white mb-3">Token Details</h3>
               
               <div className="space-y-4">
                 {/* Token info with better contrast */}
-                <div className="bg-[#1A0F0A]/40 rounded-md p-3">
-                  <h4 className="text-base text-[#D4A017] font-medium mb-2">Token Information</h4>
+                <div className="bg-[#101c3a]/40 rounded-md p-3">
+                  <h4 className="text-base text-white font-medium mb-2">Token Information</h4>
                   <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
                     <div className="flex justify-between">
                       <span className="text-white/80">Name:</span>
-                      <span className="text-white font-medium">Coffy Coin</span>
+                      <span className="text-white font-medium">Hungerium</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">Network:</span>
-                      <span className="text-white font-medium">BSC</span>
+                      <span className="text-white font-medium">Base</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">Symbol:</span>
-                      <span className="text-white font-medium">COFFY</span>
+                      <span className="text-white font-medium">HUNGX</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">Type:</span>
-                      <span className="text-white font-medium">BEP-20</span>
+                      <span className="text-white font-medium">ERC-20</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/80">Max Supply:</span>
@@ -277,7 +280,7 @@ const Tokenomics = () => {
                 
                 {/* Key features with optimized rendering */}
                 <div>
-                  <h4 className="text-base text-[#D4A017] font-medium mb-2">Key Features</h4>
+                  <h4 className="text-base text-white font-medium mb-2">Key Features</h4>
                   <ul className="space-y-2 text-sm">
                     {[
                       { title: "35% Community", desc: "Long-term ecosystem rewards and growth" },
@@ -292,7 +295,7 @@ const Tokenomics = () => {
                           </svg>
                         </div>
                         <span className="text-white">
-                          <span className="text-[#D4A017] font-medium">{feature.title}:</span> {feature.desc}
+                          <span className="text-[#FFD700] font-medium">{feature.title}:</span> {feature.desc}
                         </span>
                       </li>
                     ))}
@@ -341,34 +344,21 @@ const Tokenomics = () => {
                 desc: "Game marketplace" 
               }
             ].map((item, idx) => (
-              <div key={idx} className="card-coffee p-3 flex-1 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#D4A017]/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#D4A017" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div key={idx} className="card-bee p-3 flex-1 flex items-center gap-3 rounded-xl bg-[#101c3a] border border-[#1e90ff]/30 shadow-lg hover:shadow-[#1e90ff]/40 transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1e90ff] to-[#00bfff] flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#00bfff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     {item.icon}
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-white">{item.title}</h4>
-                  <p className="text-[#E8D5B5]/70 text-xs">{item.desc}</p>
+                  <h4 className="text-sm font-semibold text-[#1e90ff]">{item.title}</h4>
+                  <p className="text-white/80 text-xs">{item.desc}</p>
                 </div>
               </div>
             ))}
           </motion.div>
         </div>
         
-        {/* Ultra compact CTA */}
-        <div className="mt-5 text-center">
-          <motion.a 
-            href="#staking" 
-            className="btn-primary text-sm py-2 px-4 inline-block"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.3 }}
-          >
-            Start Staking
-          </motion.a>
-        </div>
       </div>
     </section>
   );

@@ -1,29 +1,30 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FaCoffee, FaGamepad, FaUsers, FaCoins } from 'react-icons/fa';
+import { FaGamepad, FaUsers, FaCoins } from 'react-icons/fa';
+import { GiBee } from 'react-icons/gi';
 
 export default function Features() {
   const features = [
     { 
-      icon: <FaCoffee />, 
-      title: 'Drink-to-Earn', 
-      desc: 'Earn COFFY tokens by enjoying your favorite coffee!' 
+      icon: <GiBee />, 
+      title: 'Eat-to-Earn', 
+      desc: 'Earn HUNGX tokens by participating in the Hungerium ecosystem!' 
     },
     { 
       icon: <FaGamepad />, 
       title: 'Play-to-Earn', 
-      desc: 'Engage in exciting games to earn rewards' 
+      desc: 'Engage in exciting games to earn HUNGX rewards' 
     },
     { 
       icon: <FaUsers />, 
       title: 'SocialFi', 
-      desc: 'Connect with coffee lovers worldwide' 
+      desc: 'Connect with the Hungerium community worldwide' 
     },
     { 
       icon: <FaCoins />, 
       title: 'Staking', 
-      desc: 'Earn passive income through staking' 
+      desc: 'Earn passive income through staking HUNGX' 
     }
   ];
 
@@ -50,7 +51,7 @@ export default function Features() {
     },
     hover: {
       scale: 1.05,
-      boxShadow: "0 0 30px rgba(212, 160, 23, 0.3)",
+      boxShadow: "0 0 30px rgba(30, 144, 255, 0.3)",
       transition: {
         type: "spring",
         stiffness: 400,
@@ -77,31 +78,13 @@ export default function Features() {
         >
           Key Features
         </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              variants={cardVariants}
-              whileHover="hover"
-              className="bg-[#3A2A1E] rounded-xl shadow-xl border border-[#D4A017]/20 overflow-hidden group"
-            >
-              <div className="p-6">
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#D4A017] to-[#A77B06] rounded-full flex items-center justify-center text-3xl text-white mb-4 group-hover:scale-110 transition-transform duration-300">
-                    {feature.icon}
-                  </div>
-                  <motion.div
-                    className="absolute -inset-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] rounded-full opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"
-                  />
-                </div>
-                <h3 className="text-xl font-semibold text-[#D4A017] mb-2 group-hover:text-[#E8B923] transition-colors duration-300">
-                  {feature.title}
-                </h3>
-                <p className="text-[#E8D5B5] group-hover:text-white transition-colors duration-300">
-                  {feature.desc}
-                </p>
-              </div>
-            </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+          {features.map((feature, idx) => (
+            <div key={idx} className="rounded-2xl bg-gradient-to-br from-[#101c3a] via-[#0e2247] to-[#1e90ff] border border-[#1e90ff]/30 shadow-lg hover:shadow-[#1e90ff]/40 transition-all duration-300 p-6 flex flex-col items-center text-center">
+              <div className="mb-4 text-4xl text-[#00bfff]">{feature.icon}</div>
+              <h4 className="text-lg font-bold mb-2 text-[#1e90ff]">{feature.title}</h4>
+              <p className="text-[#b3e0ff]">{feature.desc}</p>
+            </div>
           ))}
         </div>
       </motion.div>

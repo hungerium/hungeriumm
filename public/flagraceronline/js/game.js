@@ -138,11 +138,11 @@ class Game {
         // ✅ REMOVED: Token balance display per user request
         
         // Coffy Earnings Display (Claimable Rewards)
-        const coffyEarningsDisplay = document.createElement('div');
-        coffyEarningsDisplay.id = 'coffyEarningsDisplay';
-        const savedCoffyTokens = localStorage.getItem('coffyTokens') || '0';
-        coffyEarningsDisplay.innerHTML = `☕ Claimable Coffy: ${savedCoffyTokens}`;
-        coffyEarningsDisplay.style.cssText = `
+        const hungxEarningsDisplay = document.createElement('div');
+        hungxEarningsDisplay.id = 'hungxEarningsDisplay';
+        const savedHungxTokens = localStorage.getItem('hungxTokens') || '0';
+        hungxEarningsDisplay.innerHTML = `☕ Claimable Hungx: ${savedHungxTokens}`;
+        hungxEarningsDisplay.style.cssText = `
             color: #D2691E;
             font-size: 1rem;
             font-weight: bold;
@@ -154,7 +154,7 @@ class Game {
             border-radius: 8px;
             text-align: center;
         `;
-        walletSection.appendChild(coffyEarningsDisplay);
+        walletSection.appendChild(hungxEarningsDisplay);
         
         // Web3 Buttons Container
         const web3ButtonsContainer = document.createElement('div');
@@ -433,10 +433,10 @@ class Game {
                 this.updateWalletUI(event.detail);
             });
             
-            // Listen for localStorage changes to update coffy display
+            // Listen for localStorage changes to update hungx display
             window.addEventListener('storage', (event) => {
-                if (event.key === 'coffyTokens') {
-                    this.updateCoffyDisplay();
+                if (event.key === 'hungxTokens') {
+                    this.updateHungxDisplay();
                 }
             });
             
@@ -456,14 +456,14 @@ class Game {
     updateWalletUI(walletData) {
         const walletStatus = document.getElementById('walletStatus');
         // ✅ REMOVED: balanceDisplay reference per user request
-        const coffyEarningsDisplay = document.getElementById('coffyEarningsDisplay');
+        const hungxEarningsDisplay = document.getElementById('hungxEarningsDisplay');
         const connectBtn = document.getElementById('connectWalletBtn');
         const claimBtn = document.getElementById('claimRewardsBtn');
         
-        // Update claimable coffy display if it exists
-        if (coffyEarningsDisplay) {
-            const currentCoffyTokens = localStorage.getItem('coffyTokens') || '0';
-            coffyEarningsDisplay.innerHTML = `☕ Claimable Coffy: ${currentCoffyTokens}`;
+        // Update claimable hungx display if it exists
+        if (hungxEarningsDisplay) {
+            const currentHungxTokens = localStorage.getItem('hungxTokens') || '0';
+            hungxEarningsDisplay.innerHTML = `☕ Claimable Hungx: ${currentHungxTokens}`;
         }
         
         if (walletStatus && connectBtn && claimBtn) {
@@ -491,23 +491,23 @@ class Game {
         }
     }
     
-    // Update coffy display in both game and login screen
-    updateCoffyDisplay() {
-        const currentCoffyTokens = localStorage.getItem('coffyTokens') || '0';
+    // Update hungx display in both game and login screen
+    updateHungxDisplay() {
+        const currentHungxTokens = localStorage.getItem('hungxTokens') || '0';
         
         // Update login screen display
-        const coffyEarningsDisplay = document.getElementById('coffyEarningsDisplay');
-        if (coffyEarningsDisplay) {
-            coffyEarningsDisplay.innerHTML = `☕ Claimable Coffy: ${currentCoffyTokens}`;
+        const hungxEarningsDisplay = document.getElementById('hungxEarningsDisplay');
+        if (hungxEarningsDisplay) {
+            hungxEarningsDisplay.innerHTML = `☕ Claimable Hungx: ${currentHungxTokens}`;
         }
         
-        // Update in-game coffy counter
+        // Update in-game hungx counter
         if (this.coffeCount !== undefined) {
-            this.coffeCount = parseInt(currentCoffyTokens) || 0;
+            this.coffeCount = parseInt(currentHungxTokens) || 0;
             this.updateCoffeeCounter();
         }
         
-        console.log(`🔄 Updated coffy display: ${currentCoffyTokens}`);
+        console.log(`🔄 Updated hungx display: ${currentHungxTokens}`);
     }
     
     // Handle wallet connection
@@ -563,9 +563,9 @@ class Game {
                 return;
             }
             
-            // Get actual coffy tokens from localStorage instead of calculated game rewards
-            const coffyTokensInStorage = localStorage.getItem('coffyTokens') || "0";
-            const tokensToClaimFromGame = parseInt(coffyTokensInStorage);
+            // Get actual hungx tokens from localStorage instead of calculated game rewards
+            const hungxTokensInStorage = localStorage.getItem('hungxTokens') || "0";
+            const tokensToClaimFromGame = parseInt(hungxTokensInStorage);
             
             if (tokensToClaimFromGame <= 0) {
                 alert('No rewards available to claim at this time');
@@ -581,9 +581,9 @@ class Game {
                     address: window.web3Handler.currentAccount
                 });
                 
-                // Update coffy counter display after claiming
+                // Update hungx counter display after claiming
                 this.updateCoffeeCounter();
-                this.updateCoffyDisplay();
+                this.updateHungxDisplay();
                 
                 alert(`Successfully claimed ${tokensToClaimFromGame} tokens!`);
                 
@@ -704,30 +704,30 @@ class Game {
     
     // Award rewards to team members when they score
     awardTeamReward(team, rewardAmount) {
-        console.log(`🏆 Awarding ${rewardAmount} Coffy to ALL ${team} team members for scoring!`);
+        console.log(`🏆 Awarding ${rewardAmount} Hungx to ALL ${team} team members for scoring!`);
         
         // ✅ ENHANCED: Award to current player (if on the scoring team)
         if (this.playerTeam === team) {
-            const currentCoffy = parseInt(localStorage.getItem('coffyTokens') || '0');
-            const newCoffy = currentCoffy + rewardAmount;
-            localStorage.setItem('coffyTokens', newCoffy.toString());
+            const currentHungx = parseInt(localStorage.getItem('hungxTokens') || '0');
+            const newHungx = currentHungx + rewardAmount;
+            localStorage.setItem('hungxTokens', newHungx.toString());
             
             // Update displays
-            this.coffeCount = newCoffy;
+            this.coffeCount = newHungx;
             this.updateCoffeeCounter();
-            this.updateCoffyDisplay();
+            this.updateHungxDisplay();
             
             // Show team score reward notification
             this.showTeamScoreRewardNotification(rewardAmount, team);
             
-            console.log(`💰 ${this.playerName} earned ${rewardAmount} Coffy for team ${team} score! Total: ${newCoffy}`);
+            console.log(`💰 ${this.playerName} earned ${rewardAmount} Hungx for team ${team} score! Total: ${newHungx}`);
         } else {
             console.log(`📊 Team ${team} scored, but ${this.playerName} is on team ${this.playerTeam} - no reward`);
         }
         
         // Update Web3 handler notification
         if (window.web3Handler && this.playerTeam === team) {
-            window.web3Handler.showNotification(`+${rewardAmount} Coffy! Team ${team} scored!`, 'success');
+            window.web3Handler.showNotification(`+${rewardAmount} Hungx! Team ${team} scored!`, 'success');
             
             // Trigger wallet balance update
             setTimeout(() => {
@@ -1131,17 +1131,17 @@ class Game {
         // Initialize Web3 rewards system for in-game rewards
         this.initializeInGameRewards();
         
-        // Load existing coffy tokens from localStorage
-        const savedCoffyTokens = localStorage.getItem('coffyTokens');
-        if (savedCoffyTokens) {
-            this.coffeCount = parseInt(savedCoffyTokens) || 0;
+        // Load existing hungx tokens from localStorage
+        const savedHungxTokens = localStorage.getItem('hungxTokens');
+        if (savedHungxTokens) {
+            this.coffeCount = parseInt(savedHungxTokens) || 0;
         }
         this.updateCoffeeCounter();
         
-        // Update login screen coffy display if it still exists
-        const coffyEarningsDisplay = document.getElementById('coffyEarningsDisplay');
-        if (coffyEarningsDisplay) {
-            coffyEarningsDisplay.innerHTML = `☕ Claimable Coffy: ${this.coffeCount}`;
+        // Update login screen hungx display if it still exists
+        const hungxEarningsDisplay = document.getElementById('hungxEarningsDisplay');
+        if (hungxEarningsDisplay) {
+            hungxEarningsDisplay.innerHTML = `☕ Claimable Hungx: ${this.coffeCount}`;
         }
         
         // Start game loop
@@ -1952,7 +1952,7 @@ class Game {
         teamScoresContainer.appendChild(thiefScore);
         document.body.appendChild(teamScoresContainer);
         
-        // ✅ BOTTOM COFFY COUNTER REMOVED - Only top HUD coffy remains
+        // ✅ BOTTOM COFFY COUNTER REMOVED - Only top HUD hungx remains
         
         // ✅ MODERN KILLS/DEATHS COUNTER FOR GAME MODE (if multiplayer exists)
         if (this.multiplayer) {
@@ -3043,7 +3043,7 @@ class Game {
         // ✅ CRITICAL: Clear flag state immediately
         this.flagTaken = false;
         
-        // ✅ TEAM REWARD SYSTEM: Award 200 Coffy to the scoring team
+        // ✅ TEAM REWARD SYSTEM: Award 200 Hungx to the scoring team
         this.awardTeamReward(team, 200);
         
         // ✅ CRITICAL: Remove flag carrier effect immediately
@@ -3273,12 +3273,12 @@ class Game {
     
     updateCoffeeCounter() {
         // Always read from localStorage for the most up-to-date value
-        const coffyFromStorage = localStorage.getItem('coffyTokens') || "0";
-        this.coffeCount = parseInt(coffyFromStorage);
+        const hungxFromStorage = localStorage.getItem('hungxTokens') || "0";
+        this.coffeCount = parseInt(hungxFromStorage);
         
-        const coffeeText = document.getElementById('coffeeText');
-        if (coffeeText) {
-            coffeeText.textContent = this.coffeCount.toString();
+        const hungxText = document.getElementById('hungxText');
+        if (hungxText) {
+            hungxText.textContent = this.coffeCount.toString();
         }
     }
     
@@ -4126,23 +4126,23 @@ class Game {
     // when performance dropped from AUTO to MEDIUM. Proper culling should only remove
     // objects outside camera frustum, not randomly remove visible scene objects.
     
-    // ✅ ENHANCED: Vehicle destruction, flag dropping, and coffy reward system
+    // ✅ ENHANCED: Vehicle destruction, flag dropping, and hungx reward system
     onVehicleDestroyed(vehiclePos, attackerInfo = null) {
-        // ✅ NEW: Award 50 coffy for vehicle kills
+        // ✅ NEW: Award 50 hungx for vehicle kills
         if (attackerInfo) {
             if (attackerInfo.playerId === (this.multiplayer?.socket?.id) || !this.multiplayer?.socket?.id) {
-                // Current player (or single player) destroyed a vehicle - award them coffy
-                console.log(`💰 Awarding 50 coffy to current player for vehicle kill`);
-                this.awardCoffy(50, 'Vehicle Kill');
+                // Current player (or single player) destroyed a vehicle - award them hungx
+                console.log(`💰 Awarding 50 hungx to current player for vehicle kill`);
+                this.awardHungx(50, 'Vehicle Kill');
             } else {
-                // Another player destroyed this vehicle - award them coffy  
-                console.log(`💰 Awarding 50 coffy to attacker ${attackerInfo.playerName} for vehicle kill`);
+                // Another player destroyed this vehicle - award them hungx  
+                console.log(`💰 Awarding 50 hungx to attacker ${attackerInfo.playerName} for vehicle kill`);
                 this.awardVehicleKillReward(attackerInfo, 50);
             }
         } else {
-            // No attacker info, but still award coffy for vehicle destruction
-            console.log(`💰 Awarding 50 coffy for vehicle destruction (no attacker info)`);
-            this.awardCoffy(50, 'Vehicle Kill');
+            // No attacker info, but still award hungx for vehicle destruction
+            console.log(`💰 Awarding 50 hungx for vehicle destruction (no attacker info)`);
+            this.awardHungx(50, 'Vehicle Kill');
         }
         
         if (this.flagTaken && this.vehicle && this.vehicle.mesh) {
@@ -4293,34 +4293,34 @@ class Game {
         console.log(`🚨 [EMERGENCY] Emergency flag created at origin`);
     }
 
-    // ✅ NEW: Award vehicle kill reward (50 coffy per kill)
+    // ✅ NEW: Award vehicle kill reward (50 hungx per kill)
     awardVehicleKillReward(attackerInfo, rewardAmount) {
-        // Award coffy to the attacker (if it's the current player)
+        // Award hungx to the attacker (if it's the current player)
         if (attackerInfo.playerId === (this.multiplayer?.socket?.id)) {
-            // This player got the kill - award them coffy
-            const currentCoffy = parseInt(localStorage.getItem('coffyTokens') || '0');
-            const newCoffy = currentCoffy + rewardAmount;
-            localStorage.setItem('coffyTokens', newCoffy.toString());
+            // This player got the kill - award them hungx
+            const currentHungx = parseInt(localStorage.getItem('hungxTokens') || '0');
+            const newHungx = currentHungx + rewardAmount;
+            localStorage.setItem('hungxTokens', newHungx.toString());
             
             // Update displays
-            this.updateCoffyDisplay();
+            this.updateHungxDisplay();
             this.updateCoffeeCounter();
             
             // Show kill reward notification
             this.showKillRewardNotification(rewardAmount);
             
-            console.log(`💰 ${attackerInfo.playerName} earned ${rewardAmount} coffy for vehicle kill! Total: ${newCoffy}`);
+            console.log(`💰 ${attackerInfo.playerName} earned ${rewardAmount} hungx for vehicle kill! Total: ${newHungx}`);
         }
     }
 
-    // ✅ NEW: Generic coffy award function for direct usage
-    awardCoffy(amount, reason = 'Action') {
-        const currentCoffy = parseInt(localStorage.getItem('coffyTokens') || '0');
-        const newCoffy = currentCoffy + amount;
-        localStorage.setItem('coffyTokens', newCoffy.toString());
+    // ✅ NEW: Generic hungx award function for direct usage
+    awardHungx(amount, reason = 'Action') {
+        const currentHungx = parseInt(localStorage.getItem('hungxTokens') || '0');
+        const newHungx = currentHungx + amount;
+        localStorage.setItem('hungxTokens', newHungx.toString());
         
         // Update displays
-        this.updateCoffyDisplay();
+        this.updateHungxDisplay();
         this.updateCoffeeCounter();
         
         // Show appropriate notification based on reason
@@ -4332,8 +4332,8 @@ class Game {
             this.showTeamScoreRewardNotification(amount, team);
         }
         
-        console.log(`💰 ${amount} coffy awarded for ${reason}! Total: ${newCoffy}`);
-        return newCoffy;
+        console.log(`💰 ${amount} hungx awarded for ${reason}! Total: ${newHungx}`);
+        return newHungx;
     }
 
     // ✅ NEW: Show kill reward notification
@@ -4356,16 +4356,16 @@ class Game {
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
             backdrop-filter: blur(5px);
-            animation: coffyRewardPop 2.5s ease-out forwards;
+            animation: hungxRewardPop 2.5s ease-out forwards;
         `;
-        notification.innerHTML = `☕ +${amount} COFFY<br><small>Vehicle Kill!</small>`;
+        notification.innerHTML = `☕ +${amount} HUNGX<br><small>Vehicle Kill!</small>`;
 
         // Add animation keyframes if not already added
-        if (!document.getElementById('coffy-reward-animations')) {
+        if (!document.getElementById('hungx-reward-animations')) {
             const style = document.createElement('style');
-            style.id = 'coffy-reward-animations';
+            style.id = 'hungx-reward-animations';
             style.textContent = `
-                @keyframes coffyRewardPop {
+                @keyframes hungxRewardPop {
                     0% {
                         opacity: 0;
                         transform: translateX(-50%) translateY(-20px) scale(0.8);
@@ -4424,7 +4424,7 @@ class Game {
         `;
         
         const teamName = team === 'police' ? 'POLICE' : 'THIEF';
-        notification.innerHTML = `🏆 TEAM GOAL!<br>☕ +${amount} COFFY<br><small>${teamName} SCORED!</small>`;
+        notification.innerHTML = `🏆 TEAM GOAL!<br>☕ +${amount} HUNGX<br><small>${teamName} SCORED!</small>`;
 
         // Add animation keyframes if not already added
         if (!document.getElementById('team-score-reward-animations')) {
@@ -4593,8 +4593,8 @@ class Game {
         }
         
         claimInfo.innerHTML = `
-            <div style="font-size: 18px; margin-bottom: 10px;">☕ Claimable Coffy</div>
-            <div style="font-size: 24px; color: #FFD700; margin-bottom: 10px;">${localStorage.getItem('coffyTokens') || '0'}</div>
+            <div style="font-size: 18px; margin-bottom: 10px;">☕ Claimable Hungx</div>
+            <div style="font-size: 24px; color: #FFD700; margin-bottom: 10px;">${localStorage.getItem('hungxTokens') || '0'}</div>
             <div style="font-size: 14px; opacity: 0.8;">${claimLimitText}</div>
         `;
         menuContainer.appendChild(claimInfo);

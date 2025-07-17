@@ -28,53 +28,53 @@ const ADMIN_ADDRESS = "0xD45024E3fC67DFAA456e111204950D510Bd44B9B"; // örnek ad
 const characterNFTs = [
   {
     id: 1,
-    name: 'Genesis',
+    name: 'Genesis Bee',
     description: '2x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '2x',
     price: 1000000,
-    priceLabel: '1,000,000 COFFY',
-    image: '/coffygame/assets/coffee_cup.png',
-    gradient: 'from-[#BFA181] to-[#6F4E37]',
+    priceLabel: '1,000,000 HUNGX',
+    image: '/hungeriumfototwitter/ab.jpg',
+    gradient: 'from-[#1e90ff] to-[#00bfff]',
   },
   {
     id: 2,
-    name: 'Mocha Knight',
+    name: 'Blue Guardian',
     description: '3x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '3x',
     price: 3000000,
-    priceLabel: '3,000,000 COFFY',
-    image: '/coffygame/assets/player_mocha.png',
-    gradient: 'from-[#A77B06] to-[#3A2A1E]',
+    priceLabel: '3,000,000 HUNGX',
+    image: '/hungeriumfototwitter/Whisk_cauajguzmthmnzdilwu5owitndm0zc04zwzjltm.mp4',
+    gradient: 'from-[#00bfff] to-[#0077ff]',
   },
   {
     id: 3,
-    name: 'Arabica Archmage',
+    name: 'Honey Master',
     description: '5x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '5x',
     price: 5000000,
-    priceLabel: '5,000,000 COFFY',
-    image: '/coffygame/assets/player_arabica.png',
-    gradient: 'from-[#FFD700] to-[#D4A017]',
+    priceLabel: '5,000,000 HUNGX',
+    image: '/hungeriumfototwitter/Whisk_cauajdi4nda4ndhmltdlntctndbjns1iyzfmltc.mp4',
+    gradient: 'from-[#1e90ff] to-[#b3e0ff]',
   },
   {
     id: 4,
-    name: 'Robusta Shadowblade',
+    name: 'Sting Commander',
     description: '7x claim & staking multiplier. 20% of price is burned, 80% goes to treasury.',
     multiplier: '7x',
     price: 8000000,
-    priceLabel: '8,000,000 COFFY',
-    image: '/coffygame/assets/player_robusta.png',
-    gradient: 'from-[#8B6F4E] to-[#3A2A1E]',
+    priceLabel: '8,000,000 HUNGX',
+    image: '/hungeriumfototwitter/Whisk_cauajdixymnkztvilwjhmzutngfhns04ndkzlta.mp4',
+    gradient: 'from-[#0077ff] to-[#1e90ff]',
   },
   {
     id: 5,
-    name: 'Legendary Dragon',
+    name: 'Royal Bee',
     description: '10x claim & staking multiplier. DAO membership. 20% of price is burned, 80% goes to treasury.',
     multiplier: '10x',
     price: 10000000,
-    priceLabel: '10,000,000 COFFY',
-    image: '/coffygame/assets/player_espresso.png',
-    gradient: 'from-[#D4A017] to-[#A77B06]',
+    priceLabel: '10,000,000 HUNGX',
+    image: '/hungeriumfototwitter/sad.mp4',
+    gradient: 'from-[#b3e0ff] to-[#0077ff]',
   },
 ];
 
@@ -920,7 +920,7 @@ export default function NFTMarketplace() {
 		<section id="coffy-marketplace" className="py-16 bg-gradient-to-b from-[#1A0F0A] to-[#2A1B13]">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="text-center mb-12">
-					<h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017] mb-4">
+					<h2 className="text-4xl font-bold text-[#FFD700] mb-4">
 						Coffy Character Collection
 					</h2>
 					<p className="text-lg text-[#E8D5B5] max-w-3xl mx-auto mb-6">

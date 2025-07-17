@@ -1,7 +1,7 @@
 // import { ethers } from "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js"; // KALDIRILDI
 
 // COFFY_ABI'yi global scope'a taşı
-const COFFY_TOKEN_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
+const COFFY_TOKEN_ADDRESS = "0xF87A2A0ADcBE4591d8d013171E6f1552D2349004";
 const COFFY_TOKEN_ABI = [
   {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},
@@ -246,131 +246,62 @@ class Web3Handler {
     }
     
     async connectWallet() {
+        await switchToBaseNetwork();
         if (!this.web3) {
             this.showNotification("Please install MetaMask to connect your wallet", "error");
             return false;
         }
-        
         this.connectionStatus = 'connecting';
         this.showNotification("Connecting wallet... Please check your browser extension", "info");
-        
         try {
-            // Clear any previous accounts to ensure we get a fresh approval dialog
             this.currentAccount = null;
             this.accounts = [];
-            
-            // Give the user time to see the notification before the wallet popup appears
             await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Force wallet popup by using a specific approach - first check if wallet is locked
-            // This improves user experience by ensuring they see the approval dialog
             const isLocked = !(await window.ethereum._metamask?.isUnlocked?.());
             console.log("Wallet locked status:", isLocked);
-            
-            // Request accounts - This should ALWAYS trigger the wallet approval dialog now
-            console.log("Requesting wallet approval...");
             try {
-                // Clear any cached permissions first
                 if (window.ethereum.request?.({method: 'wallet_requestPermissions'})) {
                     await window.ethereum.request({
                         method: 'wallet_requestPermissions',
                         params: [{ eth_accounts: {} }]
                     });
                 }
-                
-                // Now request accounts (this should always show the popup)
                 this.accounts = await window.ethereum.request({ 
                     method: 'eth_requestAccounts',
                     params: [{ eth_accounts: {} }]
                 });
-                
                 console.log("Accounts after request:", this.accounts);
             } catch (permError) {
                 console.log("Permission request error:", permError);
-                // Try alternative approach if the above fails
                 this.accounts = await window.ethereum.enable();
             }
-            
-            // Check if user approved and we have accounts
             if (!this.accounts || this.accounts.length === 0) {
                 this.connectionStatus = 'error';
                 this.showNotification("No accounts found or access denied", "error");
                 return false;
             }
-            
             this.currentAccount = this.accounts[0];
-            console.log("Connected account:", this.currentAccount);
-            
-            // Check if we're on BSC network
-            const chainId = await this.web3.eth.getChainId();
-            
-            if (chainId !== 56 && chainId !== 97) { // BSC Mainnet and Testnet IDs
-                this.showNotification("Your wallet needs to connect to Binance Smart Chain", "info");
-                
-                // Prompt to switch to BSC - this will show another wallet approval
-                try {
-                    this.showNotification("Please approve network switch in your wallet", "info");
-                    await window.ethereum.request({
-                        method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0x38' }], // BSC Mainnet
-                    });
-                    this.showNotification("Successfully switched to BSC network", "success");
-                } catch (switchError) {
-                    // If BSC isn't added yet, prompt to add it
-                    if (switchError.code === 4902) {
-                        try {
-                            this.showNotification("Please approve adding BSC network to your wallet", "info");
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: '0x38',
-                                    chainName: 'Binance Smart Chain',
-                                    nativeCurrency: {
-                                        name: 'BNB',
-                                        symbol: 'BNB',
-                                        decimals: 18
-                                    },
-                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                                    blockExplorerUrls: ['https://bscscan.com/']
-                            }],
-                        });
-                        this.showNotification("BSC network added successfully", "success");
-                        } catch (addError) {
-                            this.connectionStatus = 'error';
-                            this.showNotification("Failed to add BSC network: " + this.getErrorMessage(addError), "error");
-                            console.error("Failed to add BSC network:", addError);
-                            return false;
-                        }
-                    } else {
-                        this.connectionStatus = 'error';
-                        this.showNotification("Failed to switch to BSC network: " + this.getErrorMessage(switchError), "error");
-                        console.error("Failed to switch to BSC network:", switchError);
-                        return false;
-                    }
-                }
+            this.tokenContract = new this.web3.eth.Contract(COFFY_TOKEN_ABI, this.tokenAddress);
+            if (window.ethers) {
+                this.ethersProvider = new window.ethers.providers.Web3Provider(window.ethereum);
+                this.ethersSigner = this.ethersProvider.getSigner();
+                this.tokenContractEthers = new window.ethers.Contract(this.tokenAddress, COFFY_TOKEN_ABI, this.ethersSigner);
             }
-            
-            // Fetch token balance
+            window.web3Handler = this;
             await this.fetchTokenBalance();
-            
             this.connectionStatus = 'connected';
             this.showNotification("Wallet connected successfully!", "success");
-            
-            // Notify any listeners that the balance has been updated
             this.notifyBalanceUpdate();
-            
+            this.triggerWalletUpdate(); // <-- Ekstra garanti
             return true;
         } catch (error) {
             console.error("Error connecting wallet:", error);
             this.connectionStatus = 'error';
-            
             if (error.code === 4001) {
-                // User rejected the connection
                 this.showNotification("Connection rejected by user", "error");
             } else {
                 this.showNotification("Failed to connect wallet: " + this.getErrorMessage(error), "error");
             }
-            
             return false;
         }
     }
@@ -779,6 +710,17 @@ class Web3Handler {
             }
         }
     }
+
+    // Base Mainnet network params
+    defineNetworkParams() {
+      return {
+        chainId: '0x2105',
+        chainName: 'Base Mainnet',
+        rpcUrls: ['https://mainnet.base.org'],
+        blockExplorerUrls: ['https://basescan.org'],
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }
+      };
+    }
 }
 
 // Web3Handler'ı globalde erişilebilir yap
@@ -799,4 +741,42 @@ function onClaimRewardsClick() {
 const claimButton = document.getElementById('claim-total-reward');
 if (claimButton) {
   claimButton.onclick = onClaimRewardsClick;
+}
+
+const BASE_CHAIN_ID = '0x2105';
+const BASE_NETWORK_PARAMS = {
+  chainId: BASE_CHAIN_ID,
+  chainName: 'Base Mainnet',
+  rpcUrls: ['https://mainnet.base.org'],
+  blockExplorerUrls: ['https://basescan.org'],
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }
+};
+
+async function switchToBaseNetwork() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID }],
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [BASE_NETWORK_PARAMS],
+        });
+      }
+    }
+  }
+}
+
+async function connectWallet() {
+  await switchToBaseNetwork();
+  // ... mevcut cüzdan bağlantı kodu ...
+}
+
+// Oyun başlarken kontrat startGame fonksiyonu çağrılsın
+async function startGame() {
+  await switchToBaseNetwork();
+  // ... mevcut startGameOnContract çağrısı ...
 }

@@ -40,20 +40,20 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
-    background: linear-gradient(90deg, #3a2614 0%, #5a3a1a 80%, #ffd70022 100%);
-    color: #fffbe8;
+    background: linear-gradient(90deg, #182848 0%, #1e90ff 80%, #b3e0ff 100%);
+    color: #b3e0ff;
     padding: 10px 32px;
     border-radius: 18px;
     font-size: 16px;
     font-family: 'Segoe UI', Arial, sans-serif;
     font-weight: 500;
-    border: 1.5px solid #ffd70055;
-    box-shadow: 0 4px 24px 0 #ffd70044, 0 2px 12px rgba(0,0,0,0.18);
+    border: 1.5px solid #1e90ff55;
+    box-shadow: 0 4px 24px 0 #1e90ff44, 0 2px 12px rgba(0,0,0,0.18);
     z-index: 2001;
     backdrop-filter: blur(2px);
     opacity: 0.7;
     letter-spacing: 0.02em;
-    text-shadow: 0 1px 8px #ffd70033;
+    text-shadow: 0 1px 8px #1e90ff33;
 }
 
 #cameraModeInfoBox, #weatherInfoBox {
@@ -161,21 +161,21 @@ body {
     flex-direction: row;
     align-items: center;
     gap: 18px;
-    background: linear-gradient(90deg, #3a2614 0%, #5a3a1a 80%, #ffd70022 100%);
+    background: linear-gradient(90deg, #182848 0%, #1e90ff 80%, #b3e0ff 100%);
     border-radius: 18px;
     padding: 10px 32px;
-    box-shadow: 0 4px 24px 0 #ffd70044, 0 2px 12px rgba(0,0,0,0.18);
-    border: 1.5px solid #ffd70055;
+    box-shadow: 0 4px 24px 0 #1e90ff44, 0 2px 12px rgba(0,0,0,0.18);
+    border: 1.5px solid #1e90ff55;
     z-index: 2002;
     backdrop-filter: blur(2px);
 }
 #top-hud > div, #top-hud > span {
     font-family: 'Segoe UI', Arial, sans-serif;
     font-size: 16px;
-    color: #fffbe8;
+    color: #b3e0ff;
     font-weight: 500;
     letter-spacing: 0.02em;
-    text-shadow: 0 1px 8px #ffd70033;
+    text-shadow: 0 1px 8px #1e90ff33;
 }
 #level-display, #time-display, #rescued-display {
     background: none;
@@ -183,30 +183,30 @@ body {
     border-radius: 0;
     box-shadow: none;
     padding: 0 8px;
-    color: #ffd700;
+    color: #1e90ff;
     font-weight: bold;
     font-size: 16px;
-    text-shadow: 0 1px 8px #ffd70055;
+    text-shadow: 0 1px 8px #1e90ff55;
 }
 #time-display {
-    color: #fffbe8;
+    color: #b3e0ff;
     font-weight: 500;
     font-size: 15px;
 }
 #rescued-display {
-    color: #aaddff;
+    color: #b3e0ff;
     font-weight: 500;
     font-size: 15px;
-    text-shadow: 0 1px 8px #aaddff55;
+    text-shadow: 0 1px 8px #b3e0ff55;
 }
 #coffyCounterText {
-    color: #ffd700;
+    color: #1e90ff;
     font-weight: bold;
-    text-shadow: 0 1px 8px #ffd70055;
+    text-shadow: 0 1px 8px #1e90ff55;
 }
 
 #coinCounter {
-    background: linear-gradient(90deg, #3a2614 0%, #5a3a1a 80%, #ffd70022 100%);
+    background: linear-gradient(90deg, #182848 0%, #1e90ff 80%, #b3e0ff 100%);
 }
 
 /* --- Coffy Themed Wallet Button Styles --- */
@@ -219,11 +219,11 @@ body {
   font-size: 16px;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-weight: 600;
-  border: 2px solid #c9a15b;
+  border: 2px solid #1e90ff;
   border-radius: 24px;
-  background: linear-gradient(90deg, #5a3a1a 0%, #a67c52 80%, #ffd700 100%);
-  color: #fffbe8;
-  box-shadow: 0 2px 12px #5a3a1a33, 0 1.5px 8px #ffd70033;
+  background: linear-gradient(90deg, #1e90ff 0%, #00bfff 100%);
+  color: #b3e0ff;
+  box-shadow: 0 2px 12px #1e90ff33, 0 1.5px 8px #b3e0ff33;
   cursor: pointer;
   transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.09s;
   outline: none;
@@ -232,25 +232,25 @@ body {
   letter-spacing: 0.01em;
 }
 .web3-button.connect-wallet {
-  background: linear-gradient(90deg, #7c4a1e 0%, #ffd700 100%);
-  color: #fffbe8;
-  border-color: #ffd700;
+  background: linear-gradient(90deg, #1e90ff 0%, #00bfff 100%);
+  color: #b3e0ff;
+  border-color: #1e90ff;
 }
 .web3-button.claim-reward {
-  background: linear-gradient(90deg, #ffd700 0%, #a67c52 100%);
-  color: #5a3a1a;
-  border-color: #c9a15b;
+  background: linear-gradient(90deg, #00bfff 0%, #1e90ff 100%);
+  color: #182848;
+  border-color: #1e90ff;
 }
 .web3-button:active {
   transform: scale(0.97);
-  box-shadow: 0 1px 4px #5a3a1a55;
+  box-shadow: 0 1px 4px #1e90ff55;
 }
 .web3-button:disabled {
-  background: #e0d2b0 !important;
-  color: #a67c52 !important;
+  background: #b3e0ff !important;
+  color: #182848 !important;
   cursor: not-allowed;
   box-shadow: none;
-  border-color: #e0d2b0;
+  border-color: #b3e0ff;
 }
 
 /* --- Login Overlay & Form: Always Fit Viewport, No Scroll --- */

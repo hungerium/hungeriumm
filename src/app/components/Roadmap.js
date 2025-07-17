@@ -51,15 +51,15 @@ export default function Roadmap() {
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-b from-[#3A2A1E] to-[#1A0F0A] relative overflow-hidden" id="roadmap">
+    <section className="py-24 bg-gradient-to-br from-[#0a1833] via-[#0e2247] to-[#1e90ff] text-white" id="roadmap">
       {/* Arkaplan efektleri */}
       <motion.div 
         className="absolute inset-0 opacity-5"
         animate={{
           background: [
-            'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 80% 80%, #D4A017 0%, transparent 50%)',
-            'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)'
+            'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)',
+            'radial-gradient(circle at 80% 80%, #00bfff 0%, transparent 50%)',
+            'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)'
           ]
         }}
         transition={{ duration: 10, repeat: Infinity }}
@@ -73,8 +73,8 @@ export default function Roadmap() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">Roadmap</h2>
-          <div className="w-24 h-1 bg-[#D4A017] mx-auto rounded-full"></div>
+          <h2 className="text-5xl font-bold mb-6 text-[#FFD700]">Roadmap</h2>
+          <div className="w-24 h-1 bg-[#1e90ff] mx-auto rounded-full"></div>
         </motion.div>
 
         <div className="max-w-3xl mx-auto">
@@ -92,7 +92,7 @@ export default function Roadmap() {
               {/* Quarter Circle */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
-                className="w-24 h-24 rounded-lg bg-gradient-to-br from-[#D4A017] to-[#A77B06] flex items-center justify-center shadow-lg"
+                className="w-24 h-24 rounded-lg bg-gradient-to-br from-[#1e90ff] to-[#00bfff] flex items-center justify-center shadow-lg"
               >
                 <div className="text-white text-center">
                   <div className="text-xl font-bold">{phase.quarter.split(' ')[0]}</div>
@@ -104,12 +104,12 @@ export default function Roadmap() {
               <div className="flex-1">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
-                  className="bg-[#2C1B12] p-4 rounded-lg border border-[#D4A017]/20 hover:border-[#D4A017] transition-all duration-300"
+                  className="bg-[#182848] p-4 rounded-lg border border-[#1e90ff]/20 hover:border-[#00bfff] transition-all duration-300"
                 >
-                  <h3 className="text-xl font-bold text-[#D4A017] mb-3">
+                  <h3 className="text-xl font-bold text-white mb-3">
                     {phase.quarter}
                   </h3>
-                  <p className="text-xs text-[#E8D5B5] mb-3">{phase.status}</p>
+                  <p className="text-xs text-white mb-3">{phase.status}</p>
                   <ul className="space-y-2">
                     {phase.items.map((item, itemIndex) => (
                       <motion.li
@@ -118,9 +118,9 @@ export default function Roadmap() {
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{ delay: itemIndex * 0.1 }}
                         viewport={{ once: true }}
-                        className="flex items-center text-[#E8D5B5]"
+                        className="flex items-center text-white"
                       >
-                        <span className="w-2 h-2 bg-[#D4A017] rounded-full mr-2"></span>
+                        <span className="w-2 h-2 bg-[#1e90ff] rounded-full mr-2"></span>
                         {item}
                       </motion.li>
                     ))}

@@ -98,7 +98,7 @@ export default function Migration() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06] mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#FFD700] mb-4">
             Token Migration V1 → V2
           </h2>
           <p className="text-[#E8D5B5] text-sm opacity-90 max-w-2xl mx-auto">

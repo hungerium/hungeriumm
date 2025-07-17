@@ -3,7 +3,6 @@
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import NFTMarketplace from './components/NFTMarketplace';
 import Roadmap from './components/Roadmap';
 import Staking from './components/Staking';
 import Whitepaper from './components/Whitepaper';
@@ -54,7 +53,6 @@ export default function Home() {
           <About id="about" />
           <GamesSection id="games" />
           <Staking id="staking" />
-          <NFTMarketplace id="coffy-marketplace" />
           <Tokenomics />
           <ContractInfo />
           <Roadmap />

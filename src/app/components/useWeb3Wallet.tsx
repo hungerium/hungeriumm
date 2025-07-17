@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 
-const COFFY_TOKEN_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
+const HUNGERIUM_TOKEN_ADDRESS = "0xF87A2A0ADcBE4591d8d013171E6f1552D2349004";
 const BSC_CHAIN_ID = '0x38'; // Binance Smart Chain Mainnet
 
 // En güncel COFFY Token ABI
@@ -260,7 +260,7 @@ export default function useWeb3Wallet() {
       }
 
       // Create contract instance with signer
-      const contract = new ethers.Contract(COFFY_TOKEN_ADDRESS, COFFY_TOKEN_ABI, newSigner);
+      const contract = new ethers.Contract(HUNGERIUM_TOKEN_ADDRESS, COFFY_TOKEN_ABI, newSigner);
       
       // Update state
       setProvider(newProvider);

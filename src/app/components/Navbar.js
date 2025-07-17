@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { BrowserProvider, Contract } from "ethers";
 
-const COFFY_CONTRACT_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
-const COFFY_ABI = [
+const HUNGERIUM_CONTRACT_ADDRESS = "0xF87A2A0ADcBE4591d8d013171E6f1552D2349004";
+const HUNGERIUM_ABI = [
   {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},
   {"inputs":[{"internalType":"address","name":"account","type":"address"},{"internalType":"bytes32","name":"neededRole","type":"bytes32"}],"name":"AccessControlUnauthorizedAccount","type":"error"},
@@ -182,7 +182,7 @@ function generateUUID() {
 // Helper: Kalıcı verified kontrolü
 function checkPermanentVerification() {
   try {
-    return localStorage.getItem('coffy_human_verified') === 'true';
+    return localStorage.getItem('hungerium_human_verified') === 'true';
   } catch (e) {
     return false;
   }
@@ -205,13 +205,13 @@ export default function Navbar() {
 
   // On mount, clear any old human verification state from previous contract
   useEffect(() => {
-    localStorage.removeItem('coffy_human_verification_ts');
-    localStorage.removeItem('coffy_human_verified');
+    localStorage.removeItem('hungerium_human_verification_ts');
+    localStorage.removeItem('hungerium_human_verified');
   }, []);
 
   // Mount sırasında localStorage'dan timestamp oku
   useEffect(() => {
-    const ts = localStorage.getItem('coffy_human_verification_ts');
+    const ts = localStorage.getItem('hungerium_human_verification_ts');
     if (ts) setVerificationTimestamp(Number(ts));
   }, []);
 
@@ -265,14 +265,14 @@ export default function Navbar() {
         return;
       }
       // --- Reset any old verification state before new verification ---
-      localStorage.removeItem('coffy_human_verification_ts');
-      localStorage.removeItem('coffy_human_verified');
+      localStorage.removeItem('hungerium_human_verification_ts');
+      localStorage.removeItem('hungerium_human_verified');
       // ---
       const ethersModule = await import("ethers");
       const { BrowserProvider, Contract } = ethersModule;
         const provider = new BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
-        const contract = new Contract(COFFY_CONTRACT_ADDRESS, COFFY_ABI, signer);
+        const contract = new Contract(HUNGERIUM_CONTRACT_ADDRESS, HUNGERIUM_ABI, signer);
       // Generate random profileId
       const profileId = generateUUID();
       // On-chain transaction: linkUserProfile
@@ -281,8 +281,8 @@ export default function Navbar() {
       // Success: set localStorage and timer (only new values)
       const now = Date.now();
       setVerificationTimestamp(now);
-      localStorage.setItem('coffy_human_verification_ts', now.toString());
-      localStorage.setItem('coffy_human_verified', 'true');
+      localStorage.setItem('hungerium_human_verification_ts', now.toString());
+      localStorage.setItem('hungerium_human_verified', 'true');
       setIsVerifyingHuman(false);
       alert('Verification successful!');
     } catch (error) {
@@ -323,10 +323,10 @@ export default function Navbar() {
 
   // Navigation items
   const navItems = [
-    { id: 'games', label: 'Games', icon: Gamepad2, subtitle: 'Earn COFFY' },
-    { id: 'about', label: 'About Coffy', icon: Info, subtitle: 'Learn More' },
+    { id: 'games', label: 'Games', icon: Gamepad2, subtitle: 'Earn HUNGX' },
+    { id: 'about', label: 'About Hungerium', icon: Info, subtitle: 'Learn More' },
     { id: 'staking', label: 'Staking', icon: Coins, subtitle: 'Earn Rewards' },
-    { id: 'coffy-marketplace', label: 'Coffy Marketplace', icon: Store, subtitle: 'Trade Assets' }
+    { id: 'hungerium-marketplace', label: 'Hungerium Marketplace', icon: Store, subtitle: 'Trade Assets' }
   ];
 
   return (
@@ -334,15 +334,11 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        isScrolled 
-          ? 'bg-amber-950/95 backdrop-blur-xl shadow-2xl border-b border-amber-800/20' 
-          : 'bg-transparent'
-      }`}
+      className="w-full fixed top-0 left-0 z-50 bg-gradient-to-r from-[#0a1833] via-[#0e2247] to-[#1e90ff] shadow-lg text-white"
     >
       {/* Scroll Progress Bar */}
       <motion.div 
-        className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600"
+        className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-[#FFD700] via-[#FFD700] to-[#FFD700]"
         style={{ width: `${scrollProgress}%` }}
         initial={{ width: 0 }}
         animate={{ width: `${scrollProgress}%` }}
@@ -356,14 +352,14 @@ export default function Navbar() {
           <div className="flex items-center cursor-pointer" onClick={handleLogoClick}>
             <Image 
               src="/images/coffy-logo.png" 
-              alt="Coffy Logo" 
+              alt="Hungerium Logo" 
               width={45} 
               height={45} 
               priority 
               className="rounded-full w-8 h-8 sm:w-10 sm:h-10 lg:w-11 lg:h-11 animate-float shadow-lg" 
             />
-            <span className="ml-2 text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
-              COFFY
+            <span className="ml-2 text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#1e90ff] to-[#00bfff]">
+              HUNGERIUM
             </span>
           </div>
 
@@ -376,18 +372,18 @@ export default function Navbar() {
                 <motion.button
                   key={item.id}
                   onClick={() => handleNavigation(item.id)}
-                  className="group relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-amber-900/30"
+                  className="group relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-[#101c3a]/60"
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <item.icon className="w-5 h-5 text-amber-300 group-hover:text-amber-200 transition-colors duration-300" />
-                  <span className="text-sm font-medium text-amber-100 group-hover:text-white transition-colors duration-300">
-                    {item.label}
+                  <item.icon className="w-5 h-5 text-white group-hover:text-white transition-colors duration-300" />
+                  <span className="text-sm font-medium text-white group-hover:text-white transition-colors duration-300">
+                    {item.label.replace('Coffy', 'Hungerium')}
                   </span>
-                  <span className="text-xs text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {item.subtitle}
+                  <span className="text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {item.subtitle.replace('COFFY', 'HUNGX')}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/10 to-amber-400/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1e90ff]/0 via-[#00bfff]/10 to-[#1e90ff]/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </motion.button>
               ))}
             </div>
@@ -401,8 +397,8 @@ export default function Navbar() {
                 disabled={timer > 0 || isVerifyingHuman}
                 className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-300
                   ${isVerifyingHuman
-                    ? 'bg-amber-900/50 text-amber-300 cursor-wait'
-                    : 'bg-amber-800/50 text-amber-200 hover:bg-amber-700/50 hover:text-amber-100 hover:scale-105'}
+                    ? 'bg-blue-900/50 text-blue-300 cursor-wait'
+                    : 'bg-blue-800/50 text-blue-200 hover:bg-blue-700/50 hover:text-blue-100 hover:scale-105'}
                 `}
                 whileHover={isVerifyingHuman ? {} : { scale: 1.05 }}
                 whileTap={isVerifyingHuman ? {} : { scale: 0.95 }}
@@ -429,13 +425,13 @@ export default function Navbar() {
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="absolute left-1/2 top-full mt-2 -translate-x-1/2 px-4 py-2 rounded-lg bg-amber-950/95 text-amber-100 text-xs shadow-lg border border-amber-800/30 z-50"
+                    className="absolute left-1/2 top-full mt-2 -translate-x-1/2 px-4 py-2 rounded-lg bg-blue-950/95 text-blue-100 text-xs shadow-lg border border-blue-800/30 z-50"
                   >
                     {timer > 0 
                       ? `Verification expires in ${formatTimer(timer)}`
                       : 'Verify to prevent bots and earn rewards'
                     }
-                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-amber-950 border-l border-t border-amber-800/30 rotate-45" />
+                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-950 border-l border-t border-blue-800/30 rotate-45" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -444,7 +440,7 @@ export default function Navbar() {
             {/* Wallet Connection */}
             <motion.button
               onClick={connectWallet}
-              className="relative flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+              className="relative flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#1e90ff] to-[#00bfff] hover:from-[#00bfff] hover:to-[#1e90ff] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -457,14 +453,14 @@ export default function Navbar() {
                   {isConnected ? 'Wallet' : 'Get Started'}
                 </span>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/20 to-amber-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/20 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
             </motion.button>
           </div>
 
           {/* Mobile Menu Button */}
           <motion.button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-3 text-amber-300 hover:text-amber-200 transition-colors duration-300 rounded-xl hover:bg-amber-900/30 active:scale-95 touch-manipulation"
+            className="lg:hidden p-3 text-blue-300 hover:text-blue-200 transition-colors duration-300 rounded-xl hover:bg-blue-900/30 active:scale-95 touch-manipulation"
             whileTap={{ scale: 0.9 }}
             aria-label="Toggle mobile menu"
           >
@@ -485,7 +481,7 @@ export default function Navbar() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="lg:hidden absolute left-0 right-0 top-full bg-amber-950/98 backdrop-blur-xl border-t border-amber-800/30 shadow-2xl z-40"
+              className="lg:hidden absolute left-0 right-0 top-full bg-[#101c3a]/98 backdrop-blur-xl border-t border-[#1e90ff]/30 shadow-2xl z-40"
             >
               <div className="py-6 px-4 space-y-2 max-h-[calc(100vh-5rem)] overflow-y-auto">
                 {navItems.map((item, index) => (
@@ -495,17 +491,17 @@ export default function Navbar() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                     onClick={() => handleNavigation(item.id)}
-                    className="w-full flex items-center gap-4 px-6 py-4 text-left text-amber-200 hover:text-white hover:bg-amber-900/40 rounded-xl transition-all duration-300 active:scale-95 touch-manipulation"
+                    className="w-full flex items-center gap-4 px-6 py-4 text-left text-blue-200 hover:text-white hover:bg-blue-900/40 rounded-xl transition-all duration-300 active:scale-95 touch-manipulation"
                   >
                     <item.icon className="w-6 h-6 flex-shrink-0" />
                     <div className="flex flex-col">
                       <span className="font-medium text-base">{item.label}</span>
-                      <span className="text-sm text-amber-500">{item.subtitle}</span>
+                      <span className="text-sm text-blue-500">{item.subtitle}</span>
                     </div>
                   </motion.button>
                 ))}
                 
-                <div className="pt-4 border-t border-amber-800/30 space-y-3">
+                <div className="pt-4 border-t border-blue-800/30 space-y-3">
                   <motion.button
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -514,10 +510,10 @@ export default function Navbar() {
                     disabled={timer > 0 || isVerifyingHuman}
                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-300 touch-manipulation ${
                       isVerifyingHuman 
-                        ? 'bg-amber-900/40 text-amber-300' 
+                        ? 'bg-blue-900/40 text-blue-300' 
                         : timer > 0 
-                        ? 'bg-amber-900/40 text-amber-300' 
-                        : 'bg-amber-800/40 text-amber-200 hover:bg-amber-700/40 active:scale-95'
+                        ? 'bg-blue-900/40 text-blue-300' 
+                        : 'bg-blue-800/40 text-blue-200 hover:bg-blue-700/40 active:scale-95'
                     }`}
                   >
                     {isVerifyingHuman ? (
@@ -525,7 +521,7 @@ export default function Navbar() {
                         <Loader2 className="w-6 h-6 animate-spin flex-shrink-0" />
                         <div className="flex flex-col">
                           <span className="font-medium text-base">Verifying...</span>
-                          <span className="text-sm text-amber-500">Anti-Bot Protection</span>
+                          <span className="text-sm text-blue-500">Anti-Bot Protection</span>
                         </div>
                       </>
                     ) : timer > 0 ? (
@@ -541,7 +537,7 @@ export default function Navbar() {
                         <Shield className="w-6 h-6 flex-shrink-0" />
                         <div className="flex flex-col">
                           <span className="font-medium text-base">Verify Human</span>
-                          <span className="text-sm text-amber-500">Anti-Bot Protection</span>
+                          <span className="text-sm text-blue-500">Anti-Bot Protection</span>
                         </div>
                       </>
                     )}
@@ -552,7 +548,7 @@ export default function Navbar() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 }}
                     onClick={connectWallet}
-                    className="w-full flex items-center gap-4 px-6 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 active:scale-95 touch-manipulation shadow-lg"
+                    className="w-full flex items-center gap-4 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-500 hover:to-blue-500 transition-all duration-300 active:scale-95 touch-manipulation shadow-lg"
                   >
                     <Wallet className="w-6 h-6 flex-shrink-0" />
                     <div className="flex flex-col items-start">

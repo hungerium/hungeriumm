@@ -2383,9 +2383,9 @@ class MultiplayerManager {
         healthContainer.appendChild(healthText);
         
         // ✅ COFFY COUNTER NEXT TO HEALTH BAR
-        const coffyContainer = document.createElement('div');
-        coffyContainer.id = 'coffyContainer';
-        coffyContainer.style.cssText = `
+        const hungxContainer = document.createElement('div');
+        hungxContainer.id = 'hungxContainer';
+        hungxContainer.style.cssText = `
             display: flex;
             align-items: center;
             gap: 8px;
@@ -2401,11 +2401,11 @@ class MultiplayerManager {
         
         const coffeeText = document.createElement('span');
         coffeeText.id = 'coffeeText';
-        const coffyFromStorage = localStorage.getItem('coffyTokens') || "0";
-        coffeeText.textContent = coffyFromStorage;
+        const hungxFromStorage = localStorage.getItem('hungxTokens') || "0";
+        coffeeText.textContent = hungxFromStorage;
         
-        coffyContainer.appendChild(coffeeIcon);
-        coffyContainer.appendChild(coffeeText);
+        hungxContainer.appendChild(coffeeIcon);
+        hungxContainer.appendChild(coffeeText);
         
         // ✅ MODERN KILLS/DEATHS COUNTER
         const killsDeathsContainer = document.createElement('div');
@@ -2454,7 +2454,7 @@ class MultiplayerManager {
         
         // Add all elements to right side bar
         topHudBar.appendChild(healthContainer);
-        topHudBar.appendChild(coffyContainer);
+        topHudBar.appendChild(hungxContainer);
         topHudBar.appendChild(killsDeathsContainer);
         document.body.appendChild(topHudBar);
         
@@ -3081,7 +3081,7 @@ class MultiplayerManager {
                 window.web3Handler.showNotification(`+${data.amount} Coffy! Team ${data.team} scored by ${data.scorerName}!`, 'success');
                 
                 // Update localStorage for persistence
-                localStorage.setItem('coffyTokens', this.game.coffeCount.toString());
+                localStorage.setItem('hungxTokens', this.game.coffeCount.toString());
                 
                 // Trigger wallet balance update
                 setTimeout(() => {

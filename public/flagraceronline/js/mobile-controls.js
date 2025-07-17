@@ -758,19 +758,19 @@ class MobileControls {
         document.body.appendChild(pauseButton);
         
         // ✅ NEW: Create minimal coffy counter (aligned to speedometer's right)
-        const coffyCounter = document.createElement('div');
-        coffyCounter.id = 'mobileCoffyCounter';
-        coffyCounter.textContent = '☕ 0';
+        const hungxCounter = document.createElement('div');
+        hungxCounter.id = 'mobileHungxCounter';
+        hungxCounter.textContent = '☕ 0';
         
         // Calculate position relative to speedometer
         const speedometerLeft = Math.max(safeAreaInsets.left, 20) + 10;
         const speedometerWidth = 80; // Approximate speedometer width
-        const coffyLeft = speedometerLeft + speedometerWidth + 10; // 10px gap from speedometer
+        const hungxLeft = speedometerLeft + speedometerWidth + 10; // 10px gap from speedometer
         
-        coffyCounter.style.cssText = `
+        hungxCounter.style.cssText = `
             position: fixed !important;
             top: ${Math.max(safeAreaInsets.top, 20) + 10 + landscapeOffset}px !important;
-            left: ${coffyLeft}px !important;
+            left: ${hungxLeft}px !important;
             background: rgba(139, 69, 19, 0.6) !important;
             color: #D2691E !important;
             padding: 0.5vh 1.5vw !important;
@@ -791,7 +791,7 @@ class MobileControls {
             margin: 0 !important;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
         `;
-        document.body.appendChild(coffyCounter);
+        document.body.appendChild(hungxCounter);
         
         // Store HUD references
         this.mobileHUD = {
@@ -801,7 +801,7 @@ class MobileControls {
             connectionStatus,
             cameraButton,
             pauseButton,
-            coffyCounter
+            hungxCounter
         };
         
         console.log(`✅ Mobile HUD created successfully for ${isSamsung ? 'Samsung' : isAndroid ? 'Android' : isIOS ? 'iOS' : 'Other'} device`);
@@ -2233,15 +2233,15 @@ class MobileControls {
                 }
             }
             
-            // ✅ NEW: Update coffy counter
-            if (this.mobileHUD.coffyCounter) {
-                const currentCoffy = localStorage.getItem('coffyTokens') || '0';
-                this.mobileHUD.coffyCounter.textContent = `☕ ${currentCoffy}`;
+            // ✅ NEW: Update hungx counter
+            if (this.mobileHUD.hungxCounter) {
+                const currentHungx = localStorage.getItem('hungxTokens') || '0';
+                this.mobileHUD.hungxCounter.textContent = `☕ ${currentHungx}`;
                 
-                // Ensure coffy counter is visible
-                this.mobileHUD.coffyCounter.style.display = 'block';
-                this.mobileHUD.coffyCounter.style.visibility = 'visible';
-                this.mobileHUD.coffyCounter.style.opacity = '0.8';
+                // Ensure hungx counter is visible
+                this.mobileHUD.hungxCounter.style.display = 'block';
+                this.mobileHUD.hungxCounter.style.visibility = 'visible';
+                this.mobileHUD.hungxCounter.style.opacity = '0.8';
             }
         } catch (error) {
             // Silently handle errors to prevent console spam

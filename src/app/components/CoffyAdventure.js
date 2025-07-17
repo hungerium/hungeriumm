@@ -23,13 +23,13 @@ const CoffyAdventure = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="game-preview">
-        <h3 className="text-2xl font-bold mb-4">Coffy Adventure</h3>
-        <p className="mb-4">
-          Help Coffy collect coffee beans while avoiding obstacles in this fun adventure game!
+        <h3 className="text-2xl font-bold mb-4 text-[#1e90ff]">Hungerium Adventure</h3>
+        <p className="mb-4 text-[#0077ff]">
+          Help the bee collect honey drops while avoiding obstacles in this fun adventure game!
         </p>
-        <Link href="/games/coffy">
+        <Link href="/hungeriumgame/game.html">
           <motion.button
-            className="bg-amber-600 hover:bg-amber-700 text-white py-2 px-6 rounded-full transition-colors duration-300"
+            className="bg-[#1e90ff] hover:bg-[#0077ff] text-white py-2 px-6 rounded-full transition-colors duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

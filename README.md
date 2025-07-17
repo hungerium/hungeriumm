@@ -1,100 +1,62 @@
-# 3D Driving Game - Sound Implementation Guide
+# Hungerium (HUNGX) Whitepaper
 
-This document explains how to add realistic sound effects to the game.
+## Introduction
+Hungerium is a blockchain-based ecosystem designed to revolutionize the food economy by leveraging decentralized technology. Built on the Base Network, Hungerium introduces innovative mechanisms such as Eat-to-Earn and AI-powered solutions to reduce food waste while incentivizing user participation.
 
-## Sound Asset Structure
+Website: [hungerium.space](https://hungerium.space)
 
-The game uses HTML5 Audio elements to play sounds. Sound files should be placed in the `assets/sounds/` directory:
+---
 
-```
-assets/sounds/
-├── engine.mp3       # Vehicle engine sound
-├── siren.mp3        # Police siren sound
-├── ambient_city.mp3 # Background city ambience (clear weather)
-├── rain.mp3         # Rain weather sound
-├── wind.mp3         # Wind/snow weather sound
-├── collision.mp3    # Minor vehicle collision sound
-├── crash.mp3        # Major vehicle crash sound
-├── gunshot.mp3      # Weapon firing sound
-├── missile.mp3      # Missile launch sound
-├── background_music.mp3 # Game background music
-```
+## Tokenomics
+- **Total Supply:** 15 Billion HUNGX
+- **Treasury:** 3.75B (25%)
+- **Liquidity:** 3B (20%)
+- **Community:** 5.25B (35%)
+- **Team:** 1.5B (10%)
+- **Marketing:** 1.5B (10%)
+- **Burning Mechanism:** Implemented to sustain token value
 
-## Recommended Sound Types
+*Note: Token allocations are based on the smart contract and may differ from previous versions. See contract for details.*
 
-To achieve realistic sound effects, we recommend using the following types of sounds:
+---
 
-### Engine Sound
-- A looping engine recording with a neutral RPM
-- The game modifies playback rate based on engine RPM
-- Length: 3-10 seconds (will be looped)
-- Recommended format: MP3 or OGG, 128-192kbps
+## Roadmap
 
-### Collision and Crash Sounds
-- **collision.mp3**: Lighter impacts and bumps (metal/plastic bumping sounds)
-- **crash.mp3**: Heavy, dramatic crash sounds for high-speed collisions
-- Both should be short (1-3 seconds) with a strong initial impact
-- Multiple variations can enhance realism
+**Q1 2024 – Initial Development and Infrastructure**
+- Announcement of Hungerium concept
+- Development of smart contracts on the Base Network
+- Community formation and early participation programs
 
-### Weather Sounds
-- **rain.mp3**: Rain falling on vehicle/surroundings
-- **wind.mp3**: Wind howling for snow weather
-- **ambient_city.mp3**: City background noise for clear weather
-- All should be ambient, looping sounds (10-30 seconds)
+**Q2 2024 – MVP Launch & Initial User Engagement**
+- Release of the beta version
+- Initial user testing and feedback collection
+- SocialFi integration for enhanced community engagement
 
-### Action Sounds
-- **gunshot.mp3**: Quick, punchy weapon firing sound
-- **missile.mp3**: Missile launch with whoosh effect
-- Short, distinct sounds with good stereo effects
+**Q3 2024 – Growth, Partnerships & Mobile App Development**
+- Strategic partnerships with major food chains and restaurants
+- Development and beta testing of the Hungerium mobile application
+- Listing on Uniswap and liquidity expansion efforts
 
-### Background Music
-- Loopable track that suits driving game
-- Should not be too distracting or overpowering
-- Recommended length: 1-3 minutes (will be looped)
-- Lower volume than other sound effects
+**Q4 2024 – Global Expansion & Sustainable Model**
+- Official launch of the mobile application with worldwide accessibility
+- Expansion of the Eat-to-Earn model
+- Special initiatives to combat hunger in affected regions
+- AI-driven solutions to minimize food waste
 
-## Implementation Details
+---
 
-The AudioManager class handles all sound loading and playback. Key features:
+## Token Address
+Hungerium operates on the Base Network with the following token contract address:
+**0xF87A2A0ADcBE4591d8d013171E6f1552D2349004**
 
-- Automatic loading of all sound assets
-- Volume and playback rate adjustment for engine sounds based on speed
-- Weather-dependent ambient sounds
-- Crash sounds with volume based on collision intensity
-- Automatic cleanup of audio resources
+---
 
-## Adding Custom Sounds
+## Security & Audits
+To ensure maximum security, Hungerium has undergone smart contract audits. The SolidityScan quick scan report can be accessed here. *(Add link when available)*
 
-To add custom sounds:
-1. Place high-quality MP3 files in the assets/sounds directory
-2. Use the naming convention mentioned above
-3. The game will automatically use your sound files at runtime
+---
 
-For the best experience, use high-quality sound recordings with good stereo separation.
+## Conclusion
+Hungerium is committed to creating a sustainable and decentralized food economy through strategic partnerships, blockchain-powered rewards, and AI-driven waste reduction. By leveraging the Base Network, it ensures scalability, security, and efficiency in transactions and ecosystem growth.
 
-## Where to Find Sound Assets
-
-You can find free and premium sound assets for your game at:
-
-1. **Free Resources**:
-   - [Freesound.org](https://freesound.org/)
-   - [OpenGameArt](https://opengameart.org/)
-   - [Mixkit](https://mixkit.co/free-sound-effects/)
-
-2. **Premium Resources**:
-   - [Envato Elements](https://elements.envato.com/sound-effects)
-   - [Soundsnap](https://www.soundsnap.com/)
-   - [A Sound Effect](https://www.asoundeffect.com/)
-
-## Sound Implementation Details
-
-The game uses an AudioManager class that handles all sound playback:
-
-- Sounds are loaded when the game starts
-- Engine sound pitch changes based on vehicle speed
-- Weather sounds automatically change with weather conditions
-- Collision sound volume varies based on impact force
-- Weapon sounds use slight variations in pitch and volume for realism
-- Background music plays at a low volume to avoid being distracting
-
-All audio implementation uses standard HTML5 Audio elements without dependencies on Web Audio API or external libraries for maximum compatibility. 
+For more details, stay tuned for upcoming announcements and developments in the Hungerium ecosystem. 

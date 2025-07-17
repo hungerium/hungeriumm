@@ -43,11 +43,11 @@ const ScrollToTop = () => {
         pointerEvents: isVisible ? 'auto' : 'none'
       }}
       transition={{ duration: 0.3 }}
-      className="fixed bottom-6 right-6 p-3 rounded-full bg-[#D4A017]/90 hover:bg-[#D4A017] text-white shadow-lg z-50 hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4A017]"
+      className="fixed bottom-6 right-6 p-3 rounded-full bg-[#1e90ff]/90 hover:bg-[#00bfff] text-white shadow-lg z-50 hover:scale-110 transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4A017]"
       onClick={scrollToTop}
       aria-label="Back to top"
       style={{
-        boxShadow: '0 4px 14px rgba(212, 160, 23, 0.4)'
+        boxShadow: '0 4px 14px rgba(30, 144, 255, 0.4)'
       }}
     >
       <IoArrowUp size={24} />

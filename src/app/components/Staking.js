@@ -60,7 +60,9 @@ export const viewport = {
   maximumScale: 1,
 }
 
-// Yeni ABI (kısa, sadece staking ve balance için)
+// --- Kontrat adresi ve ABI güncellemesi ---
+const BASE_CHAIN_ID = '0x2105'; // Base Mainnet
+const STAKING_ADDRESS = '0xF87A2A0ADcBE4591d8d013171E6f1552D2349004'; // Güncel Base kontrat adresi
 const STAKING_ABI = [
   {"inputs":[{"internalType":"address","name":"_treasury","type":"address"},{"internalType":"address","name":"_liquidity","type":"address"},{"internalType":"address","name":"_community","type":"address"},{"internalType":"address","name":"_team","type":"address"},{"internalType":"address","name":"_marketing","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
   {"inputs":[],"name":"AccessControlBadConfirmation","type":"error"},
@@ -81,7 +83,6 @@ const STAKING_ABI = [
   "function claimStakingReward()",
   "function getStakeInfo(address) view returns (uint128 amount, uint64 startTime, uint128 pendingReward)"
 ];
-const STAKING_ADDRESS = "0x33AA3dbCB3c4fF066279AD33099Ce154936D8b88";
 
 // Sabit APY
 const FIXED_APY = 5.00;
@@ -93,12 +94,12 @@ export default function Staking({ id }) {
   const [walletBalance, setWalletBalance] = useState('0.00');
   const [stakedBalance, setStakedBalance] = useState('0.00');
   const [rewards, setRewards] = useState('0.00');
-  const [totalStaked, setTotalStaked] = useState('0 COFFY');
+  const [totalStaked, setTotalStaked] = useState('0 HUNGX');
   const [stakeStartTime, setStakeStartTime] = useState(null);
   const [canUnstake, setCanUnstake] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [totalSupply, setTotalSupply] = useState('0 COFFY');
+  const [totalSupply, setTotalSupply] = useState('0 HUNGX');
   const [stakeData, setStakeData] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ open: false, message: '', onConfirm: null });
   const [apy, setApy] = useState('0');
@@ -152,8 +153,8 @@ export default function Staking({ id }) {
       const totalSupplyAmount = await contract.totalSupply ? await contract.totalSupply() : 0;
 
       setWalletBalance(ethers.formatUnits(balance, 18));
-      setTotalSupply(`${ethers.formatUnits(totalSupplyAmount, 18)} COFFY`);
-      setTotalStaked(`${ethers.formatUnits(totalStakedAmount, 18)} COFFY`);
+      setTotalSupply(`${ethers.formatUnits(totalSupplyAmount, 18)} HUNGX`);
+      setTotalStaked(`${ethers.formatUnits(totalStakedAmount, 18)} HUNGX`);
 
       // [0]=stakedAmount, [1]=startTime, [2]=pendingReward
       const stakedAmount = stakeInfo[0] ? ethers.formatUnits(stakeInfo[0], 18) : '0.00';
@@ -241,7 +242,7 @@ export default function Staking({ id }) {
             return new Promise((resolve) => {
               setConfirmModal({
                 open: true,
-                message: `⚠️ Early Unstake Warning\n\nYour tokens are locked for ${remainingDays} more days.\nEarly unstaking will result in a ${penaltyPercent}% penalty.\n\nInput: ${inputAmount} COFFY\nNet alacağınız miktar: ${netAmount.toFixed(6)} COFFY\n\nAre you sure you want to continue?`,
+                message: `⚠️ Early Unstake Warning\n\nYour tokens are locked for ${remainingDays} more days.\nEarly unstaking will result in a ${penaltyPercent}% penalty.\n\nInput: ${inputAmount} HUNGX\nNet alacağınız miktar: ${netAmount.toFixed(6)} HUNGX\n\nAre you sure you want to continue?`,
                 onConfirm: async () => {
                   setConfirmModal({ open: false, message: '', onConfirm: null });
                   console.log(`Early unstake with ${penaltyPercent}% penalty`);
@@ -281,7 +282,7 @@ export default function Staking({ id }) {
             ? (totalStaked * 95n) / 100n
             : Math.floor(Number(totalStaked) * 0.95);
           const netAmountFormatted = ethers.formatUnits(netAmount.toString(), 18);
-          toast.info(`Emergency Unstake: %${penaltyPercent} penalty uygulanacak.\nÇekilecek net miktar: ${netAmountFormatted} COFFY`, { autoClose: 6000 });
+          toast.info(`Emergency Unstake: %${penaltyPercent} penalty uygulanacak.\nÇekilecek net miktar: ${netAmountFormatted} HUNGX`, { autoClose: 6000 });
           // Kontrata raw BigNumber olarak gönder
           console.log('Unstaking amount (wei):', totalStaked.toString());
           tx = await contract.unstake(totalStaked);
@@ -431,13 +432,14 @@ export default function Staking({ id }) {
     }
   };
 
+  // --- Ağ kontrolü ve explorer linki güncellemesi ---
   const showTransactionStatus = (hash) => {
-    const explorerUrl = `https://bscscan.com/tx/${hash}`;
+    const explorerUrl = `https://basescan.org/tx/${hash}`;
     setStatus(
       <div className="transaction-status">
-        Transaction confirmed! 
+        Transaction confirmed!
         <a href={explorerUrl} target="_blank" rel="noopener noreferrer">
-          View on BSCScan
+          View on BaseScan
         </a>
       </div>
     );
@@ -450,24 +452,24 @@ export default function Staking({ id }) {
   const walletBalanceNum = parseFloat((walletBalance || '').toString().replace(/[^\d.\-]/g, '')) || 0;
   const stakedBalanceNum = parseFloat((stakedBalance || '').toString().replace(/[^\d.\-]/g, '')) || 0;
   const rewardsNum = parseFloat((rewards || '').toString().replace(/[^\d.\-]/g, '')) || 0;
-  const totalCoffy = walletBalanceNum + stakedBalanceNum + rewardsNum;
+  const totalHungx = walletBalanceNum + stakedBalanceNum + rewardsNum;
 
   return (
-    <section id={id} className="relative py-20 bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] min-h-[60vh] scroll-mt-24">
+    <section id={id} className="relative py-20 bg-gradient-to-b from-[#0a1833] via-[#0e2247] to-[#1e90ff] min-h-[60vh] scroll-mt-24">
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0"
           animate={{
             background: [
-              'radial-gradient(circle at 0% 0%, rgba(212,160,23,0.15) 0%, transparent 70%)',
-              'radial-gradient(circle at 100% 100%, rgba(212,160,23,0.15) 0%, transparent 70%)',
-              'radial-gradient(circle at 0% 0%, rgba(212,160,23,0.15) 0%, transparent 70%)'
+              'radial-gradient(circle at 0% 0%, rgba(10, 24, 51, 0.15) 0%, transparent 70%)',
+              'radial-gradient(circle at 100% 100%, rgba(10, 24, 51, 0.15) 0%, transparent 70%)',
+              'radial-gradient(circle at 0% 0%, rgba(10, 24, 51, 0.15) 0%, transparent 70%)'
             ]
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
         />
         <div className="absolute inset-0 bg-[url('/images/coffee-beans-pattern.png')] opacity-[0.08] animate-slide"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#3A2A1E]/60 via-transparent to-[#2A1810]/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0e2247]/60 via-transparent to-[#0a1833]/60"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
@@ -478,13 +480,11 @@ export default function Staking({ id }) {
           viewport={{ once: true }}
           className="text-center mb-8"
         >
-          <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017]">
-            Stake COFFY
-          </h2>
-          <p className="text-lg text-[#E8D5B5] max-w-2xl mx-auto">
-            Stake your COFFY tokens and earn rewards. <b>Dynamic APY (based on character multiplier)</b> with enhanced security features.
+          <h2 className="text-3xl font-bold mb-6 text-[#FFD700] text-center">Hungerium Staking</h2>
+          <p className="text-lg text-white max-w-2xl mx-auto">
+            Stake your HUNGX tokens and earn rewards. <b>Dynamic APY (based on character multiplier)</b> with enhanced security features.
           </p>
-          <div className="w-20 h-1 bg-gradient-to-r from-[#D4A017] to-[#A77B06] mx-auto mt-4"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-[#00bfff] to-[#0077ff] mx-auto mt-4"></div>
         </motion.div>
 
         {/* Stake formu ve içerik */}
@@ -506,43 +506,43 @@ export default function Staking({ id }) {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-[#3A2A1E] to-[#2A1810] p-8 rounded-2xl shadow-xl border border-[#BFA181]/40 backdrop-blur-sm text-center"
+              className="bg-gradient-to-br from-[#0e2247] to-[#0a1833] p-8 rounded-2xl shadow-xl border border-[#00bfff]/40 backdrop-blur-sm text-center"
             >
               <div className="mb-6">
-                <div className="w-20 h-20 mx-auto mb-4 bg-[#D4A017]/20 rounded-full flex items-center justify-center">
-                  <FaWallet className="text-[#D4A017] text-3xl" />
+                <div className="w-20 h-20 mx-auto mb-4 bg-[#00bfff]/20 rounded-full flex items-center justify-center">
+                  <FaWallet className="text-white text-3xl" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#D4A017] mb-2">Connect Your Wallet</h3>
-                <p className="text-[#E8D5B5] mb-6">
-                  Connect your wallet to start staking COFFY tokens and earn 5% APY rewards
+                <h3 className="text-2xl font-bold text-white mb-2">Connect Your Wallet</h3>
+                <p className="text-white mb-6">
+                  Connect your wallet to start staking HUNGX tokens and earn 5% APY rewards
                 </p>
               </div>
               
               {/* Preview Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
-                  <FaChartLine className="text-[#D4A017] text-xl mx-auto mb-2" />
+                <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20">
+                  <FaChartLine className="text-white text-xl mx-auto mb-2" />
                   <p className="text-xs text-gray-400 mb-1">APY</p>
                   <p className="text-lg font-bold text-white">{FIXED_APY}%</p>
                 </div>
-                <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
-                  <FaClock className="text-[#D4A017] text-xl mx-auto mb-2" />
+                <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20">
+                  <FaClock className="text-white text-xl mx-auto mb-2" />
                   <p className="text-xs text-gray-400 mb-1">Lock Period</p>
                   <p className="text-lg font-bold text-white">7 Days</p>
                 </div>
-                <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20">
-                  <FaCoins className="text-[#D4A017] text-xl mx-auto mb-2" />
+                <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20">
+                  <FaCoins className="text-white text-xl mx-auto mb-2" />
                   <p className="text-xs text-gray-400 mb-1">No Min Stake</p>
                   <p className="text-lg font-bold text-white">-</p>
                 </div>
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(212,160,23,0.3)" }}
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(10, 24, 51, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={connectWallet}
                 disabled={isConnecting}
-                className="bg-gradient-to-r from-[#D4A017] to-[#A77B06] text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                className="bg-gradient-to-r from-[#00bfff] to-[#0077ff] text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               >
                 {isConnecting ? (
                   <>
@@ -575,40 +575,40 @@ export default function Staking({ id }) {
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="bg-gradient-to-br from-[#3A2A1E] to-[#2A1810] p-6 rounded-2xl shadow-xl border border-[#BFA181]/40 backdrop-blur-sm"
+                className="bg-gradient-to-br from-[#0e2247] to-[#0a1833] p-6 rounded-2xl shadow-xl border border-[#00bfff]/40 backdrop-blur-sm"
                 style={{ fontSize: '0.95rem' }}
               >
                 {/* Total Staked Global Stats */}
-                <div className="bg-[#3A2A1E]/60 rounded-xl p-4 border border-[#BFA181]/40 mb-4 relative overflow-hidden">
+                <div className="bg-[#0e2247]/60 rounded-xl p-4 border border-[#00bfff]/40 mb-4 relative overflow-hidden">
                   <motion.div
                     className="absolute inset-0 pointer-events-none rounded-xl"
                     initial={{ opacity: 0.12 }}
                     animate={{ opacity: [0.12, 0.22, 0.12] }}
                     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                    style={{ background: 'radial-gradient(circle at 70% 30%, #D4A017 0%, transparent 70%)' }}
+                    style={{ background: 'radial-gradient(circle at 70% 30%, #00bfff 0%, transparent 70%)' }}
                   />
                   <div className="flex items-center justify-center gap-2 mb-1 relative z-10">
-                    <i className="fas fa-users text-[#D4A017] text-base"></i>
-                    <span className="text-[#D4A017] text-xs font-semibold">Total Staked</span>
+                    <i className="fas fa-users text-white text-base"></i>
+                    <span className="text-white text-xs font-semibold">Total Staked</span>
                   </div>
-                  <div className="text-xl font-bold text-white mb-0.5 relative z-10">{formatNumberShort(totalStaked)} COFFY</div>
+                  <div className="text-xl font-bold text-white mb-0.5 relative z-10">{formatNumberShort(totalStaked)} HUNGX</div>
                   <div className="text-xs text-gray-400 relative z-10">Locked in V2 staking</div>
                 </div>
 
                 {/* Yeni: Toplam Arz, Aylık APY, Wallet Adresi */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 place-items-center">
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
-                    <FaCoins className="text-[#D4A017] text-xl mb-1" />
+                  <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20 flex flex-col items-center w-full max-w-xs">
+                    <FaCoins className="text-white text-xl mb-1" />
                     <span className="text-xs text-gray-400">Total Supply</span>
                     <span className="text-lg font-bold text-white">{totalSupply}</span>
                   </div>
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
-                    <FaChartLine className="text-[#D4A017] text-xl mb-1" />
+                  <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20 flex flex-col items-center w-full max-w-xs">
+                    <FaChartLine className="text-white text-xl mb-1" />
                     <span className="text-xs text-gray-400">Annual APY</span>
                     <span className="text-lg font-bold text-white">{FIXED_APY}%</span>
                   </div>
-                  <div className="bg-[#2A1810]/60 p-4 rounded-lg border border-[#BFA181]/20 flex flex-col items-center w-full max-w-xs">
-                    <FaWallet className="text-[#D4A017] text-xl mb-1" />
+                  <div className="bg-[#0e2247]/60 p-4 rounded-lg border border-[#00bfff]/20 flex flex-col items-center w-full max-w-xs">
+                    <FaWallet className="text-white text-xl mb-1" />
                     <span className="text-xs text-gray-400">Your Address</span>
                     <span className="text-lg font-bold text-white">{userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : '-'}</span>
                   </div>
@@ -618,14 +618,14 @@ export default function Staking({ id }) {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
                   {/* Your Balance */}
                   <motion.div 
-                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
-                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-blue-400/20 hover:border-blue-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(10, 24, 51, 0.18)` }}
+                    className={`bg-[#0e2247]/80 p-2 rounded-lg border border-blue-400/20 hover:border-blue-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
                   >
                     <motion.div
                       className="absolute inset-0 pointer-events-none rounded-lg"
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 0.18 }}
-                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #00bfff 0%, transparent 70%)` }}
                       transition={{ duration: 0.4 }}
                     />
                     <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
@@ -638,14 +638,14 @@ export default function Staking({ id }) {
                   </motion.div>
                   {/* Your Staked */}
                   <motion.div 
-                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
-                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-green-400/20 hover:border-green-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(10, 24, 51, 0.18)` }}
+                    className={`bg-[#0e2247]/80 p-2 rounded-lg border border-green-400/20 hover:border-green-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
                   >
                     <motion.div
                       className="absolute inset-0 pointer-events-none rounded-lg"
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 0.18 }}
-                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #00bfff 0%, transparent 70%)` }}
                       transition={{ duration: 0.4 }}
                     />
                     <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
@@ -662,14 +662,14 @@ export default function Staking({ id }) {
                   </motion.div>
                   {/* Pending Rewards */}
                   <motion.div 
-                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
-                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-purple-400/20 hover:border-purple-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                    whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(10, 24, 51, 0.18)` }}
+                    className={`bg-[#0e2247]/80 p-2 rounded-lg border border-purple-400/20 hover:border-purple-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
                   >
                     <motion.div
                       className="absolute inset-0 pointer-events-none rounded-lg"
                       initial={{ opacity: 0 }}
                       whileHover={{ opacity: 0.18 }}
-                      style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                      style={{ background: `radial-gradient(circle at 60% 20%, #00bfff 0%, transparent 70%)` }}
                       transition={{ duration: 0.4 }}
                     />
                     <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
@@ -682,14 +682,14 @@ export default function Staking({ id }) {
                   </motion.div>
                   {/* Your Total */}
                     <motion.div 
-                      whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(212,160,23,0.18)` }}
-                    className={`bg-[#3A2A1E]/80 p-2 rounded-lg border border-yellow-400/20 hover:border-yellow-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
+                      whileHover={{ scale: 1.07, y: -4, boxShadow: `0 8px 32px rgba(10, 24, 51, 0.18)` }}
+                    className={`bg-[#0e2247]/80 p-2 rounded-lg border border-yellow-400/20 hover:border-yellow-400/60 transition-all duration-300 flex flex-col justify-center items-center min-h-[90px] h-full relative overflow-hidden`}
                     >
                       <motion.div
                         className="absolute inset-0 pointer-events-none rounded-lg"
                         initial={{ opacity: 0 }}
                         whileHover={{ opacity: 0.18 }}
-                        style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
+                        style={{ background: `radial-gradient(circle at 60% 20%, #00bfff 0%, transparent 70%)` }}
                         transition={{ duration: 0.4 }}
                       />
                       <div className="flex items-center gap-1 mb-1 justify-center z-10 relative">
@@ -721,8 +721,8 @@ export default function Staking({ id }) {
                 )}
 
                 {/* Enhanced Input Section with Quick Actions */}
-                <div className="bg-[#3A2A1E]/60 rounded-xl p-4 mb-4 border border-[#BFA181]/40">
-                  <label className="block text-[#D4A017] text-xs font-semibold mb-2">
+                <div className="bg-[#0e2247]/60 rounded-xl p-4 mb-4 border border-[#00bfff]/40">
+                  <label className="block text-white text-xs font-semibold mb-2">
                     <i className="fas fa-coins mr-1"></i>
                     Stake/Unstake Amount
                   </label>
@@ -732,8 +732,8 @@ export default function Staking({ id }) {
                     type="number"
                     value={stakeAmount}
                     onChange={(e) => setStakeAmount(e.target.value)}
-                    placeholder="Enter COFFY amount"
-                    className="w-full p-3 rounded-lg bg-[#2A1810] text-[#E8D5B5] text-base border border-[#BFA181]/40 focus:border-[#D4A017] focus:outline-none transition-all duration-200 mb-3"
+                    placeholder="Enter HUNGX amount"
+                    className="w-full p-3 rounded-lg bg-[#0e2247] text-white text-base border border-white/40 focus:border-white focus:outline-none transition-all duration-200 mb-3"
                   />
 
                   <div className="flex justify-between text-xs text-gray-400 mb-2">
@@ -747,20 +747,20 @@ export default function Staking({ id }) {
                 {/* Enhanced Action Buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <motion.button
-                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(10, 24, 51, 0.25)" }}
                     whileTap={{ scale: 0.97 }}
                     onClick={stakeTokens}
                     disabled={isLoading || !stakeAmount || parseFloat(stakeAmount) <= 0}
-                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#00bfff] to-[#0077ff] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <i className="fas fa-plus"></i>
-                    <span>Stake {stakeAmount ? `${parseFloat(stakeAmount).toFixed(2)}` : ''} COFFY</span>
+                    <span>Stake {stakeAmount ? `${parseFloat(stakeAmount).toFixed(2)}` : ''} HUNGX</span>
                   </motion.button>
 
                   {/* Unstake/Emergency Unstake butonu */}
                   {(!canUnstake) ? (
                   <motion.button
-                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                    whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(10, 24, 51, 0.25)" }}
                     whileTap={{ scale: 0.97 }}
                       onClick={async () => {
                         setIsLoading(true);
@@ -784,7 +784,7 @@ export default function Staking({ id }) {
                     </motion.button>
                   ) : (
                     <motion.button
-                      whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(212,160,23,0.25)" }}
+                      whileHover={{ scale: 1.03, boxShadow: "0 6px 18px rgba(10, 24, 51, 0.25)" }}
                       whileTap={{ scale: 0.97 }}
                       onClick={async () => {
                         setIsLoading(true);
@@ -807,7 +807,7 @@ export default function Staking({ id }) {
                         setIsLoading(false);
                       }}
                       disabled={isLoading}
-                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#BFA181] to-[#A77B06] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                    className="py-3 px-4 rounded-lg bg-gradient-to-r from-[#00bfff] to-[#0077ff] text-white font-bold text-sm shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <i className="fas fa-unlock"></i>
                     <span>Unstake</span>
@@ -845,7 +845,7 @@ export default function Staking({ id }) {
                 rotate: { duration: 2, repeat: Infinity, ease: "linear" },
                 scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
               }}
-              className="w-16 h-16 border-4 border-[#D4A017] border-t-transparent rounded-full"
+              className="w-16 h-16 border-4 border-[#00bfff] border-t-transparent rounded-full"
             />
           </motion.div>
         )}
@@ -857,7 +857,7 @@ export default function Staking({ id }) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-4 right-4 bg-gradient-to-r from-[#A77B06] to-[#8B6914] text-white px-6 py-3 rounded-lg shadow-lg z-50"
+            className="fixed bottom-4 right-4 bg-gradient-to-r from-[#00bfff] to-[#0077ff] text-white px-6 py-3 rounded-lg shadow-lg z-50"
           >
             {error}
           </motion.div>

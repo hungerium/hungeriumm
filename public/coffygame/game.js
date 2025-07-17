@@ -2225,6 +2225,10 @@ function init() {
 
     // Setup main button listeners
     connectWalletButton.addEventListener("click", () => Web3.connectWallet(gameState, web3UiElements));
+    const connectButton = document.getElementById('connectButton');
+    if (connectButton) {
+        connectButton.addEventListener("click", () => Web3.connectWallet(gameState, web3UiElements));
+    }
     startButton.addEventListener('click', startGame);
     restartButton.addEventListener('click', startGame);
     // Use GameLogic functions for pause and end game

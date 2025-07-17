@@ -1,11 +1,11 @@
 export const metadata = {
-  title: 'Coffy Coin - The Future of Coffee Blockchain',
-  description: 'Brewing the Future of Coffee with Blockchain! The First Drink-to-Earn, Play-to-Earn, and SocialFi Coin on Binance Smart Chain.',
-  keywords: 'Coffy Coin, Blockchain, Coffee, DeFi, GameFi, SocialFi, Crypto',
+  title: 'Hungerium - The Future of Decentralized Food & Rewards',
+  description: 'Empowering the food economy with blockchain! The first Eat-to-Earn, Play-to-Earn, and SocialFi token on Base Network. Powered by Hungerium (HUNGX).',
+  keywords: 'Hungerium, HUNGX, Blockchain, Base, DeFi, GameFi, SocialFi, Crypto, Bee, Blue Theme',
   openGraph: {
-    title: 'Coffy Coin',
-    description: 'Join the coffee revolution with Coffy Coin!',
-    url: 'https://coffycoin.com',
-    images: [{ url: '/images/coffy-logo.png' }],
+    title: 'Hungerium',
+    description: 'Join the decentralized food revolution with Hungerium!',
+    url: 'https://hungerium.space',
+    images: [{ url: '/images/coffy-logo.png' }], // Görseli sen manuel değiştireceksin
   },
 };

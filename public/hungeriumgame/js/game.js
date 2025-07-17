@@ -272,7 +272,7 @@ class Game {
         const pauseMenu = document.getElementById('pauseMenu');
         if (pauseMenu) {
             // Get tokens directly from localStorage for consistency
-            const savedTokens = localStorage.getItem('coffyTokens');
+            const savedTokens = localStorage.getItem('hungxTokens');
             const tokenAmount = savedTokens ? parseInt(savedTokens) : 0;
             
             document.getElementById('earnedTokens').textContent = tokenAmount;
@@ -325,14 +325,9 @@ class Game {
         
         // Save current token amount to global storage if we have coins
         if (this.coinManager) {
-            const coffyAmount = this.coinManager.getTotalCoffyValue();
-            localStorage.setItem('coffyTokens', coffyAmount.toString());
-            window.dispatchEvent(new CustomEvent('coffy-tokens-updated', { detail: { coffyAmount } }));
-            // --- RESET KALDIRILDI ---
-            // if (typeof this.coinManager.resetCoffyCounter === 'function') {
-            //     this.coinManager.resetCoffyCounter();
-            // }
-            // --- END RESET KALDIRILDI ---
+            const hungxAmount = this.coinManager.getTotalHungxValue();
+            localStorage.setItem('hungxTokens', hungxAmount.toString());
+            window.dispatchEvent(new CustomEvent('hungx-tokens-updated', { detail: { coffyAmount: hungxAmount } }));
         }
         
         // Remove everything from the scene
@@ -370,8 +365,8 @@ class Game {
         // --- YENİ: Eski overlay ve event listener'ı temizle ---
         const oldOverlay = document.getElementById('loginOverlay');
         if (oldOverlay) oldOverlay.remove();
-        if (window._coffyTokensListener) {
-            window.removeEventListener('coffy-tokens-updated', window._coffyTokensListener);
+        if (window._hungxTokensListener) {
+            window.removeEventListener('hungx-tokens-updated', window._hungxTokensListener);
         }
         // --- SON YENİ ---
         // Create a simple login overlay
@@ -455,22 +450,22 @@ class Game {
         statusValue.style.color = this.web3Handler.currentAccount ? '#4CAF50' : '#FFA500';
         walletStatus.appendChild(statusLabel);
         walletStatus.appendChild(statusValue);
-        // COFFY Balance
+        // HUNGX Balance
         const balanceRow = document.createElement('div');
         balanceRow.className = 'balance-row';
         const balanceLabel = document.createElement('span');
-        balanceLabel.textContent = 'COFFY Balance:';
+        balanceLabel.textContent = 'HUNGX Balance:';
         balanceLabel.style.color = 'white';
         const balanceValue = document.createElement('span');
-        balanceValue.id = 'coffy-balance';
+        balanceValue.id = 'hungx-balance';
         balanceValue.style.color = '#DAA520';
         balanceValue.style.fontWeight = 'bold';
         balanceValue.textContent = this.web3Handler.getDisplayBalance();
         balanceRow.appendChild(balanceLabel);
         balanceRow.appendChild(balanceValue);
-        // Compact COFFY tokens to claim info
+        // Compact HUNGX tokens to claim info
         let earnedTokensInfo = document.getElementById('earnedTokensInfo');
-        const savedTokens = localStorage.getItem('coffyTokens');
+        const savedTokens = localStorage.getItem('hungxTokens');
         const tokenAmount = savedTokens ? parseInt(savedTokens) : 0;
         if (!earnedTokensInfo) {
             earnedTokensInfo = document.createElement('div');
@@ -499,7 +494,7 @@ class Game {
         earnedTokensInfo.style.minHeight = '28px';
         earnedTokensInfo.style.gap = '7px';
         earnedTokensInfo.style.animation = 'coffyPulse 1.8s infinite';
-        // Add Coffy coin icon to the left
+        // Add Hungx coin icon to the left
         const pillCoinIcon = document.createElement('span');
         pillCoinIcon.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ffd700" stroke="#a67c52" stroke-width="2"/><ellipse cx="12" cy="12" rx="5" ry="7" fill="#5a3a1a"/><ellipse cx="12" cy="12" rx="2.2" ry="3.2" fill="#a67c52" opacity=".7"/></svg>';
         pillCoinIcon.style.display = 'inline-flex';
@@ -511,24 +506,24 @@ class Game {
         }
         earnedTokensInfo.insertBefore(pillCoinIcon, earnedTokensInfo.firstChild);
         // Highlight the token amount in gold
-        function updateCoffyPillText(amount) {
+        function updateHungxPillText(amount) {
             earnedTokensInfo.innerHTML = '';
             earnedTokensInfo.appendChild(pillCoinIcon);
             const textSpan = document.createElement('span');
-            textSpan.innerHTML = `You have <span style="color:#d4a200;font-size:15px;font-weight:900;">${amount}</span> COFFY tokens to claim!`;
+            textSpan.innerHTML = `You have <span style="color:#d4a200;font-size:15px;font-weight:900;">${amount}</span> HUNGX tokens to claim!`;
             earnedTokensInfo.appendChild(textSpan);
         }
         // Initial set
-        updateCoffyPillText(tokenAmount);
+        updateHungxPillText(tokenAmount);
         // Update on event
-        window._coffyTokensListener = (e) => {
+        window._hungxTokensListener = (e) => {
             const newAmount = e.detail && typeof e.detail.coffyAmount === 'number' ? e.detail.coffyAmount : 0;
-            updateCoffyPillText(newAmount);
+            updateHungxPillText(newAmount);
             if (this.web3Handler && typeof this.web3Handler.setGameTokens === 'function') {
                 this.web3Handler.setGameTokens(newAmount);
             }
         };
-        window.addEventListener('coffy-tokens-updated', window._coffyTokensListener);
+        window.addEventListener('hungx-tokens-updated', window._hungxTokensListener);
         // Add animation CSS if not present
         if (!document.getElementById('coffy-pulse-style')) {
             const style = document.createElement('style');
@@ -588,7 +583,7 @@ class Game {
                     claimRewardBtn.textContent = 'Claim Rewards';
                     claimRewardBtn.disabled = true;
                     if (earnedTokensInfo) {
-                        earnedTokensInfo.textContent = 'You have 0 COFFY tokens to claim!';
+                        earnedTokensInfo.textContent = 'You have 0 HUNGX tokens to claim!';
                     }
                     balanceValue.textContent = this.web3Handler.getDisplayBalance();
                 }, 2000);
@@ -778,8 +773,8 @@ class Game {
             }
             
             // Update balance
-            if (document.getElementById('coffy-balance')) {
-                document.getElementById('coffy-balance').textContent = data.balance;
+            if (document.getElementById('hungx-balance')) {
+                document.getElementById('hungx-balance').textContent = data.balance;
             }
             
             // Update connect button
@@ -1776,12 +1771,8 @@ class Game {
             
             // Update the web handler with the accurate COFFY token total
             if (this.coinManager.collectedCount > 0 && this.web3Handler) {
-                // Calculate total COFFY tokens with the correct conversion
-                const coffyTokens = this.coinManager.getTotalCoffyValue();
-                
-                // Use setGameTokens to update the web handler with the accurate amount
-                // This will also update localStorage
-                this.web3Handler.setGameTokens(coffyTokens);
+                const hungxTokens = this.coinManager.getTotalHungxValue();
+                this.web3Handler.setGameTokens(hungxTokens);
             }
         }
         

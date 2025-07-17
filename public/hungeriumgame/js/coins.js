@@ -411,7 +411,7 @@ class CoinManager {
     // Sync with global token storage
     syncWithGlobalStorage() {
         // Get the global stored COFFY token value
-        const savedTokens = localStorage.getItem('coffyTokens');
+        const savedTokens = localStorage.getItem('hungxTokens');
         if (savedTokens) {
             // Calculate equivalent coin count
             const tokenValue = parseFloat(savedTokens);
@@ -442,12 +442,12 @@ class CoinManager {
     
     createUI() {
         // Remove old counter if exists
-        const oldCounter = document.getElementById('coinCounter');
+        const oldCounter = document.getElementById('hungxCounter');
         if (oldCounter) oldCounter.remove();
 
         // Create COFFY counter as a standalone element (top right)
         this.coinCounter = document.createElement('div');
-        this.coinCounter.id = 'coinCounter';
+        this.coinCounter.id = 'hungxCounter';
         this.coinCounter.style.position = 'absolute';
         this.coinCounter.style.top = '18px';
         this.coinCounter.style.right = '135px';
@@ -475,8 +475,8 @@ class CoinManager {
 
         // Primary counter (COFFY tokens)
         const coffyText = document.createElement('div');
-        coffyText.id = 'coffyCounterText';
-        coffyText.textContent = '0 COFFY';
+        coffyText.id = 'hungxCounterText';
+        coffyText.textContent = '0 HUNGX';
         coffyText.style.fontSize = '15px';
         coffyText.style.color = '#ffd700';
         coffyText.style.fontWeight = 'bold';
@@ -658,14 +658,14 @@ class CoinManager {
     
     updateUI() {
         // Update COFFY counter (main display)
-        const coffyText = document.getElementById('coffyCounterText');
+        const coffyText = document.getElementById('hungxCounterText');
         const coffyAmount = Math.floor(this.totalValue * this.coffyPerCoin);
         if (coffyText) {
-            coffyText.textContent = `${coffyAmount} COFFY`;
+            coffyText.textContent = `${coffyAmount} HUNGX`;
         }
         // HER ZAMAN localStorage ve event güncelle
-        localStorage.setItem('coffyTokens', coffyAmount.toString());
-        window.dispatchEvent(new CustomEvent('coffy-tokens-updated', { detail: { coffyAmount } }));
+        localStorage.setItem('hungxTokens', coffyAmount.toString());
+        window.dispatchEvent(new CustomEvent('hungx-tokens-updated', { detail: { coffyAmount } }));
     }
     
     playCollectionSound() {
@@ -719,7 +719,7 @@ class CoinManager {
         this.coins = [];
         
         // Remove UI
-        const counter = document.getElementById('coinCounter');
+        const counter = document.getElementById('hungxCounter');
         if (counter) counter.remove();
     }
     
@@ -728,8 +728,8 @@ class CoinManager {
         this.totalValue += 7.5;
         this.updateUI();
         const coffyAmount = this.totalValue * this.coffyPerCoin;
-        localStorage.setItem('coffyTokens', coffyAmount.toString());
-        window.dispatchEvent(new CustomEvent('coffy-tokens-updated', { detail: { coffyAmount } }));
+        localStorage.setItem('hungxTokens', coffyAmount.toString());
+        window.dispatchEvent(new CustomEvent('hungx-tokens-updated', { detail: { coffyAmount } }));
     }
     
     // COFFY sayacını sıfırlamak için fonksiyon ekle
@@ -737,8 +737,8 @@ class CoinManager {
         this.collectedCount = 0;
         this.totalValue = 0;
         this.updateUI();
-        localStorage.setItem('coffyTokens', '0');
-        window.dispatchEvent(new CustomEvent('coffy-tokens-updated', { detail: { coffyAmount: 0 } }));
+        localStorage.setItem('hungxTokens', '0');
+        window.dispatchEvent(new CustomEvent('hungx-tokens-updated', { detail: { coffyAmount: 0 } }));
     }
 }
 

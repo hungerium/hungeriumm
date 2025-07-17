@@ -7,57 +7,12 @@
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
    <meta name="theme-color" content="#1a202c">
-   <title>Coffy Adventure</title>
+   <title>Hungerium Adventure</title>
    <link rel="icon" href="favicon.ico" type="image/x-icon">
    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
    
-   <!-- Ethers.js Loading Script -->
-   <script>
-     window.ethersLoaded = false;
-     
-     function loadEthers() {
-       const cdnUrls = [
-         "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js",
-         "libs/ethers-5.7.2.min.js" // Local fallback
-       ];
-       
-       let currentIndex = 0;
-       
-       function attemptLoad() {
-         if (currentIndex >= cdnUrls.length) {
-           console.log("ethers.js could not be loaded, Web3 features will be disabled");
-           return;
-         }
-         
-         const script = document.createElement('script');
-         script.src = cdnUrls[currentIndex];
-         script.async = false;
-         
-         script.onload = function() {
-           console.log(`✅ Ethers.js loaded successfully`);
-           window.ethersLoaded = true;
-           window.dispatchEvent(new CustomEvent('ethersLoaded'));
-         };
-         
-         script.onerror = function() {
-           currentIndex++;
-           attemptLoad();
-         };
-         
-         document.head.appendChild(script);
-       }
-       
-       attemptLoad();
-     }
-     
-     loadEthers();
-     
-     setTimeout(function() {
-       if (!window.ethersLoaded && typeof window.ethers === 'undefined') {
-         console.log("Web3 functionality may be limited");
-       }
-     }, 2000);
-   </script>
+   <!-- Import Ethers.js for contract calls (modül olarak) -->
+   <script type="module" src="ethers-init.js"></script>
    
    <!-- Stylesheets -->
    <link rel="stylesheet" href="game.css">
@@ -89,9 +44,9 @@
 
         <!-- Start Screen -->
         <div id="start-screen" class="screen">
-            <div class="screen-title">Coffy Adventure</div>
+            <div class="screen-title">Hungerium Adventure</div>
             <p class="start-screen-description">Collect coffee cups, avoid tea cups!</p>
-            <div class="start-screen-total-reward">Total Reward: <span id="total-reward">0</span> COFFY</div>
+            <div class="start-screen-total-reward">Total Reward: <span id="total-reward">0</span> HUNGX</div>
             <div class="start-screen-high-score">High Score: <span id="start-high-score">0</span></div>
             
             <button id="claim-total-reward" class="game-button" data-tooltip="Daily claim limit: 1 per IP address">CLAIM REWARDS</button>
@@ -102,35 +57,35 @@
                 <div class="character-item">
                     <i class="fas fa-coffee"></i>
                     <span class="character-name">Genesis</span>
-                    <span class="character-price">1M COFFY</span>
+                    <span class="character-price">1M HUNGX</span>
                     <span class="character-multiplier">1.5x rewards</span>
                     <button id="character-1" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-chess-knight"></i>
                     <span class="character-name">Mocha Knight</span>
-                    <span class="character-price">3M COFFY</span>
+                    <span class="character-price">3M HUNGX</span>
                     <span class="character-multiplier">2x rewards</span>
                     <button id="character-2" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-hat-wizard"></i>
                     <span class="character-name">Arabica Archmage</span>
-                    <span class="character-price">5M COFFY</span>
+                    <span class="character-price">5M HUNGX</span>
                     <span class="character-multiplier">3x rewards</span>
                     <button id="character-3" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item">
                     <i class="fas fa-user-ninja"></i>
                     <span class="character-name">Robusta Shadowblade</span>
-                    <span class="character-price">8M COFFY</span>
+                    <span class="character-price">8M HUNGX</span>
                     <span class="character-multiplier">4x rewards</span>
                     <button id="character-4" class="buy-button">Buy</button>
                 </div>
                 <div class="character-item legendary">
                     <i class="fas fa-dragon"></i>
                     <span class="character-name">Legendary Dragon</span>
-                    <span class="character-price">10M COFFY</span>
+                    <span class="character-price">10M HUNGX</span>
                     <span class="character-multiplier">5x rewards + DAO</span>
                     <button id="character-5" class="buy-button">Buy</button>
                 </div>
@@ -143,7 +98,7 @@
             <div id="final-score-container">
                 <div id="final-score">Score: 0</div>
                 <div id="high-score">High Score: 0</div>
-                <div id="reward">Total Reward: 0 COFFY</div>
+                <div id="reward">Total Reward: 0 HUNGX</div>
             </div>
             <button id="restart-button" class="game-button">PLAY AGAIN</button>
             <button id="main-menu-reward-button" class="game-button">MAIN MENU & CLAIM REWARD</button>
@@ -187,10 +142,10 @@
             <div class="left-section">
                 <div class="balance-container">
                     <div class="token-info">
-                        <span id="tokenCount">0</span> COFFY
+                        <span id="tokenCount">0</span> HUNGX
                     </div>
                     <button id="claimTotalRewardButton" class="claim-button">
-                        CLAIM <span id="totalRewardsHud">0</span> COFFY
+                        CLAIM <span id="totalRewardsHud">0</span> HUNGX
                     </button>
                 </div>
             </div>
@@ -217,7 +172,7 @@
                 <!-- Migration Section -->
                 <div id="migration-section" class="migration-section" style="display: none;">
                     <div id="migration-info" class="migration-info">
-                        You have COFFY tokens in your old contract. You can migrate them.
+                        You have HUNGX tokens in your old contract. You can migrate them.
                     </div>
                     <button id="migration-button" class="migration-button">
                         🚀 Migrate to V2
@@ -241,7 +196,7 @@
         <source src="gameover.mp3" type="audio/mpeg">
     </audio>
     
-    <!-- Game Scripts (Modules) -->
+    <!-- Game Scripts (modül, sıralı) -->
     <script type="module" src="constants.js?v=1703002"></script>
     <script type="module" src="utils.js?v=1703002"></script>
     <script type="module" src="PlayerBullet.js?v=1703002"></script>

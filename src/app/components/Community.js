@@ -6,31 +6,31 @@ export default function Community() {
   const socialLinks = [
     {
       platform: "Telegram",
-      url: "https://t.me/+DVdNX9nar99hN2Rk",
+      url: "https://t.me/hungeriumx",
       icon: "telegram-plane",
-      bgColor: "bg-[#0088CC]",
-      hoverEffect: "hover:bg-[#0099DD]"
+      bgColor: "bg-gradient-to-r from-[#1e90ff] to-[#00bfff]",
+      hoverEffect: "hover:from-[#1560bd] hover:to-[#009acd]"
     },
     {
-      platform: "Twitter",
-      url: "https://x.com/coffycoinxyz",
+      platform: "X (Twitter)",
+      url: "https://x.com/Hungeriumx",
       icon: "twitter",
-      bgColor: "bg-[#1DA1F2]",
-      hoverEffect: "hover:bg-[#1A91DA]"
+      bgColor: "bg-gradient-to-r from-[#FFD700] to-[#1e90ff]",
+      hoverEffect: "hover:from-[#ffe066] hover:to-[#1560bd]"
     }
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-br from-[#1A0F0A] to-[#3A2A1E] relative overflow-hidden" id="community">
+    <section className="py-16 bg-gradient-to-br from-[#101c3a] via-[#0e2247] to-[#1e90ff] relative overflow-hidden" id="community">
       {/* Arkaplan Efekti */}
       <div className="absolute inset-0">
         <motion.div
           className="absolute inset-0 opacity-10"
           animate={{
             background: [
-              'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 80%, #D4A017 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 20%, #D4A017 0%, transparent 50%)'
+              'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)',
+              'radial-gradient(circle at 80% 80%, #00bfff 0%, transparent 50%)',
+              'radial-gradient(circle at 20% 20%, #1e90ff 0%, transparent 50%)'
             ]
           }}
           transition={{ duration: 10, repeat: Infinity }}
@@ -46,7 +46,7 @@ export default function Community() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06]">
+          <h2 className="text-4xl font-bold mb-4 text-[#FFD700]">
             Join Our Community
           </h2>
           <div className="w-20 h-1 bg-[#D4A017] mx-auto mb-4"></div>

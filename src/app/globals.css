@@ -4,12 +4,13 @@
 
 /* Root variables */
 :root {
-  --primary-gold: #D4A017;
-  --secondary-gold: #A77B06;
-  --dark-brown: #1A0F0A;
-  --medium-brown: #2A1810;
-  --light-brown: #E8D5B5;
-  --accent-orange: #FF8C00;
+  --primary-gold: #FFD700;
+  --secondary-gold: #FFD700;
+  --dark-brown: #101c3a;
+  --medium-brown: #101c3a;
+  --light-brown: #fff;
+  --accent-orange: #1e90ff;
+  --color-text: 255,255,255;
 }
 
 /* Performance optimizations */
@@ -133,29 +134,29 @@
 
 /* Updated Button variants with harmonious colors */
 .btn-variant-default {
-  background: linear-gradient(135deg, rgba(42, 24, 16, 0.8), rgba(26, 15, 10, 0.8));
-  color: #E8D5B5;
-  border: 1px solid rgba(212, 160, 23, 0.3);
+  background: linear-gradient(135deg, #101c3a, #1e233a);
+  color: #fff;
+  border: 1px solid rgba(33, 150, 243, 0.3);
   backdrop-filter: blur(8px);
 }
 
 .btn-variant-default:hover {
-  border-color: rgba(212, 160, 23, 0.6);
-  background: linear-gradient(135deg, rgba(212, 160, 23, 0.2), rgba(167, 123, 6, 0.2));
-  color: #D4A017;
-  box-shadow: 0 8px 25px rgba(212, 160, 23, 0.3);
+  border-color: rgba(33, 150, 243, 0.6);
+  background: linear-gradient(135deg, #1e90ff, #00bfff);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3);
 }
 
 .btn-variant-primary {
-  background: linear-gradient(135deg, #D4A017, #A77B06);
-  color: white;
-  border: 1px solid rgba(212, 160, 23, 0.5);
+  background: linear-gradient(135deg, #1e90ff, #00bfff);
+  color: #fff;
+  border: 1px solid rgba(33, 150, 243, 0.5);
 }
 
 .btn-variant-primary:hover {
-  background: linear-gradient(135deg, #A77B06, #D4A017);
-  border-color: #D4A017;
-  box-shadow: 0 8px 25px rgba(212, 160, 23, 0.5);
+  background: linear-gradient(135deg, #00bfff, #1e90ff);
+  border-color: #1e90ff;
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.5);
 }
 
 .btn-variant-games {
@@ -284,12 +285,12 @@
 
 @layer base {
   :root {
-    --color-primary: 212, 160, 23;
-    --color-secondary: 167, 123, 6;
-    --color-background: 26, 15, 10;
-    --color-surface: 58, 42, 30;
-    --color-text: 232, 213, 181;
-    --shadow-color: 212, 160, 23;
+    --color-primary: 33, 150, 243;
+    --color-secondary: 0, 191, 255;
+    --color-background: 16, 28, 58;
+    --color-surface: 16, 28, 58;
+    --color-text: 255,255,255;
+    --shadow-color: 33, 150, 243;
   }
 
   html {
@@ -306,7 +307,7 @@
   }
 
   body {
-    @apply min-h-screen bg-gradient-to-b from-[#1A0F0A] to-[#3A2A1E] text-[#E8D5B5] antialiased;
+    @apply min-h-screen bg-gradient-to-b from-[#101c3a] to-[#1e233a] text-white antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     /* Daha iyi kaydırma deneyimi */
     overscroll-behavior: none;
@@ -329,11 +330,8 @@
   }
   
   .card-coffee {
-    @apply bg-[#3A2A1E]/90 p-7 rounded-2xl shadow-xl 
-           border border-[#D4A017]/30
-           hover:shadow-[0_0_25px_rgba(212,160,23,0.5)] 
-           transition-all duration-500 transform 
-           hover:-translate-y-2 backdrop-blur-sm;
+    @apply bg-[#101c3a]/90 p-7 rounded-2xl shadow-xl border border-[#1e90ff]/30 hover:shadow-[0_0_25px_rgba(33,150,243,0.5)] transition-all duration-500 transform hover:-translate-y-2 backdrop-blur-sm;
+    color: #fff;
     /* Performans iyileştirmesi */
     will-change: transform;
   }
@@ -345,17 +343,15 @@
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] to-[#A77B06];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FFD700] to-[#FFD700];
     /* Daha keskin metin için */
     -webkit-font-smoothing: antialiased;
   }
   
   .input-coffee {
-    @apply bg-[#1A0F0A]/80 border border-[#D4A017]/30 rounded-xl px-4 py-3
-           text-[#E8D5B5] focus:outline-none focus:border-[#D4A017]
-           focus:ring-2 focus:ring-[#D4A017]/30 transition-all duration-300;
+    @apply bg-[#101c3a]/80 border border-[#FFD700]/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#FFD700] focus:ring-2 focus:ring-[#FFD700]/30 transition-all duration-300;
     /* Erişilebilirlik artırımı */
-    @apply focus:ring-offset-2 focus:ring-offset-[#1A0F0A];
+    @apply focus:ring-offset-2 focus:ring-offset-[#101c3a];
   }
 }
 
@@ -661,7 +657,7 @@ iframe {
 
 /* Text gradient */
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#D4A017];
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FFD700] via-[#F4C430] to-[#FFD700];
 }
 
 /* Animations */

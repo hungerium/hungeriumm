@@ -62,9 +62,6 @@ export default function Hero() {
   const logoRotate = useTransform(scrollY, [0, 500], [0, 15]);
   const contentScale = useTransform(scrollY, [0, 500], [1, 0.9]);
 
-  // Kahve çekirdeği SVG'si (partikül için)
-  const coffeeBeanSVG = `<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><ellipse cx='8' cy='8' rx='7' ry='4' fill='#6F4E37'/><ellipse cx='8' cy='8' rx='2' ry='4' fill='#3A2A1E'/></svg>`;
-
   // Particles config
   const particlesInit = useCallback(async (engine) => {
     try {
@@ -140,7 +137,7 @@ export default function Hero() {
     addNotification({
       type: 'info',
       title: 'Redirecting to PancakeSwap',
-      message: 'Opening COFFY trading page...'
+      message: 'Opening HUNGX trading page...'
     });
   };
 
@@ -175,32 +172,13 @@ export default function Hero() {
   return (
     <section 
       ref={ref}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1A0F0A] via-[#2A1810] to-[#1A0F0A]" 
+      className="relative w-full min-h-[80vh] flex flex-col justify-center items-center bg-gradient-to-br from-[#0a1833] via-[#0e2247] to-[#1e90ff] text-white overflow-hidden px-4" 
       id="hero"
     >
       {/* Gradient Glow (arka plan) */}
-      {shouldAnimate && (
-        <motion.div
-          className="absolute inset-0 z-0 pointer-events-none"
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)',
-              'radial-gradient(circle at 80% 70%, #F4C43033 0%, transparent 70%)',
-              'radial-gradient(circle at 20% 30%, #D4A01733 0%, transparent 70%)'
-            ]
-          }}
-          transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
-          style={{ zIndex: 0 }}
-        />
-      )}
-      {/* Kahve çekirdeği partikülleri */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-        {shouldAnimate && (
-          <Particles id="coffee-particles" init={particlesInit} options={particlesOptions} style={{ width: '100%', height: '100%' }} />
-        )}
-      </div>
+      {/* Removed: animated background and particles */}
       {/* Main content with modern animations */}
-      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8 mt-16">
         <motion.div 
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center"
           variants={heroVariants}
@@ -213,22 +191,18 @@ export default function Hero() {
             className="flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1"
           >
             <motion.h1 
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 sm:mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#D4A017] via-[#F4C430] to-[#A77B06] leading-tight"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 sm:mb-6 text-[#FFD700] leading-tight text-center max-w-4xl mx-auto px-2"
               variants={childVariants}
             >
-              COFFY COIN
+              HUNGERIUM TOKEN
             </motion.h1>
             
             <motion.p 
-              className="text-lg sm:text-xl text-[#E8D5B5] mb-6 sm:mb-8 max-w-xl leading-relaxed"
+              className="text-lg md:text-xl text-white mb-8 max-w-xl animate-fadeIn font-body"
               variants={childVariants}
             >
-              "Brewing the Future of Coffee with Blockchain! The First{' '}
-              <span className="bg-gradient-to-r from-[#D4A017] to-[#A77B06] bg-clip-text text-transparent font-semibold">Drink-to-Earn</span>,{' '}
-              <span className="bg-gradient-to-r from-[#A77B06] to-[#8B6914] bg-clip-text text-transparent font-semibold">Play-to-Earn</span>, and{' '}
-              <span className="bg-gradient-to-r from-[#8B6914] to-[#D4A017] bg-clip-text text-transparent font-semibold">SocialFi</span> Coin on Binance Smart Chain."
+              Empowering the food economy with blockchain! The first Eat-to-Earn, Play-to-Earn, and SocialFi token on Base Network. Powered by the community, inspired by the bee!
             </motion.p>
-
             <motion.div 
               className="flex flex-col sm:flex-row items-center lg:items-start gap-3 sm:gap-6 w-full sm:w-auto mb-8 sm:mb-12"
               variants={childVariants}
@@ -240,10 +214,10 @@ export default function Hero() {
                 onClick={handleTradeClick}
                 whileHover={{ 
                   scale: 1.05,
-                  boxShadow: "0 20px 40px rgba(212,160,23,0.4)"
+                  boxShadow: "0 8px 32px #1e90ff44"
                 }}
                 whileTap={{ scale: 0.95 }}
-                className="group bg-gradient-to-br from-[#D4A017] via-[#F4C430] to-[#A77B06] text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:shadow-[#D4A017]/50 transition-all duration-500 transform hover:-translate-y-2 w-full sm:w-auto flex items-center justify-center relative overflow-hidden"
+                className="group bg-gradient-to-r from-[#1e90ff] to-[#00bfff] text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-2xl hover:from-[#1560bd] hover:to-[#009acd] hover:shadow-[#1e90ff]/50 transition-all duration-500 transform hover:-translate-y-2 w-full sm:w-auto flex items-center justify-center relative overflow-hidden"
               >
                 <span className="relative z-10">Trade Now</span>
                 <motion.svg 
@@ -259,7 +233,7 @@ export default function Hero() {
                 </motion.svg>
                 {/* Parlayan çizgi efekti */}
                 <motion.div
-                  className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#fff7] to-[#D4A017] rounded-full opacity-0 group-hover:opacity-100"
+                  className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#fff7] to-[#1e90ff] rounded-full opacity-0 group-hover:opacity-100"
                   initial={{ opacity: 0, x: -20 }}
                   whileHover={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.4 }}
@@ -270,20 +244,12 @@ export default function Hero() {
                 href="#tokenomics"
                 whileHover={{ 
                   scale: 1.05,
-                  backgroundColor: "rgba(212,160,23,0.1)" 
+                  backgroundColor: "rgba(30,144,255,0.08)" 
                 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-[#3A2A1E]/80 hover:bg-[#2C1B12] border-2 border-[#D4A017]/50 hover:border-[#D4A017] text-[#E8D5B5] font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-500 transform hover:-translate-y-2 w-full sm:w-auto text-center backdrop-blur-md relative overflow-hidden group"
+                className="bg-gradient-to-r from-[#FFD700] to-[#1e90ff] text-[#101c3a] font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-500 transform hover:-translate-y-2 w-full sm:w-auto text-center backdrop-blur-md relative overflow-hidden group shadow hover:from-[#ffe066] hover:to-[#1560bd]"
               >
                 Learn More
-                {/* Glow efekti */}
-                <motion.div
-                  className="absolute inset-0 pointer-events-none rounded-2xl"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 0.18 }}
-                  style={{ background: `radial-gradient(circle at 60% 20%, #D4A017 0%, transparent 70%)` }}
-                  transition={{ duration: 0.4 }}
-                />
               </motion.a>
             </motion.div>
           </motion.div>
@@ -304,7 +270,7 @@ export default function Hero() {
               >
                 <Image
                   src="/images/coffy-hero.png"
-                  alt="Coffy Coin Hero"
+                  alt="Hungerium Coin Hero"
                   width={320}
                   height={320}
                   className="w-full h-full object-contain drop-shadow-2xl filter brightness-110 rounded-[2.5rem]"

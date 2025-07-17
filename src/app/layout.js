@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'Coffy Coin - Play to Earn Gaming Platform',
-  description: 'The first Drink-to-Earn, Play-to-Earn, and SocialFi platform on Binance Smart Chain. Earn COFFY tokens while gaming!',
-  keywords: 'coffy coin, play to earn, blockchain gaming, BSC, crypto gaming, coffee token',
+  title: 'Hungerium - Play to Earn Gaming Platform',
+  description: 'The first Eat-to-Earn, Play-to-Earn, and SocialFi platform on Binance Smart Chain. Earn HUNGX tokens while gaming!',
+  keywords: 'hungerium, play to earn, blockchain gaming, BSC, crypto gaming, food token',
   metadataBase: new URL('http://localhost:3000'),
   icons: {
     icon: [
@@ -25,16 +25,16 @@ export const metadata = {
     shortcut: '/images/coffy-logo.png'
   },
   openGraph: {
-    title: 'Coffy Coin - Play to Earn Gaming Platform',
-    description: 'Earn COFFY tokens while gaming! The first coffee-themed blockchain gaming ecosystem.',
+    title: 'Hungerium - Play to Earn Gaming Platform',
+    description: 'Earn HUNGX tokens while gaming! The first coffee-themed blockchain gaming ecosystem.',
     images: ['/images/coffy-logo.png'],
     type: 'website',
     url: 'https://coffycoin.io',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Coffy Coin - Play to Earn Gaming Platform',
-    description: 'Earn COFFY tokens while gaming!',
+    title: 'Hungerium - Play to Earn Gaming Platform',
+    description: 'Earn HUNGX tokens while gaming!',
     images: ['/images/coffy-logo.png'],
   },
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
