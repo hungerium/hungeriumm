@@ -467,7 +467,7 @@ export default function Navbar() {
                   style={{ minHeight: '40px' }}
                 >
                   <Gift className="w-4 h-4" />
-                  <span className="text-sm font-bold">Claim Airdrop</span>
+                  <span className="text-sm font-bold">Claim Airdrop (50K HUNGX)</span>
                 </motion.button>
                 <span className="text-[11px] text-yellow-200 mt-0.5">Min 0.01 ETH needed</span>
               </div>
@@ -595,7 +595,7 @@ export default function Navbar() {
                 >
                   <Gift className="w-6 h-6 flex-shrink-0" />
                   <div className="flex flex-col items-start">
-                    <span className="text-base">Claim Airdrop</span>
+                    <span className="text-base">Claim Airdrop (50K HUNGX)</span>
                     <span className="text-[11px] text-yellow-600">Min 0.01 ETH needed</span>
                   </div>
                 </motion.button>
