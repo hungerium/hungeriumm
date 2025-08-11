@@ -1049,11 +1049,11 @@
       (function () {
         try {
           var params = new URLSearchParams(window.location.search);
-          var forceRemote = params.get('useRemote') === '1';
+          var forceLocal = params.get('useLocal') === '1';
           var isLocalHost = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-          var SERVER_URL = (isLocalHost && !forceRemote)
-            ? 'http://localhost:3000'
-            : 'https://hungeriumm.onrender.com';
+          var SERVER_URL = (!forceLocal)
+            ? 'https://hungeriumm.onrender.com'
+            : 'http://localhost:3000';
           window.CHINESEE_SERVER_URL = SERVER_URL;
           try { console.log('📡 Socket target:', SERVER_URL); } catch (e) {}
 
@@ -1062,9 +1062,9 @@
             var patched = function (url, opts) {
               // If client passes undefined (same-origin) or nothing, force SERVER_URL
               var params = new URLSearchParams(window.location.search);
-              var forceRemote = params.get('useRemote') === '1';
+              var forceLocal = params.get('useLocal') === '1';
               var isLocalHost = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-              var isLocal = isLocalHost && !forceRemote;
+              var isLocal = isLocalHost && forceLocal;
               if (typeof url === 'undefined' || url === null) {
                 opts = opts || {};
                 // Prefer pure websocket in production to avoid polling CORS issues
