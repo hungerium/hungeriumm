@@ -203,7 +203,7 @@ const CoffyAdventure = () => {
         <div className="screen">
           <h1 className="text-4xl font-bold text-white mb-4">Game Over</h1>
           <p className="mb-2">Score: {score}</p>
-          <p className="mb-2">Total Reward: {pendingRewards} COFFY</p>
+          <p className="mb-2">Total Reward: {pendingRewards} HUNGX</p>
           <button className="game-button" onClick={startGame}>Play Again</button>
           <button className="game-button" onClick={() => setGameState('start')}>Main Menu</button>
         </div>

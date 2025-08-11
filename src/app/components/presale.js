@@ -1200,7 +1200,7 @@ export default function Presale() {
 			// Check if contract has enough tokens
 			const contractBalance = await contract.getContractCoffyBalance();
 			if (contractBalance.toString() === "0") {
-				setMessage('Presale contract has no COFFY tokens. Please contact the team.');
+				setMessage('Presale contract has no HUNGX tokens. Please contact the team.');
 				setLoading(false);
 				return;
 			}
@@ -1282,7 +1282,7 @@ export default function Presale() {
 					if (receipt.status === 1) {
 						setMessage(
 							<div className="transaction-status success">
-								<p>Transaction successful! Your COFFY tokens will be available to claim when the presale ends.</p>
+								<p>Transaction successful! Your HUNGX tokens will be available to claim when the presale ends.</p>
 								<a href={explorerUrl} target="_blank" rel="noopener noreferrer" aria-label="View transaction on BSCScan">
 									View on BSCScan
 								</a>
@@ -1356,7 +1356,7 @@ export default function Presale() {
 							
 							setMessage(
 								<div className="transaction-status success">
-									<p>Transaction successful! Your COFFY tokens will be available to claim when the presale ends.</p>
+									<p>Transaction successful! Your HUNGX tokens will be available to claim when the presale ends.</p>
 									<a href={`https://bscscan.com/tx/${txHash}`} target="_blank" rel="noopener noreferrer" aria-label="View transaction on BSCScan">
 										View on BSCScan
 									</a>
@@ -1580,7 +1580,7 @@ export default function Presale() {
 					
 					setMessage(
 						<div className="transaction-status success">
-							<p>Claim successful! COFFY tokens have been sent to your wallet. <span role="img" aria-label="celebration">🎉</span></p>
+							<p>Claim successful! HUNGX tokens have been sent to your wallet. <span role="img" aria-label="celebration">🎉</span></p>
 							<a href={`https://bscscan.com/tx/${txHash}`} target="_blank" rel="noopener noreferrer" aria-label="View transaction on BSCScan">
 								View on BSCScan
 							</a>
@@ -1618,7 +1618,7 @@ export default function Presale() {
 					if (receipt.status === 1) {
 						setMessage(
 							<div className="transaction-status success">
-								<p>Claim successful! COFFY tokens have been sent to your wallet. <span role="img" aria-label="celebration">🎉</span></p>
+								<p>Claim successful! HUNGX tokens have been sent to your wallet. <span role="img" aria-label="celebration">🎉</span></p>
 								<a href={explorerUrl} target="_blank" rel="noopener noreferrer" aria-label="View transaction on BSCScan">
 									View on BSCScan
 								</a>
@@ -1671,7 +1671,7 @@ export default function Presale() {
 					
 					// Wait for transaction to be mined
 					await tx.wait();
-					setMessage('Claim successful! COFFY tokens have been sent to your wallet.');
+					setMessage('Claim successful! HUNGX tokens have been sent to your wallet.');
 					
 					// Update UI after successful claim
 					setCanClaim(false);

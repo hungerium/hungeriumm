@@ -465,7 +465,7 @@ class PerformanceMonitor {
     }
     
     /**
-     * Check if it's ok to save COFFY tokens now (throttled)
+     * Check if it's ok to save HUNGX tokens now (throttled)
      * @returns {boolean} True if enough time has passed since last save
      */
     canSaveTokens() {

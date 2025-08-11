@@ -207,7 +207,7 @@ const CONFIG = {
             minDistance: 5,        // Minimum distance between coffee items
             pickupDistance: 1.5,   // Distance at which player can collect
             respawnTime: 60000,    // Respawn time in ms (1 minute)
-            value: 50              // COFFY tokens earned per coffee
+            value: 50              // HUNGX tokens earned per coffee
         }
     }
 };

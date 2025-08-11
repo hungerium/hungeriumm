@@ -68,6 +68,17 @@ const GamesSection = ({ id }) => {
       isNew: true
     },
     {
+      id: 'coffee-checkers',
+      title: 'Coffee Checkers (Multiplayer)',
+      image: '/images/game-previews/chinesee-preview.jpg',
+      purpose: 'Play elegant coffee-themed checkers with multiplayer support. Smooth animations, capture rules, and strategic gameplay. Earn HUNGX in competitive matches.',
+      path: '/chinesee/index.html',
+      gradient: 'from-[#8b4513] to-[#d4af37]',
+      rewards: 'Max 35,000 HUNGX/week (base)',
+      category: 'Board Game',
+      isNew: true
+    },
+    {
       id: 'flagracer-online',
       title: 'FlagRacer Online',
       image: '/images/game-previews/flagracer-preview.jpg',
@@ -185,7 +196,7 @@ const GamesSection = ({ id }) => {
             Play to Earn Games
           </h2>
           <p className="text-lg text-white max-w-3xl mx-auto mb-6 leading-relaxed">
-            Dive into our immersive gaming ecosystem and earn COFFY tokens while experiencing 
+            Dive into our immersive gaming ecosystem and earn HUNGX tokens while experiencing 
             cutting-edge gameplay mechanics
           </p>
         </motion.div>

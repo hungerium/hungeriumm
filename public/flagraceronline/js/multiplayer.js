@@ -2382,7 +2382,7 @@ class MultiplayerManager {
         healthContainer.appendChild(healthBar);
         healthContainer.appendChild(healthText);
         
-        // ✅ COFFY COUNTER NEXT TO HEALTH BAR
+        // ✅ HUNGX COUNTER NEXT TO HEALTH BAR
         const hungxContainer = document.createElement('div');
         hungxContainer.id = 'hungxContainer';
         hungxContainer.style.cssText = `
@@ -3078,7 +3078,7 @@ class MultiplayerManager {
             
             // Update Web3 handler with new coffy balance
             if (window.web3Handler) {
-                window.web3Handler.showNotification(`+${data.amount} Coffy! Team ${data.team} scored by ${data.scorerName}!`, 'success');
+                window.web3Handler.showNotification(`+${data.amount} HUNGX! Team ${data.team} scored by ${data.scorerName}!`, 'success');
                 
                 // Update localStorage for persistence
                 localStorage.setItem('hungxTokens', this.game.coffeCount.toString());
@@ -3089,7 +3089,7 @@ class MultiplayerManager {
                 }, 100);
             }
             
-            console.log(`💰 Earned ${data.amount} Coffy from team ${data.team} score! Total: ${this.game.coffeCount}`);
+            console.log(`💰 Earned ${data.amount} HUNGX from team ${data.team} score! Total: ${this.game.coffeCount}`);
         } else if (data.scorerId === this.playerId) {
             console.log(`🎯 You scored for team ${data.team} and already received your reward!`);
         } else {

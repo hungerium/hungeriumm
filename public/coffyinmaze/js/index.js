@@ -639,7 +639,7 @@ function updateUIForWalletStatus() {
     if (claimRewardsButton) {
         if (isWalletConnected) {
             claimRewardsButton.disabled = false;
-            claimRewardsButton.title = "Claim your COFFY tokens to your wallet";
+            claimRewardsButton.title = "Claim your HUNGX tokens to your wallet";
         } else {
             claimRewardsButton.disabled = true;
             claimRewardsButton.title = "Connect your wallet first to claim tokens";
@@ -804,7 +804,7 @@ function initializeStartEvents() {
             try {
                 if (!window.gameState.walletConnected || !window.gameState.walletAddress) {
                     // Show wallet connection requirement message
-                    const message = 'You need to connect your wallet first to claim COFFY tokens.\n\nWould you like to connect your wallet now?';
+                    const message = 'You need to connect your wallet first to claim HUNGX tokens.\n\nWould you like to connect your wallet now?';
                     if (confirm(message)) {
                         // User wants to connect wallet
                         if (gameManager) {

@@ -455,20 +455,21 @@ class Game {
         statusValue.style.color = this.web3Handler.currentAccount ? '#4CAF50' : '#FFA500';
         walletStatus.appendChild(statusLabel);
         walletStatus.appendChild(statusValue);
-        // COFFY Balance
+        // HUNGX Balance
         const balanceRow = document.createElement('div');
-        balanceRow.className = 'balance-row';
-        const balanceLabel = document.createElement('span');
-        balanceLabel.textContent = 'COFFY Balance:';
-        balanceLabel.style.color = 'white';
-        const balanceValue = document.createElement('span');
+        balanceRow.style.display = 'flex';
+        balanceRow.style.alignItems = 'center';
+        balanceRow.style.justifyContent = 'space-between';
+        balanceRow.style.gap = '10px';
+        balanceRow.style.fontSize = '14px';
+        balanceLabel.textContent = 'HUNGX Balance:';
         balanceValue.id = 'coffy-balance';
         balanceValue.style.color = '#DAA520';
         balanceValue.style.fontWeight = 'bold';
         balanceValue.textContent = this.web3Handler.getDisplayBalance();
         balanceRow.appendChild(balanceLabel);
         balanceRow.appendChild(balanceValue);
-        // Compact COFFY tokens to claim info
+        // Compact HUNGX tokens to claim info
         let earnedTokensInfo = document.getElementById('earnedTokensInfo');
         const savedTokens = localStorage.getItem('coffyTokens');
         const tokenAmount = savedTokens ? parseInt(savedTokens) : 0;
@@ -515,7 +516,7 @@ class Game {
             earnedTokensInfo.innerHTML = '';
             earnedTokensInfo.appendChild(pillCoinIcon);
             const textSpan = document.createElement('span');
-            textSpan.innerHTML = `You have <span style="color:#d4a200;font-size:15px;font-weight:900;">${amount}</span> COFFY tokens to claim!`;
+            textSpan.innerHTML = `You have <span style="color:#d4a200;font-size:15px;font-weight:900;">${amount}</span> HUNGX tokens to claim!`;
             earnedTokensInfo.appendChild(textSpan);
         }
         // Initial set
@@ -588,7 +589,7 @@ class Game {
                     claimRewardBtn.textContent = 'Claim Rewards';
                     claimRewardBtn.disabled = true;
                     if (earnedTokensInfo) {
-                        earnedTokensInfo.textContent = 'You have 0 COFFY tokens to claim!';
+                        earnedTokensInfo.textContent = 'You have 0 HUNGX tokens to claim!';
                     }
                     balanceValue.textContent = this.web3Handler.getDisplayBalance();
                 }, 2000);
@@ -1756,14 +1757,11 @@ class Game {
         if (this.coinManager && this.vehicle) {
             this.coinManager.update(minDelta, this.vehicle);
             
-            // Update the web handler with the accurate COFFY token total
+            // Update the web handler with the accurate HUNGX token total
             if (this.coinManager.collectedCount > 0 && this.web3Handler) {
-                // Calculate total COFFY tokens with the correct conversion
+                // Calculate total HUNGX tokens with the correct conversion
                 const coffyTokens = this.coinManager.getTotalCoffyValue();
-                
-                // Use setGameTokens to update the web handler with the accurate amount
-                // This will also update localStorage
-                this.web3Handler.setGameTokens(coffyTokens);
+                this.web3Handler.setEarnedTokensDirect(coffyTokens);
             }
         }
         
@@ -2725,7 +2723,7 @@ function createCoffyIcon() {
     // Create an Image element
     const img = new Image();
     img.src = dataURL;
-    img.alt = "COFFY";
+    img.alt = "HUNGX";
     img.id = "coffy-icon";
     img.style.display = 'none';
     document.body.appendChild(img);

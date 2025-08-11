@@ -153,7 +153,7 @@ class Web3Handler {
             await tx.wait();
             localStorage.setItem('coffyTokens', "0");
             this.totalEarnedTokens = 0;
-            this.showNotification(`Successfully claimed ${actualClaimAmount} COFFY tokens!`, "success");
+            this.showNotification(`Successfully claimed ${actualClaimAmount} HUNGX tokens!`, "success");
             await this.fetchTokenBalance();
             return true;
         } catch (error) {

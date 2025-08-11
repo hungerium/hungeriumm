@@ -379,7 +379,7 @@ class CoinManager {
         this.coins = [];
         this.collectedCount = 0;
         this.totalValue = 0; // Total coin value collected
-        this.coffyPerCoin = 1; // Her coin 1 COFFY değerinde
+        this.coffyPerCoin = 1; // Her coin 1 HUNGX değerinde
         this.soundEnabled = true;
         
         // Check if running on mobile
@@ -410,7 +410,7 @@ class CoinManager {
     
     // Sync with global token storage
     syncWithGlobalStorage() {
-        // Get the global stored COFFY token value
+        // Get the global stored HUNGX token value
         const savedTokens = localStorage.getItem('hungxTokens');
         if (savedTokens) {
             // Calculate equivalent coin count
@@ -445,7 +445,7 @@ class CoinManager {
         const oldCounter = document.getElementById('hungxCounter');
         if (oldCounter) oldCounter.remove();
 
-        // Create COFFY counter as a standalone element (top right)
+        // Create HUNGX counter as a standalone element (top right)
         this.coinCounter = document.createElement('div');
         this.coinCounter.id = 'hungxCounter';
         this.coinCounter.style.position = 'absolute';
@@ -462,7 +462,7 @@ class CoinManager {
         this.coinCounter.style.zIndex = '2100';
         this.coinCounter.style.backdropFilter = 'blur(2px)';
 
-        // Add COFFY icon
+        // Add HUNGX icon
         const coffyIcon = document.createElement('span');
         coffyIcon.innerHTML = '☕'; // Coffee emoji
         coffyIcon.style.marginRight = '6px';
@@ -473,7 +473,7 @@ class CoinManager {
         counterContainer.style.display = 'flex';
         counterContainer.style.flexDirection = 'column';
 
-        // Primary counter (COFFY tokens)
+        // Primary counter (HUNGX tokens)
         const coffyText = document.createElement('div');
         coffyText.id = 'hungxCounterText';
         coffyText.textContent = '0 HUNGX';
@@ -657,7 +657,7 @@ class CoinManager {
     }
     
     updateUI() {
-        // Update COFFY counter (main display)
+        // Update HUNGX counter (main display)
         const coffyText = document.getElementById('hungxCounterText');
         const coffyAmount = Math.floor(this.totalValue * this.coffyPerCoin);
         if (coffyText) {
@@ -704,7 +704,7 @@ class CoinManager {
         }
     }
     
-    // Get total COFFY value
+    // Get total HUNGX value
     getTotalCoffyValue() {
         return this.totalValue * this.coffyPerCoin;
     }
@@ -732,7 +732,7 @@ class CoinManager {
         window.dispatchEvent(new CustomEvent('hungx-tokens-updated', { detail: { coffyAmount } }));
     }
     
-    // COFFY sayacını sıfırlamak için fonksiyon ekle
+    // HUNGX sayacını sıfırlamak için fonksiyon ekle
     resetCoffyCounter() {
         this.collectedCount = 0;
         this.totalValue = 0;

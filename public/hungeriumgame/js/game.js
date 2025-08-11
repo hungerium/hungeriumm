@@ -1769,7 +1769,7 @@ class Game {
         if (this.coinManager && this.vehicle) {
             this.coinManager.update(minDelta, this.vehicle);
             
-            // Update the web handler with the accurate COFFY token total
+            // Update the web handler with the accurate HUNGX token total
             if (this.coinManager.collectedCount > 0 && this.web3Handler) {
                 const hungxTokens = this.coinManager.getTotalHungxValue();
                 this.web3Handler.setGameTokens(hungxTokens);
@@ -2555,7 +2555,7 @@ function createCoffyIcon() {
     // Create an Image element
     const img = new Image();
     img.src = dataURL;
-    img.alt = "COFFY";
+    img.alt = "HUNGX";
     img.id = "coffy-icon";
     img.style.display = 'none';
     document.body.appendChild(img);

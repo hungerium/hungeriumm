@@ -479,7 +479,7 @@ class Web3Handler {
                 localStorage.setItem('coffyTokens', "0");
                 this.totalEarnedTokens = 0;
                 
-                this.showNotification(`Successfully claimed ${actualClaimAmount} COFFY tokens!`, "success");
+                this.showNotification(`Successfully claimed ${actualClaimAmount} HUNGX tokens!`, "success");
                 
                 // Update wallet balance
                 await this.fetchTokenBalance();

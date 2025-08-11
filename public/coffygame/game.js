@@ -951,7 +951,7 @@ function drawBackground() {
     // Daha yakın ikinci dağ sırası (Ağaçsız)
     drawMountains('rgba(45, 55, 65, 0.9)', 3, 10, 20); // Near mountains (no tree chance passed)
 
-    // --- "Coffy Coin" Yazısı (Ayarlanmış) ---
+    // --- "Hungerium (HUNGX)" Yazısı (Ayarlanmış) ---
     ctx.save();
     ctx.font = 'bold 110px "Poppins", sans-serif'; // Slightly larger font
 
@@ -992,12 +992,12 @@ function drawBackground() {
     const skewedXOffset = textYPosition * perspectiveSkew;
     ctx.translate(gameState.width / 2 - skewedXOffset, textYPosition);
     ctx.rotate(textRotation);
-    ctx.fillText("Coffy Coin", textOffset, 0);
+    ctx.fillText("Hungerium (HUNGX)", textOffset, 0);
 
     // Faded brown stroke
     ctx.lineWidth = 0.8; // Thinner stroke
     ctx.strokeStyle = `rgba(80, 40, 10, ${coinAlpha * 0.8})`; // Darker brown, faded stroke
-    ctx.strokeText("Coffy Coin", textOffset, 0);
+    ctx.strokeText("Hungerium (HUNGX)", textOffset, 0);
 
     ctx.restore(); // Restores original transform state
 }

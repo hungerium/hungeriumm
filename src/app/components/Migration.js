@@ -57,7 +57,7 @@ export default function Migration() {
       const success = await migrateTokens();
       if (success) {
         await checkMigrationData(); // Refresh status
-        alert(`✅ Successfully migrated ${migrationStatus.oldBalance} COFFY tokens!`);
+        alert(`✅ Successfully migrated ${migrationStatus.oldBalance} HUNGX tokens!`);
       }
     } catch (error) {
       console.error("Migration failed:", error);
@@ -102,7 +102,7 @@ export default function Migration() {
             Token Migration V1 → V2
           </h2>
           <p className="text-[#E8D5B5] text-sm opacity-90 max-w-2xl mx-auto">
-            Migrate your old COFFY tokens to the new V2 contract with enhanced security and anti-Sybil protection
+            Migrate your old HUNGX tokens to the new V2 contract with enhanced security and anti-Sybil protection
           </p>
         </motion.div>
 
@@ -192,7 +192,7 @@ export default function Migration() {
                     ) : migrationStatus.canMigrate && parseFloat(migrationStatus.oldBalance) > 0 ? (
                       <>
                         <i className="fas fa-exchange-alt"></i>
-                        Migrate {formatBalance(migrationStatus.oldBalance)} COFFY
+                        Migrate {formatBalance(migrationStatus.oldBalance)} HUNGX
                       </>
                     ) : (
                       <>
@@ -265,7 +265,7 @@ export default function Migration() {
                     <div className="bg-[#1A0F0A]/50 rounded-lg p-4 border border-blue-500/30">
                       <h4 className="text-blue-400 font-semibold text-sm mb-2">Migration Information</h4>
                       <div className="space-y-1 text-xs text-[#E8D5B5]">
-                        <p>• Migration ratio: 1:1 (1 old COFFY = 1 new COFFY)</p>
+                        <p>• Migration ratio: 1:1 (1 old HUNGX = 1 new HUNGX)</p>
                         <p>• Process is irreversible</p>
                         <p>• Gas fees apply for the transaction</p>
                         <p>• Migration contract: 0xfFe8666c1120Bbf58f6fD4A6B6F4d02A94C88AA3</p>

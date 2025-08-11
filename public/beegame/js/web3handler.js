@@ -413,7 +413,7 @@ class Web3Handler {
             claimAmount = parseInt(localStorage.getItem('coffyEarned') || '0', 10);
         }
         if (!claimAmount || claimAmount <= 0) {
-            this.showNotification('No Coffy to claim!', 'info');
+            this.showNotification('No HUNGX to claim!', 'info');
             return;
         }
         // Web3 ile kontrata claim işlemi
@@ -427,7 +427,7 @@ class Web3Handler {
             // Miktarı en küçük birime çevir
             const amountToSend = (BigInt(claimAmount) * (10n ** BigInt(decimals))).toString();
             await this.tokenContract.methods.claimGameRewards(amountToSend).send({from: this.currentAccount});
-            this.showNotification(`Successfully claimed ${claimAmount} Coffy!`, 'success');
+            this.showNotification(`Successfully claimed ${claimAmount} HUNGX!`, 'success');
             // Local coffy sıfırla
             localStorage.setItem('coffyEarned', '0');
             localStorage.setItem('lastCoffyClaimTs', now.toString());
@@ -675,7 +675,7 @@ class Web3Handler {
                 from: this.currentAccount
             });
             
-            this.showNotification(`${this.migrationInfo.oldBalance} COFFY successfully migrated!`, "success");
+            this.showNotification(`${this.migrationInfo.oldBalance} HUNGX successfully migrated!`, "success");
             
             // Migration durumunu güncelle
             await this.checkMigrationStatus();
@@ -703,7 +703,7 @@ class Web3Handler {
                 
                 const migrationInfo = document.getElementById('migration-info');
                 if (migrationInfo) {
-                    migrationInfo.textContent = `You have ${this.migrationInfo.oldBalance} COFFY in your old contract. You can migrate to the new contract.`;
+                    migrationInfo.textContent = `You have ${this.migrationInfo.oldBalance} HUNGX in your old contract. You can migrate to the new contract.`;
                 }
             } else {
                 migrationSection.style.display = 'none';

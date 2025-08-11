@@ -1465,7 +1465,7 @@ class GameManager {
                          <br>
                          You found the exit!<br>
                          Score: ${this.score}<br>
-                         COFFY Tokens: +${this.levelCompletionReward}
+                         HUNGX Tokens: +${this.levelCompletionReward}
                      `;
                 }
 
@@ -2301,10 +2301,10 @@ class GameManager {
         
         // Show notification
         if (window.ui) {
-            window.ui.showNotification(`+${this.enemyKillReward} COFFY!`, '💰', 2000);
+            window.ui.showNotification(`+${this.enemyKillReward} HUNGX!`, '💰', 2000);
         }
         
-        console.log(`Awarded ${this.enemyKillReward} COFFY tokens for killing an enemy. Total: ${this.hungxTokens}`);
+        console.log(`Awarded ${this.enemyKillReward} HUNGX tokens for killing an enemy. Total: ${this.hungxTokens}`);
         return this.enemyKillReward;
     }
     
@@ -2318,10 +2318,10 @@ class GameManager {
         
         // Show notification
         if (window.ui) {
-            window.ui.showNotification(`+${this.coffeeCollectibleReward} COFFY!`, '💰', 2000);
+            window.ui.showNotification(`+${this.coffeeCollectibleReward} HUNGX!`, '💰', 2000);
         }
         
-        console.log(`Awarded ${this.coffeeCollectibleReward} COFFY tokens for collecting coffee. Total: ${this.hungxTokens}`);
+        console.log(`Awarded ${this.coffeeCollectibleReward} HUNGX tokens for collecting coffee. Total: ${this.hungxTokens}`);
         return this.coffeeCollectibleReward;
     }
     
@@ -2334,9 +2334,9 @@ class GameManager {
             setTimeout(() => {
                 try {
                     localStorage.setItem('hungxTokens', this.hungxTokens);
-                    debugLog('COFFY tokens saved:', this.hungxTokens);
+                    debugLog('HUNGX tokens saved:', this.hungxTokens);
                 } catch (e) {
-                    console.warn('Error saving COFFY tokens:', e);
+                    console.warn('Error saving HUNGX tokens:', e);
                 }
                 this.pendingTokenSave = false;
             }, this.tokenSaveDelay);
@@ -2368,10 +2368,10 @@ class GameManager {
         try {
             const savedTokens = localStorage.getItem('hungxTokens');
             const parsedTokens = savedTokens ? parseInt(savedTokens, 10) : 0;
-            console.log(`Loaded ${parsedTokens} COFFY tokens from localStorage`);
+            console.log(`Loaded ${parsedTokens} HUNGX tokens from localStorage`);
             return parsedTokens;
         } catch (e) {
-            console.error("Failed to load COFFY tokens:", e);
+            console.error("Failed to load HUNGX tokens:", e);
             return 0;
         }
     }
@@ -2384,7 +2384,7 @@ class GameManager {
         try {
         // First check if wallet is connected
         if (!window.gameState.walletConnected || !window.gameState.walletAddress) {
-            const connectNow = confirm('You need to connect your wallet first to claim COFFY tokens.\n\nWould you like to connect your wallet now?');
+            const connectNow = confirm('You need to connect your wallet first to claim HUNGX tokens.\n\nWould you like to connect your wallet now?');
             if (connectNow) {
                 const connected = await this.connectWallet();
                 if (!connected) {
@@ -2397,7 +2397,7 @@ class GameManager {
         
         // Check if tokens are available to claim
         if (this.hungxTokens <= 0) {
-            alert('No COFFY tokens to claim!');
+            alert('No HUNGX tokens to claim!');
             return false;
         }
         
@@ -2432,8 +2432,8 @@ class GameManager {
             statusElement.style.zIndex = '10000';
             statusElement.style.textAlign = 'center';
             statusElement.innerHTML = `
-                <h3>Claiming COFFY Tokens</h3>
-                <p>Amount: ${claimAmount} COFFY${this.hungxTokens > MAX_CLAIM_LIMIT ? ` (of ${this.hungxTokens} total)` : ''}</p>
+                <h3>Claiming HUNGX Tokens</h3>
+                <p>Amount: ${claimAmount} HUNGX${this.hungxTokens > MAX_CLAIM_LIMIT ? ` (of ${this.hungxTokens} total)` : ''}</p>
                 <div id="claimStatus">Connecting to wallet...</div>
                 <button id="cancelClaim" style="margin-top: 15px; padding: 5px 10px; background: #333; border: none; color: white; border-radius: 5px; cursor: pointer;">Cancel</button>
             `;
@@ -2554,9 +2554,9 @@ class GameManager {
                 const claimCount = this.getClaimCountToday();
                 
                 if (this.hungxTokens > 0) {
-                    alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nRemaining tokens to claim: ${this.hungxTokens}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
+                    alert(`Successfully claimed ${claimAmount} HUNGX tokens!\nYour wallet balance: ${formattedBalance}\nRemaining tokens to claim: ${this.hungxTokens}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
                 } else {
-                    alert(`Successfully claimed ${claimAmount} COFFY tokens!\nYour wallet balance: ${formattedBalance}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
+                    alert(`Successfully claimed ${claimAmount} HUNGX tokens!\nYour wallet balance: ${formattedBalance}\nClaims used today: ${claimCount}/${this.maxClaimsPerDay}`);
                 }
                 
                 // Update pending rewards display
@@ -2575,7 +2575,7 @@ class GameManager {
                 return false;
             }
         } catch (err) {
-            console.error("Error claiming COFFY tokens:", err);
+            console.error("Error claiming HUNGX tokens:", err);
             alert('Failed to claim tokens: ' + (err.message || err.reason || err));
             return false;
             }
@@ -2912,7 +2912,7 @@ class GameManager {
                 setTimeout(() => {
                     document.body.removeChild(statusElement);
                     // Show success message
-                    alert(`${walletName} connected successfully!\nYour COFFY balance: ${formattedBalance}`);
+                    alert(`${walletName} connected successfully!\nYour HUNGX balance: ${formattedBalance}`);
                     this.walletConnectionInProgress = false;
                 }, 2000);
                 
@@ -2923,7 +2923,7 @@ class GameManager {
                 const claimRewardsButton = document.getElementById('claimRewardsButton');
                 if (claimRewardsButton) {
                     claimRewardsButton.disabled = false;
-                    claimRewardsButton.title = "Claim your COFFY tokens to your wallet";
+                    claimRewardsButton.title = "Claim your HUNGX tokens to your wallet";
                 }
                 
                 // Update connect wallet button

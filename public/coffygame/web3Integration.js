@@ -273,7 +273,7 @@ export async function upgradeSkill(skillKey, gameState, player, uiCallbacks) {
         const requiredAmount = ethers.utils.parseUnits(cost.toString(), 18); // Assuming 18 decimals
 
         if (balance.lt(requiredAmount)) {
-            showNotification(`Insufficient COFFY balance. Need ${cost} COFFY.`, 'error');
+            showNotification(`Insufficient HUNGX balance. Need ${cost} HUNGX.`, 'error');
             return;
         }
 
@@ -286,7 +286,7 @@ export async function upgradeSkill(skillKey, gameState, player, uiCallbacks) {
         // const tx = await tokenContract.spendTokensForSkill(requiredAmount);
         // await tx.wait();
         // For now, we'll just simulate the balance decrease locally.
-        console.log(`Simulating spending ${cost} COFFY for ${skillKey} upgrade.`);
+        console.log(`Simulating spending ${cost} HUNGX for ${skillKey} upgrade.`);
         // Update local token count for UI feedback (fetch real balance later)
         gameState.tokenCount = parseFloat(ethers.utils.formatUnits(balance.sub(requiredAmount), 18));
         if (tokenCountElement) tokenCountElement.textContent = gameState.tokenCount.toFixed(2);
@@ -484,7 +484,7 @@ function showWalletGuidance() {
     
     modal.innerHTML = `
         <h2 style="margin-top:0;">Web3 Wallet Required</h2>
-        <p style="margin:16px 0;">To connect your wallet and earn COFFY rewards, you need a Web3 wallet like MetaMask.</p>
+        <p style="margin:16px 0;">To connect your wallet and earn HUNGX rewards, you need a Web3 wallet like MetaMask.</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px;">
             <button id="install-metamask-btn" style="background:#F6851B;color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:bold;">Install MetaMask</button>
             <button id="close-modal-btn" style="background:rgba(255,255,255,0.2);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;">Continue Without Wallet</button>
@@ -605,7 +605,7 @@ export async function claimTotalReward(gameState, uiElements) {
         }
 
         // Show appropriate success message
-        let successMessage = `Successfully claimed ${actualClaimAmount} COFFY tokens!`;
+        let successMessage = `Successfully claimed ${actualClaimAmount} HUNGX tokens!`;
         if (actualClaimAmount < gameState.pendingRewards + actualClaimAmount) {
             const remainingTokens = gameState.pendingRewards;
             successMessage += ` (${remainingTokens} tokens remaining for tomorrow)`;
@@ -620,7 +620,7 @@ export async function claimTotalReward(gameState, uiElements) {
             if (error.message.includes("Daily reward limit exceeded")) {
                 errorMsg = "Günlük ödül limiti aşıldı. Yarın tekrar deneyin.";
             } else if (error.message.includes("Sybil protection")) {
-                errorMsg = "Anti-Sybil koruması: Minimum 50,000 COFFY balance gerekli.";
+                errorMsg = "Anti-Sybil koruması: Minimum 50,000 HUNGX balance gerekli.";
             } else if (error.message.includes("Claim cooldown")) {
                 errorMsg = "Claim cooldown aktif. Biraz bekleyin.";
             } else if (error.message.includes("user rejected")) {
@@ -663,12 +663,12 @@ export async function buyCharacter(characterId, gameState, uiElements) {
         const priceWei = ethers.utils.parseUnits(price.toString(), 18);
 
         if (balanceWei.lt(priceWei)) {
-            showNotification(`Insufficient COFFY balance! You need ${price} COFFY.`, 'warning');
+            showNotification(`Insufficient HUNGX balance! You need ${price} HUNGX.`, 'warning');
             return;
         }
 
         // Replace confirm with notification
-        showNotification(`Attempting to buy ${character.name} for ${price} COFFY...`, 'info');
+        showNotification(`Attempting to buy ${character.name} for ${price} HUNGX...`, 'info');
         // if (!confirmPurchase) return; // Removed confirm
 
         if (button) {

@@ -782,7 +782,7 @@ class UIManager {
                         <div style="color: #fff;"><span style="color: #ff6666;">⚔️ Kills:</span></div>
                         <div style="color: #fff; text-align: right;"><strong>${enemiesDefeated}</strong></div>
                         
-                        <div style="color: #fff;"><span style="color: #66ccff;">☕ Coffy:</span></div>
+                        <div style="color: #fff;"><span style="color: #66ccff;">☕ HUNGX:</span></div>
                         <div style="color: #fff; text-align: right;"><strong>${coffyEarned}</strong></div>
                     </div>
                     

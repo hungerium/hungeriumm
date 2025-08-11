@@ -137,7 +137,7 @@ class Game {
         
         // ✅ REMOVED: Token balance display per user request
         
-        // Coffy Earnings Display (Claimable Rewards)
+        // HUNGX Earnings Display (Claimable Rewards)
         const hungxEarningsDisplay = document.createElement('div');
         hungxEarningsDisplay.id = 'hungxEarningsDisplay';
         const savedHungxTokens = localStorage.getItem('hungxTokens') || '0';
@@ -1952,7 +1952,7 @@ class Game {
         teamScoresContainer.appendChild(thiefScore);
         document.body.appendChild(teamScoresContainer);
         
-        // ✅ BOTTOM COFFY COUNTER REMOVED - Only top HUD hungx remains
+        // ✅ BOTTOM HUNGX COUNTER REMOVED - Only top HUD hungx remains
         
         // ✅ MODERN KILLS/DEATHS COUNTER FOR GAME MODE (if multiplayer exists)
         if (this.multiplayer) {
