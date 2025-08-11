@@ -50,8 +50,9 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     credentials: false
   },
-  transports: isProd ? ['websocket'] : ['polling', 'websocket'],
-  allowUpgrades: !isProd,
+  // Enable both transports in prod for proxy compatibility
+  transports: ['websocket', 'polling'],
+  allowUpgrades: true,
   allowEIO3: true
 });
 
