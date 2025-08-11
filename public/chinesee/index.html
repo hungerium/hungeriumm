@@ -1053,7 +1053,7 @@
           var isLocalHost = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
           var SERVER_URL = (isLocalHost && !forceRemote)
             ? 'http://localhost:3000'
-            : 'https://chinesee.onrender.com';
+            : 'https://hungeriumm.onrender.com';
           window.CHINESEE_SERVER_URL = SERVER_URL;
           try { console.log('📡 Socket target:', SERVER_URL); } catch (e) {}
 
@@ -1086,8 +1086,8 @@
                         console.log('↪️ Falling back Socket.IO to http://localhost:3001');
                       } else if (stage === 1) {
                         stage = 2;
-                        socket.io.uri = 'https://chinesee.onrender.com';
-                        console.log('↪️ Falling back Socket.IO to https://chinesee.onrender.com');
+                        socket.io.uri = 'https://hungeriumm.onrender.com';
+                        console.log('↪️ Falling back Socket.IO to https://hungeriumm.onrender.com');
                       } else {
                         return;
                       }
